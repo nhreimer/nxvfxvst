@@ -74,31 +74,16 @@ namespace nx
       const auto& modifierTexture =
         m_modifier->modifyParticles( m_layout->getParticleOptions(), m_layout->getParticles() );
 
-
       const sf::RenderTexture * currentTexture = &modifierTexture;
+
       for ( auto * shader : m_shaders )
       {
         if ( shader->isShaderActive() )
           currentTexture = &shader->applyShader( *currentTexture );
       }
 
-      window.draw( sf::Sprite( currentTexture->getTexture() ), sf::BlendAdd );
-
-      // if ( m_shaders->isShaderActive() )
-      // {
-      //   const auto& shaderTexture =
-      //     m_shaders->applyShader( modifierTexture );
-      //
-      //   window.draw(
-      //     sf::Sprite( shaderTexture.getTexture() ),
-      //     sf::BlendAdd );
-      // }
-      // else
-      // {
-      //   window.draw(
-      //     sf::Sprite( modifierTexture.getTexture() ),
-      //     sf::BlendAdd );
-      // }
+      window.draw( sf::Sprite( currentTexture->getTexture() ),
+                   m_blendMode );
     }
 
     void drawMenu()
@@ -145,6 +130,15 @@ namespace nx
         ImGui::TreePop();
         ImGui::Spacing();
       }
+
+      if ( ImGui::TreeNode( "Global Options" ) )
+      {
+        ImGui::Separator();
+        MenuHelper::drawBlendOptions( m_blendMode );
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
     }
 
     template < typename TModel >
@@ -166,6 +160,8 @@ namespace nx
   private:
 
     const WindowInfo_t& m_winfo;
+
+    sf::BlendMode m_blendMode { sf::BlendAdd };
 
     // std::unique_ptr< IParticleLayout > m_layout;
     // std::unique_ptr< IParticleModifier > m_modifier;

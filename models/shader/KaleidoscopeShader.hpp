@@ -11,6 +11,7 @@ namespace nx
     float centerY { 0.5f };
     int32_t segments { 8 };
     float time { 0.f };
+    float rotationSpeed { 0.1f };
 
     bool automateTime { false };
   };
@@ -43,7 +44,10 @@ namespace nx
         ImGui::SliderFloat( "Center x##1", &m_data.centerX, -1.0f, 2.0f );
         ImGui::SliderFloat( "Center y##1", &m_data.centerY, -1.0f, 2.0f );
         ImGui::SliderFloat( "Rotate##1", &m_data.time, 0.f, 1.f );
-        ImGui::Checkbox( "Automate Rotate##1", &m_data.automateTime );
+
+        ImGui::Separator();
+        ImGui::Checkbox( "Automate Rotation##1", &m_data.automateTime );
+        ImGui::SliderFloat( "Rotation Speed##1", &m_data.rotationSpeed, 0.f, 1.f );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -66,6 +70,7 @@ namespace nx
       m_shader.setUniform( "center", sf::Vector2f( m_data.centerX, m_data.centerY ) ); // Center in UV space
       m_shader.setUniform( "numSegments", m_data.segments );
       m_shader.setUniform( "time", m_data.time );
+      m_shader.setUniform( "rotationSpeed", m_data.rotationSpeed );
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -88,6 +93,7 @@ uniform vec2 resolution;     // Window size
 uniform vec2 center;         // Center of the kaleidoscope
 uniform int numSegments;     // Number of mirrored segments
 uniform float time;          // Optional time to animate
+uniform float rotationSpeed; //
 
 void main()
 {
@@ -101,7 +107,7 @@ void main()
     float theta = atan(delta.y, delta.x);
 
     // Apply time-based rotation (optional)
-    theta += time * 0.1;
+    theta += time * rotationSpeed; // 0.1 is default
 
     // Mirror the angle across segment boundaries
     float segmentAngle = 3.14159265 * 2.0 / float(numSegments);

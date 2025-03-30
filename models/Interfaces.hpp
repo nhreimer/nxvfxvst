@@ -12,6 +12,7 @@ namespace nx
     int16_t channel { 0 };
     int16_t pitch { 0 };
     float velocity { 0.f };
+    sf::BlendMode blendMode { sf::BlendAdd };
   };
 
   struct WindowInfo_t
@@ -61,7 +62,7 @@ namespace nx
 
   struct IShader : public IMenuable//, public IIdentity
   {
-    virtual ~IShader() = default;
+    ~IShader() override = default;
 
     virtual void update( const sf::Time& deltaTime ) = 0;
 
