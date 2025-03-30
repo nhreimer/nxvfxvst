@@ -10,6 +10,7 @@
 #include "models/particle/ParticleFullMeshLineModifier.hpp"
 
 #include "models/shader/BlurShader.hpp"
+#include "models/shader/KaleidoscopeShader.hpp"
 
 namespace nx
 {
@@ -40,14 +41,16 @@ namespace nx
       : m_winfo( winfo ),
         m_layout( new SpiralParticleLayout( winfo ) ),
         m_modifier( new ParticleSequentialLineModifier( winfo ) ),
-        m_shader( new BlurShader( winfo ) )
+        m_shaders( { new KaleidoscopeShader( winfo ),
+                        new BlurShader( winfo ) } )
     {}
 
     ~ChannelPipeline()
     {
       delete m_layout;
       delete m_modifier;
-      delete m_shader;
+      for ( const auto * shader : m_shaders )
+        delete shader;
     }
 
     void processMidiEvent( const Midi_t& midiEvent ) const
@@ -62,7 +65,8 @@ namespace nx
     {
       m_layout->update( deltaTime );
       m_modifier->update( deltaTime );
-      m_shader->update( deltaTime );
+      for ( auto * shader : m_shaders )
+        shader->update( deltaTime );
     }
 
     void draw( sf::RenderWindow& window ) const
@@ -70,28 +74,39 @@ namespace nx
       const auto& modifierTexture =
         m_modifier->modifyParticles( m_layout->getParticleOptions(), m_layout->getParticles() );
 
-      if ( m_shader->isShaderActive() )
-      {
-        const auto& shaderTexture =
-          m_shader->applyShader( modifierTexture );
 
-        window.draw(
-          sf::Sprite( shaderTexture.getTexture() ),
-          sf::BlendAdd );
-      }
-      else
+      const sf::RenderTexture * currentTexture = &modifierTexture;
+      for ( auto * shader : m_shaders )
       {
-        window.draw(
-          sf::Sprite( modifierTexture.getTexture() ),
-          sf::BlendAdd );
+        if ( shader->isShaderActive() )
+          currentTexture = &shader->applyShader( *currentTexture );
       }
+
+      window.draw( sf::Sprite( currentTexture->getTexture() ), sf::BlendAdd );
+
+      // if ( m_shaders->isShaderActive() )
+      // {
+      //   const auto& shaderTexture =
+      //     m_shaders->applyShader( modifierTexture );
+      //
+      //   window.draw(
+      //     sf::Sprite( shaderTexture.getTexture() ),
+      //     sf::BlendAdd );
+      // }
+      // else
+      // {
+      //   window.draw(
+      //     sf::Sprite( modifierTexture.getTexture() ),
+      //     sf::BlendAdd );
+      // }
     }
 
     void drawMenu()
     {
       m_layout->drawMenu();
       m_modifier->drawMenu();
-      m_shader->drawMenu();
+      for ( auto * shader : m_shaders )
+        shader->drawMenu();
 
       ImGui::Separator();
       drawChannelPipelineMenu();
@@ -158,7 +173,7 @@ namespace nx
 
     IParticleLayout * m_layout;
     IParticleModifier * m_modifier;
-    IShader * m_shader;
+    std::array< IShader *, 2 > m_shaders;
 
   };
 }

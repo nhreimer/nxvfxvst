@@ -90,6 +90,9 @@ namespace nx
           m_options.startColor = color;
         }
 
+        ImGui::Separator();
+        ImGui::SliderFloat( "Thickness##2", &m_options.outlineThickness, 0.f, 25.f );
+
         ImVec4 outlineColor = m_options.outlineColor;
 
         if ( ImGui::ColorPicker4( "Particle Outline##1",

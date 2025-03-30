@@ -23,7 +23,7 @@ namespace nx
       const auto noteInfo = MidiHelper::getMidiNote( midiEvent.pitch );
       auto position = getNextPosition( noteInfo );
       position += { static_cast< float >( m_winfo.windowSize.x ) / 2.f,
-                       static_cast< float >( m_winfo.windowSize.y ) / 2.f };
+                    static_cast< float >( m_winfo.windowSize.y ) / 2.f };
 
       auto& timeParticle = m_particles.emplace_back();
       auto& particle = timeParticle.shape;
