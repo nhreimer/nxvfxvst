@@ -1,8 +1,10 @@
 #pragma once
 
-#include "shapes/GradientLine.hpp"
-#include "models/particle/ParticleLineData_t.hpp"
 #include "helpers/MenuHelper.hpp"
+
+#include "models/data/ParticleLineData_t.hpp"
+
+#include "shapes/GradientLine.hpp"
 
 namespace nx
 {
@@ -11,7 +13,7 @@ namespace nx
   {
   public:
 
-    explicit ParticleFullMeshLineModifier( const WindowInfo_t& winfo )
+    explicit ParticleFullMeshLineModifier( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
     {}
 
@@ -32,8 +34,9 @@ namespace nx
     void update( const sf::Time &deltaTime ) override
     {}
 
+    [[nodiscard]]
     sf::RenderTexture& modifyParticles( const ParticleLayoutData_t& particleLayoutData,
-                                        std::deque< TimedParticle >& particles ) override
+                                        std::deque< TimedParticle_t >& particles ) override
     {
       if ( m_outputTexture.getSize() != m_winfo.windowSize )
       {
@@ -77,7 +80,7 @@ namespace nx
 
   private:
 
-    const WindowInfo_t& m_winfo;
+    const GlobalInfo_t& m_winfo;
     sf::RenderTexture m_outputTexture;
 
     ParticleLineData_t m_data;

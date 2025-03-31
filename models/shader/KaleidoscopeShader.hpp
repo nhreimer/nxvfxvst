@@ -23,7 +23,7 @@ namespace nx
 
   public:
 
-    explicit KaleidoscopeShader( const WindowInfo_t& winfo )
+    explicit KaleidoscopeShader( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
     {
       assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
@@ -56,8 +56,10 @@ namespace nx
       }
     }
 
+    [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.segments > 0; }
 
+    [[nodiscard]]
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override
     {
@@ -83,7 +85,7 @@ namespace nx
 
   private:
 
-    const WindowInfo_t& m_winfo;
+    const GlobalInfo_t& m_winfo;
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;

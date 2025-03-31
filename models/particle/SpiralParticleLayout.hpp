@@ -17,7 +17,7 @@ namespace nx
   {
   public:
 
-    explicit SpiralParticleLayout( const WindowInfo_t& winfo )
+    explicit SpiralParticleLayout( const GlobalInfo_t& winfo )
       : ParticleConsumer( winfo )
     {}
 

@@ -9,7 +9,7 @@ class RandomParticleLayout final : public ParticleConsumer
 {
 public:
 
-  explicit RandomParticleLayout( const WindowInfo_t& winfo )
+  explicit RandomParticleLayout( const GlobalInfo_t& winfo )
   : ParticleConsumer( winfo )
   {}
 

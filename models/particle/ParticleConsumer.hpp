@@ -2,7 +2,7 @@
 
 #include "helpers/ColorHelper.hpp"
 
-#include "models/particle/ParticleLayoutData_t.hpp"
+#include "models/data/ParticleLayoutData_t.hpp"
 
 namespace nx
 {
@@ -14,7 +14,7 @@ namespace nx
   {
     public:
 
-    explicit ParticleConsumer( const WindowInfo_t& winfo )
+    explicit ParticleConsumer( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
     {}
 
@@ -69,8 +69,11 @@ namespace nx
       }
     }
 
+    [[nodiscard]]
     const ParticleLayoutData_t& getParticleOptions() const override { return m_options; }
-    std::deque< TimedParticle > &getParticles() override { return m_particles; }
+
+    [[nodiscard]]
+    std::deque< TimedParticle_t > &getParticles() override { return m_particles; }
 
     protected:
 
@@ -78,8 +81,8 @@ namespace nx
 
     protected:
 
-      const WindowInfo_t& m_winfo;
-      std::deque< TimedParticle > m_particles;
+      const GlobalInfo_t& m_winfo;
+      std::deque< TimedParticle_t > m_particles;
 
       std::mt19937 m_rand;
       ParticleLayoutData_t m_options;

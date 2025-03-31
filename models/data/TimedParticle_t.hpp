@@ -3,7 +3,7 @@
 namespace nx
 {
 
-  struct TimedParticle
+  struct TimedParticle_t
   {
     sf::CircleShape shape;
 

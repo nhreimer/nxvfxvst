@@ -2,12 +2,17 @@
 
 #include <memory>
 
+#include "models/Interfaces.hpp"
+
+#include "models/data/GlobalInfo_t.hpp"
+#include "models/data/Midi_t.hpp"
+
 #include "models/particle/SpiralParticleLayout.hpp"
 #include "models/particle/RandomParticleLayout.hpp"
 
-#include "models/particle/PassthroughParticleModifier.hpp"
-#include "models/particle/ParticleSequentialLineModifier.hpp"
-#include "models/particle/ParticleFullMeshLineModifier.hpp"
+#include "models/modifier/PassthroughParticleModifier.hpp"
+#include "models/modifier/ParticleSequentialLineModifier.hpp"
+#include "models/modifier/ParticleFullMeshLineModifier.hpp"
 
 #include "models/shader/BlurShader.hpp"
 #include "models/shader/KaleidoscopeShader.hpp"
@@ -38,7 +43,7 @@ namespace nx
   {
   public:
 
-    explicit ChannelPipeline( const WindowInfo_t& winfo )
+    explicit ChannelPipeline( const GlobalInfo_t& winfo )
       : m_winfo( winfo ),
         m_layout( new SpiralParticleLayout( winfo ) ),
         m_modifier( new ParticleSequentialLineModifier( winfo ) ),
@@ -161,7 +166,7 @@ namespace nx
 
   private:
 
-    const WindowInfo_t& m_winfo;
+    const GlobalInfo_t& m_winfo;
 
     sf::BlendMode m_blendMode { sf::BlendAdd };
 

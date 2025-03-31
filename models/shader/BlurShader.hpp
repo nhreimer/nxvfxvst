@@ -19,7 +19,7 @@ namespace nx
   {
   public:
 
-    explicit BlurShader( const WindowInfo_t& winfo )
+    explicit BlurShader( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
     {
       assert( m_blurShader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
@@ -43,8 +43,10 @@ namespace nx
       }
     }
 
+    [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.blurHorizontal + m_data.blurVertical > 0.f; }
 
+    [[nodiscard]]
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override
     {
@@ -87,7 +89,7 @@ namespace nx
 
   private:
 
-    const WindowInfo_t& m_winfo;
+    const GlobalInfo_t& m_winfo;
 
     sf::Shader m_blurShader;
     sf::RenderTexture m_intermediary;

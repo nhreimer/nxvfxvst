@@ -6,7 +6,7 @@
 
 #include "Logger.hpp"
 
-#include "models/Interfaces.hpp"
+#include "models/data/GlobalInfo_t.hpp"
 #include "models/ChannelPipeline.hpp"
 
 #include "MidiGenerator.hpp"
@@ -42,10 +42,10 @@ namespace nx
         LOG_ERROR( "initializing imgui failed" );
 
       m_windowInfo.windowSize = window.getSize();
-      m_windowInfo.windowView.setSize( { ( float )m_windowInfo.windowSize.x, ( float )m_windowInfo.windowSize.y } );
+      m_windowInfo.windowView.setSize( { static_cast< float >(m_windowInfo.windowSize.x), ( float )m_windowInfo.windowSize.y } );
     }
 
-    void shutdown( sf::RenderWindow & window )
+    void shutdown( const sf::RenderWindow & window )
     {
       LOG_INFO( "shutting down event receiver" );
       ImGui::SFML::Shutdown( window );
@@ -149,7 +149,7 @@ namespace nx
 
     test::MidiGenerator m_midiGen { 1, 1000 };
 
-    WindowInfo_t m_windowInfo;
+    GlobalInfo_t m_windowInfo;
 
     sf::Clock m_timer;
 

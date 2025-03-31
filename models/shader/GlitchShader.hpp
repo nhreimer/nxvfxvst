@@ -18,7 +18,7 @@ namespace nx
   class GlitchShader final : public IShader
   {
   public:
-    explicit GlitchShader( const WindowInfo_t& winfo )
+    explicit GlitchShader( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
     {
       assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
@@ -48,8 +48,10 @@ namespace nx
 
     void update( const sf::Time &deltaTime ) override {}
 
+    [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.glitchStrength > 0.f; }
 
+    [[nodiscard]]
     sf::RenderTexture & applyShader( const sf::RenderTexture &inputTexture ) override
     {
       if ( m_outputTexture.getSize() != m_winfo.windowSize )
@@ -79,7 +81,7 @@ namespace nx
     }
 
   private:
-    const WindowInfo_t& m_winfo;
+    const GlobalInfo_t& m_winfo;
 
     GlitchData_t m_data;
 
@@ -133,17 +135,17 @@ void main() {
     float jump = step(jumpThreshold, rand(vec2(floor(time * 2.0), 5.0))) * rand(vec2(time, 0.0)) * 0.1 * strength;
     uv.y += jump;
 
-    // ✴️ Pixelation Jump (intermittent pixel blocks)
+    // Pixelation Jump (intermittent pixel blocks)
     float pixelBlock = 1.0;
     if (step(1.0 - pixelJumpAmount, rand(vec2(floor(time * 4.0), 1.0))) > 0.5) {
         pixelBlock = floor(rand(vec2(time, 2.0)) * 40.0 + 4.0);
         uv = floor(uv * pixelBlock) / pixelBlock;
     }
 
-    // 🔺 RGB Shift
+    // RGB Shift
     vec2 rgbShift = vec2(rand(vec2(time, uv.y)) * 0.005 * strength, 0.0);
 
-    // 🔵 Chromatic Flicker — only sometimes exaggerate the RGB offset
+    // Chromatic Flicker — only sometimes exaggerate the RGB offset
     if (step(1.0 - chromaFlickerAmount, rand(vec2(time * 3.0, 3.0))) > 0.5) {
         rgbShift *= 5.0;
     }
@@ -154,7 +156,7 @@ void main() {
 
     vec4 color = vec4(r.r, g.g, b.b, 1.0);
 
-    // 🌀 Scanlines
+    // Scanlines
     float scanline = sin(uv.y * resolution.y * 10.0 + time * 40.0) * scanlineIntensity * strength;
     color.rgb += scanline;
 

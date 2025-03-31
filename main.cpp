@@ -1,12 +1,9 @@
-#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <imgui.h>
 #include <imgui-SFML.h>
 
 #include "Logger.hpp"
 #include "EventFacade.hpp"
-#include "models/Interfaces.hpp"
-
 
 void run()
 {
