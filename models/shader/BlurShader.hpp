@@ -7,6 +7,8 @@ namespace nx
 
   struct BlurData_t
   {
+    bool isActive { false };
+
     float sigma { 7.f };
     float brighten { 1.f };
     float blurHorizontal { 0.f };
@@ -20,10 +22,8 @@ namespace nx
     explicit BlurShader( const WindowInfo_t& winfo )
       : m_winfo( winfo )
     {
-      if ( !m_blurShader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
-        LOG_ERROR( "unable to load blur shader" );
-      else
-        LOG_INFO( "loaded blur shader" );
+      assert( m_blurShader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
+      LOG_INFO( "loaded blur shader" );
     }
 
     void update( const sf::Time& deltaTime ) override {}
@@ -32,6 +32,7 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Image Blur" ) )
       {
+        ImGui::Checkbox( "Blur Active##1", &m_data.isActive );
         ImGui::SliderFloat( "Smoothing##1", &m_data.sigma, 0.f, 50.f );
         ImGui::SliderFloat( "Brighten##1", &m_data.brighten, 1.f, 5.f );
         ImGui::SliderFloat( "Horizontal##1", &m_data.blurHorizontal, 0.f, 5.f );
@@ -42,7 +43,7 @@ namespace nx
       }
     }
 
-    bool isShaderActive() const override { return m_data.blurHorizontal + m_data.blurVertical > 0.f; }
+    bool isShaderActive() const override { return m_data.isActive && m_data.blurHorizontal + m_data.blurVertical > 0.f; }
 
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override

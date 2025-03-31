@@ -1,6 +1,7 @@
 #pragma once
 
 #include "particle/ParticleLayoutData_t.hpp"
+#include "particle/TimedParticle.hpp"
 
 
 #include <deque>
@@ -26,16 +27,6 @@ namespace nx
   {
     virtual ~IMenuable() = default;
     virtual void drawMenu() = 0;
-  };
-
-  struct TimedParticle
-  {
-    sf::CircleShape shape;
-
-    int32_t timeLeft { 0 };
-
-    // this is the initial color. it shouldn't change once set.
-    sf::Color initialColor { sf::Color::White };
   };
 
   struct IParticleLayout : public IMenuable//, public IIdentity

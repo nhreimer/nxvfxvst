@@ -11,6 +11,7 @@
 
 #include "models/shader/BlurShader.hpp"
 #include "models/shader/KaleidoscopeShader.hpp"
+#include "models/shader/GlitchShader.hpp"
 
 namespace nx
 {
@@ -41,7 +42,7 @@ namespace nx
       : m_winfo( winfo ),
         m_layout( new SpiralParticleLayout( winfo ) ),
         m_modifier( new ParticleSequentialLineModifier( winfo ) ),
-        m_shaders( { new KaleidoscopeShader( winfo ),
+        m_shaders( { new GlitchShader( winfo ),
                         new BlurShader( winfo ) } )
     {}
 

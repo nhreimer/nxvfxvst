@@ -7,9 +7,11 @@ namespace nx
 
   struct KaleidoscopeData_t
   {
+    bool isActive { false };
+
     float centerX { 0.5f };
     float centerY { 0.5f };
-    int32_t segments { 8 };
+    int32_t segments { 0 };
     float time { 0.f };
     float rotationSpeed { 0.1f };
 
@@ -24,10 +26,8 @@ namespace nx
     explicit KaleidoscopeShader( const WindowInfo_t& winfo )
       : m_winfo( winfo )
     {
-      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
-        LOG_ERROR( "unable to load blur shader" );
-      else
-        LOG_INFO( "loaded blur shader" );
+      assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
+      LOG_INFO( "loaded kaleidoscope shader" );
     }
 
     void update( const sf::Time& deltaTime ) override
@@ -40,6 +40,8 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Kaleidoscope" ) )
       {
+        ImGui::Checkbox( "Kaleidoscope Active##1", &m_data.isActive );
+
         ImGui::SliderInt( "Segments##1", &m_data.segments, 0, 255 );
         ImGui::SliderFloat( "Center x##1", &m_data.centerX, -1.0f, 2.0f );
         ImGui::SliderFloat( "Center y##1", &m_data.centerY, -1.0f, 2.0f );
@@ -54,7 +56,7 @@ namespace nx
       }
     }
 
-    bool isShaderActive() const override { return m_data.segments > 0; }
+    bool isShaderActive() const override { return m_data.isActive && m_data.segments > 0; }
 
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override
