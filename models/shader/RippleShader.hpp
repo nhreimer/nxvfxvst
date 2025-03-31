@@ -1,0 +1,114 @@
+#pragma once
+
+namespace nx
+{
+  struct RippleData_t
+  {
+    bool isActive { false };
+
+    float rippleCenterX { 0.5f };
+    float rippleCenterY { 0.5f };
+
+    float amplitude { 0.05f };
+    float frequency { 10.0f };
+    float speed { 0.f };
+  };
+
+  class RippleShader final : public IShader
+  {
+  public:
+
+    explicit RippleShader( const GlobalInfo_t& globalInfo )
+      : m_globalInfo( globalInfo )
+    {
+      assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
+      LOG_INFO( "loaded ripple shader" );
+    }
+
+    ~RippleShader() override = default;
+
+    void drawMenu() override
+    {
+      if ( ImGui::TreeNode( "Ripple" ) )
+      {
+        ImGui::Checkbox( "Ripple Active##1", &m_data.isActive );
+
+        ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, -1.f, 1.f );
+        ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, -1.f, 1.f );
+        ImGui::SliderFloat( "Ripple Amplitude##1", &m_data.amplitude, 0.f, 0.05f );
+        ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 10.f, 50.f );
+        ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+    }
+
+    void update( const sf::Time &deltaTime ) override {}
+
+    [[nodiscard]]
+    bool isShaderActive() const override { return m_data.isActive && m_data.amplitude > 0.f; }
+
+    [[nodiscard]]
+    sf::RenderTexture & applyShader( const sf::RenderTexture &inputTexture ) override
+    {
+      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      {
+        assert( m_outputTexture.resize( m_globalInfo.windowSize ) );
+        LOG_INFO( "successfully resized ripple texture" );
+      }
+
+      const float time = m_clock.getElapsedTime().asSeconds();
+
+      m_shader.setUniform( "texture", inputTexture.getTexture() );
+      m_shader.setUniform( "resolution", sf::Vector2f( inputTexture.getSize() ) );
+      m_shader.setUniform( "time", time );
+
+      m_shader.setUniform( "rippleCenter", sf::Vector2f( m_data.rippleCenterX, m_data.rippleCenterY) );
+      m_shader.setUniform( "amplitude", m_data.amplitude );     // 0.0f – 0.05f
+      m_shader.setUniform( "frequency", m_data.frequency );     // 10.0f – 50.0f
+      m_shader.setUniform( "speed", m_data.speed );             // 0.0f – 10.0f
+
+      m_outputTexture.clear( sf::Color::Transparent );
+      m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
+      m_outputTexture.display( );
+
+      return m_outputTexture;
+    }
+
+  private:
+    const GlobalInfo_t& m_globalInfo;
+    RippleData_t m_data;
+
+    sf::Clock m_clock;
+    sf::Shader m_shader;
+    sf::RenderTexture m_outputTexture;
+
+    static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
+uniform vec2 resolution;
+uniform float time;
+
+uniform vec2 rippleCenter;
+uniform float amplitude;
+uniform float frequency;
+uniform float speed;
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / resolution;
+
+    // Offset from ripple center (in UV space)
+    vec2 delta = uv - rippleCenter;
+    float dist = length(delta);
+
+    // Ripple offset
+    float ripple = sin(dist * frequency - time * speed) * amplitude;
+
+    // Normalize direction
+    vec2 dir = normalize(delta);
+    uv += dir * ripple;
+
+    gl_FragColor = texture2D(texture, uv);
+})";
+  };
+
+}

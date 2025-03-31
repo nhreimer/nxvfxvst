@@ -17,6 +17,7 @@
 #include "models/shader/BlurShader.hpp"
 #include "models/shader/KaleidoscopeShader.hpp"
 #include "models/shader/GlitchShader.hpp"
+#include "models/shader/RippleShader.hpp"
 
 namespace nx
 {
@@ -48,8 +49,9 @@ namespace nx
         m_layout( new SpiralParticleLayout( winfo ) ),
         m_modifier( new ParticleSequentialLineModifier( winfo ) ),
         m_shaders( { new GlitchShader( winfo ),
-                        new KaleidoscopeShader( winfo ),
-                        new BlurShader( winfo ) } )
+                     new KaleidoscopeShader( winfo ),
+                     new RippleShader( winfo ),
+                     new BlurShader( winfo ) } )
     {}
 
     ~ChannelPipeline()
@@ -70,6 +72,9 @@ namespace nx
 
     void update( const sf::Time& deltaTime ) const
     {
+      // TODO: whenever switching line or particle type
+      // TODO: this can throw an error due to a nullptr
+
       m_layout->update( deltaTime );
       m_modifier->update( deltaTime );
       for ( auto * shader : m_shaders )
@@ -176,7 +181,7 @@ namespace nx
 
     IParticleLayout * m_layout;
     IParticleModifier * m_modifier;
-    std::array< IShader *, 3 > m_shaders;
+    std::vector< IShader * > m_shaders;
 
   };
 }
