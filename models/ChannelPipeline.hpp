@@ -43,6 +43,7 @@ namespace nx
         m_layout( new SpiralParticleLayout( winfo ) ),
         m_modifier( new ParticleSequentialLineModifier( winfo ) ),
         m_shaders( { new GlitchShader( winfo ),
+                        new KaleidoscopeShader( winfo ),
                         new BlurShader( winfo ) } )
     {}
 
@@ -170,7 +171,7 @@ namespace nx
 
     IParticleLayout * m_layout;
     IParticleModifier * m_modifier;
-    std::array< IShader *, 2 > m_shaders;
+    std::array< IShader *, 3 > m_shaders;
 
   };
 }
