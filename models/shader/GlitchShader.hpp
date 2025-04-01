@@ -17,6 +17,8 @@ namespace nx
 
     float glitchPulseDecay { -0.5f };
     float glitchPulseBoost { 2.f };
+
+    float bandCount { 20.f };            // smaller value = bigger chunks
   };
 
   class GlitchShader final : public IShader
@@ -78,16 +80,15 @@ namespace nx
       float pulse = exp( m_data.glitchPulseDecay * ( time - m_lastTriggerTime ) );
       pulse = std::clamp(pulse, 0.0f, 1.0f);
 
-      // Boost glitchStrength with pulse burst
-      // TODO: make this adjustable
-      constexpr float baseStrength = 1.0f;
-      //constexpr float burstBoost = 2.0f; // Extra strength during burst
-      m_shader.setUniform( "glitchStrength", baseStrength + pulse * m_data.glitchPulseBoost );
+      const float baseStrength = m_data.glitchBaseStrength;
+      const float boostedStrength = baseStrength + pulse * m_data.glitchPulseBoost;
+      m_data.glitchStrength = boostedStrength; // store for drawMenu visibility
+      m_shader.setUniform("glitchStrength", boostedStrength);
 
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
       m_shader.setUniform("time", time);
-      // m_shader.setUniform("glitchStrength", m_data.glitchStrength);
+
       m_shader.setUniform("glitchAmount", m_data.glitchAmount);
       m_shader.setUniform("scanlineIntensity", m_data.scanlineIntensity);
 
@@ -124,6 +125,8 @@ uniform float chromaFlickerAmount;
 uniform float strobeAmount;
 uniform float pixelJumpAmount;
 
+uniform float bandCount; // small values = bigger chunks
+
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -131,12 +134,12 @@ float rand(vec2 co) {
 void main() {
     vec2 uv = gl_FragCoord.xy / resolution;
 
-    float bandCount = 20.0;
+    //float bandCount = 20.0;
     float band = floor(uv.y * bandCount);
 
     float pulse = 0.5 + 0.5 * sin(time * 2.0);
-    float strength = glitchStrength * pulse;
     float amount = glitchAmount;
+    float strength = glitchStrength * pulse * (0.5 + amount); // More aggressive with glitchAmount
 
     float blockThreshold = 1.0 - amount * 0.9;
     float jumpThreshold = 1.0 - amount * 0.8;
@@ -150,7 +153,8 @@ void main() {
     uv.y += blockOffsetY;
 
     // UV Tearing
-    float tearIntensity = strength * 0.03;
+    float tearIntensity = strength * 0.03 * (0.5 + amount);
+
     uv.x += (rand(vec2(time, uv.y * 100.0)) - 0.5) * tearIntensity;
     uv.y += (rand(vec2(uv.x * 100.0, time)) - 0.5) * tearIntensity;
 
@@ -160,13 +164,13 @@ void main() {
 
     // Pixelation Jump (intermittent pixel blocks)
     float pixelBlock = 1.0;
-    if (step(1.0 - pixelJumpAmount, rand(vec2(floor(time * 4.0), 1.0))) > 0.5) {
+    if (step(1.0 - pixelJumpAmount, rand(vec2(floor(time * 4.0), 1.0))) > 0.0) {
         pixelBlock = floor(rand(vec2(time, 2.0)) * 40.0 + 4.0);
         uv = floor(uv * pixelBlock) / pixelBlock;
     }
 
     // RGB Shift
-    vec2 rgbShift = vec2(rand(vec2(time, uv.y)) * 0.005 * strength, 0.0);
+    vec2 rgbShift = vec2(rand(vec2(time, uv.y)) * 0.005 * strength * (0.5 + amount), 0.0);
 
     // Chromatic Flicker — only sometimes exaggerate the RGB offset
     if (step(1.0 - chromaFlickerAmount, rand(vec2(time * 3.0, 3.0))) > 0.5) {
@@ -180,10 +184,10 @@ void main() {
     vec4 color = vec4(r.r, g.g, b.b, 1.0);
 
     // Scanlines
-    float scanline = sin(uv.y * resolution.y * 10.0 + time * 40.0) * scanlineIntensity * strength;
+    float scanline = sin(uv.y * resolution.y * 10.0 + time * 40.0) * scanlineIntensity * (0.5 + 0.5 * pulse);
     color.rgb += scanline;
 
-    // ⚡ Strobe Flash — full screen bright flash
+    // Strobe Flash — full screen bright flash
     if (step(1.0 - strobeAmount, rand(vec2(floor(time * 4.0), 7.0))) > 0.5) {
         color.rgb += vec3(1.0); // white flash
     }

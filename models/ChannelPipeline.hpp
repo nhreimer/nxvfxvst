@@ -134,8 +134,6 @@ namespace nx
 
     void drawChannelPipelineMenu()
     {
-      if ( !m_layout || !m_modifier ) return;
-
       if ( ImGui::TreeNode( "Models" ) )
       {
 
@@ -201,8 +199,8 @@ namespace nx
     // std::unique_ptr< IParticleModifier > m_modifier;
     // std::unique_ptr< IShader > m_shader;
 
-    IParticleLayout * m_layout;
-    IParticleModifier * m_modifier;
+    IParticleLayout * m_layout { nullptr };
+    IParticleModifier * m_modifier { nullptr };
     std::vector< IShader * > m_shaders;
 
   };
