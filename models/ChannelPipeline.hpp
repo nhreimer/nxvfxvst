@@ -66,12 +66,16 @@ namespace nx
 
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
+      if ( !m_layout ) return;
       m_layout->addMidiEvent( midiEvent );
 
       // notify all shaders of an incoming event
       // which can be used for synchronizing effects on midi hits
       for ( auto * shader : m_shaders )
-        shader->trigger( midiEvent );
+      {
+        if ( shader )
+          shader->trigger( midiEvent );
+      }
     }
 
     void processEvent( const sf::Event &event ) const
@@ -79,17 +83,21 @@ namespace nx
 
     void update( const sf::Time& deltaTime ) const
     {
-      // TODO: whenever switching line or particle type
-      // TODO: this can throw an error due to a nullptr
+      if ( !m_layout || !m_modifier ) return;
 
       m_layout->update( deltaTime );
       m_modifier->update( deltaTime );
       for ( auto * shader : m_shaders )
-        shader->update( deltaTime );
+      {
+        if ( shader )
+          shader->update( deltaTime );
+      }
     }
 
     void draw( sf::RenderWindow& window ) const
     {
+      if ( !m_layout || !m_modifier ) return;
+
       const auto& modifierTexture =
         m_modifier->modifyParticles( m_layout->getParticleOptions(), m_layout->getParticles() );
 
@@ -97,7 +105,7 @@ namespace nx
 
       for ( auto * shader : m_shaders )
       {
-        if ( shader->isShaderActive() )
+        if ( shader && shader->isShaderActive() )
           currentTexture = &shader->applyShader( *currentTexture );
       }
 
@@ -107,10 +115,15 @@ namespace nx
 
     void drawMenu()
     {
+      if ( !m_layout || !m_modifier ) return;
+
       m_layout->drawMenu();
       m_modifier->drawMenu();
       for ( auto * shader : m_shaders )
-        shader->drawMenu();
+      {
+        if ( shader )
+          shader->drawMenu();
+      }
 
       ImGui::Separator();
       drawChannelPipelineMenu();
@@ -121,6 +134,8 @@ namespace nx
 
     void drawChannelPipelineMenu()
     {
+      if ( !m_layout || !m_modifier ) return;
+
       if ( ImGui::TreeNode( "Models" ) )
       {
 
