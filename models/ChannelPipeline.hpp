@@ -20,7 +20,7 @@
 #include "models/shader/GlitchShader.hpp"
 #include "models/shader/RippleShader.hpp"
 #include "models/shader/StrobeShader.hpp"
-#include "models/shader/BloomShader.hpp"
+#include "models/shader/PulseShader.hpp"
 
 namespace nx
 {
@@ -49,15 +49,15 @@ namespace nx
   public:
 
     explicit ChannelPipeline( const GlobalInfo_t& winfo )
-      : m_winfo( winfo ),
+      : m_globalInfo( winfo ),
         m_layout( new SpiralParticleLayout( winfo ) ),
         m_modifier( new ParticleSequentialLineModifier( winfo ) ),
         m_shaders( { new GlitchShader( winfo ),
                      new KaleidoscopeShader( winfo ),
                      new RippleShader( winfo ),
-                     new BlurShader( winfo ),
-                     new BloomShader( winfo ),
-                     new StrobeShader( winfo ) } )
+                     new PulseShader( winfo ),
+                     new StrobeShader( winfo ),
+                     new BlurShader( winfo ) } )
     {}
 
     ~ChannelPipeline()
@@ -183,14 +183,14 @@ namespace nx
         {
           LOG_DEBUG( "selected {}", name );
           delete ptr;
-          ptr = new TModel( m_winfo );
+          ptr = new TModel( m_globalInfo );
         }
       }
     }
 
   private:
 
-    const GlobalInfo_t& m_winfo;
+    const GlobalInfo_t& m_globalInfo;
 
     sf::BlendMode m_blendMode { sf::BlendAdd };
 
