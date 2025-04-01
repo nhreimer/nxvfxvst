@@ -97,7 +97,7 @@ namespace nx
 
     KaleidoscopeData_t m_data;
 
-    static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
+    const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;     // Window size
 uniform vec2 center;         // Center of the kaleidoscope
 uniform int numSegments;     // Number of mirrored segments

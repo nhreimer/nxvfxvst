@@ -103,7 +103,7 @@ namespace nx
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
-    static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
+    const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;
 uniform float time;
 

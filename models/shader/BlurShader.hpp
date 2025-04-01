@@ -102,7 +102,7 @@ namespace nx
 
     BlurData_t m_data;
 
-    static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
+    const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform float blurRadiusX; // Controls horizontal blur
 uniform float blurRadiusY; // Controls vertical blur
 uniform vec2 direction;    // (1,0) for horizontal, (0,1) for vertical

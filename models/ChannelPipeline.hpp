@@ -7,6 +7,7 @@
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/data/Midi_t.hpp"
 
+#include "models/particle/EmptyParticleLayout.hpp"
 #include "models/particle/SpiralParticleLayout.hpp"
 #include "models/particle/RandomParticleLayout.hpp"
 
@@ -19,11 +20,13 @@
 #include "models/shader/GlitchShader.hpp"
 #include "models/shader/RippleShader.hpp"
 #include "models/shader/StrobeShader.hpp"
+#include "models/shader/BloomShader.hpp"
 
 namespace nx
 {
   enum E_LayoutModels
   {
+    Empty,
     Spiral,
     Random
   };
@@ -53,6 +56,7 @@ namespace nx
                      new KaleidoscopeShader( winfo ),
                      new RippleShader( winfo ),
                      new BlurShader( winfo ),
+                     new BloomShader( winfo ),
                      new StrobeShader( winfo ) } )
     {}
 
@@ -88,10 +92,7 @@ namespace nx
       m_layout->update( deltaTime );
       m_modifier->update( deltaTime );
       for ( auto * shader : m_shaders )
-      {
-        if ( shader )
-          shader->update( deltaTime );
-      }
+        shader->update( deltaTime );
     }
 
     void draw( sf::RenderWindow& window ) const
@@ -105,7 +106,7 @@ namespace nx
 
       for ( auto * shader : m_shaders )
       {
-        if ( shader && shader->isShaderActive() )
+        if ( shader->isShaderActive() )
           currentTexture = &shader->applyShader( *currentTexture );
       }
 
@@ -120,10 +121,7 @@ namespace nx
       m_layout->drawMenu();
       m_modifier->drawMenu();
       for ( auto * shader : m_shaders )
-      {
-        if ( shader )
-          shader->drawMenu();
-      }
+        shader->drawMenu();
 
       ImGui::Separator();
       drawChannelPipelineMenu();
@@ -140,6 +138,7 @@ namespace nx
         ////////////////////////////////////////////////////////
         if ( ImGui::TreeNode( "Layouts" ) )
         {
+          selectModel( static_cast< EmptyParticleLayout * >( m_layout ), "Empty" );
           selectModel( static_cast< SpiralParticleLayout * >( m_layout ), "Spiral" );
           selectModel( static_cast< RandomParticleLayout * >( m_layout ), "Random" );
 

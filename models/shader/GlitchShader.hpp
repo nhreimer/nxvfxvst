@@ -39,6 +39,7 @@ namespace nx
       {
         ImGui::Checkbox( "Glitch Active##1", &m_data.isActive );
 
+        ImGui::SliderFloat( "Glitch Band Count##1", &m_data.bandCount, 0.f, 50.f );
         ImGui::SliderFloat( "Glitch Base Strength##1", &m_data.glitchBaseStrength, 0.f, 2.0f );
         ImGui::SliderFloat( "Glitch Amount##1", &m_data.glitchAmount, 0.f, 1.0f );
         ImGui::SliderFloat( "Scanline Strength##1", &m_data.scanlineIntensity, 0.f, 1.0f );
@@ -113,7 +114,7 @@ namespace nx
     sf::Clock m_clock;
     sf::RenderTexture m_outputTexture;
 
-    static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
+    const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;
 uniform float time;
 
