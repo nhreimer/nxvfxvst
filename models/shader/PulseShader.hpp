@@ -12,7 +12,6 @@ namespace nx
 
     float pulseDecay { -5.f };
     float burstMultiplier { 1.5f };
-
   };
 
   class PulseShader final : public IShader
@@ -39,15 +38,15 @@ namespace nx
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Bloom" ) )
+      if ( ImGui::TreeNode( "Pulse" ) )
       {
-        ImGui::Checkbox( "Bloom Active##1", &m_data.isActive );
+        ImGui::Checkbox( "Pulse Active##1", &m_data.isActive );
 
-        ImGui::SliderFloat("Bloom Threshold##1", &m_data.threshold, 0.0f, 1.0f);
+        ImGui::SliderFloat("Pulse Threshold##1", &m_data.threshold, 0.0f, 1.0f);
 
         ImGui::SliderFloat("Glow Intensity##1", &m_data.glowIntensity, 0.0f, 3.0f);
-        ImGui::SliderFloat("Bloom Pulse Decay##1", &m_data.pulseDecay, -20.0f, 0.0f);
-        ImGui::SliderFloat("Bloom Burst Mult##1", &m_data.burstMultiplier, 0.0f, 5.0f);
+        ImGui::SliderFloat("Pulse Pulse Decay##1", &m_data.pulseDecay, -20.0f, 0.0f);
+        ImGui::SliderFloat("Pulse Burst Mult##1", &m_data.burstMultiplier, 0.0f, 5.0f);
 
         ImGui::TreePop();
         ImGui::Spacing();
