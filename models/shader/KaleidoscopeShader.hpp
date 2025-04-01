@@ -23,8 +23,8 @@ namespace nx
 
   public:
 
-    explicit KaleidoscopeShader( const GlobalInfo_t& winfo )
-      : m_winfo( winfo )
+    explicit KaleidoscopeShader( const GlobalInfo_t& globalInfo )
+      : m_globalInfo( globalInfo )
     {
       assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
       LOG_INFO( "loaded kaleidoscope shader" );
@@ -56,6 +56,11 @@ namespace nx
       }
     }
 
+    void trigger( const Midi_t& midi ) override
+    {
+
+    }
+
     [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.segments > 0; }
 
@@ -63,14 +68,14 @@ namespace nx
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_winfo.windowSize )
+      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        assert( m_outputTexture.resize( m_winfo.windowSize ) );
+        assert( m_outputTexture.resize( m_globalInfo.windowSize ) );
         LOG_INFO( "successfully resized kaleidoscope texture" );
       }
 
       m_shader.setUniform( "texture", sf::Shader::CurrentTexture );
-      m_shader.setUniform( "resolution", sf::Vector2f( m_winfo.windowSize ) );
+      m_shader.setUniform( "resolution", sf::Vector2f( m_globalInfo.windowSize ) );
       m_shader.setUniform( "center", sf::Vector2f( m_data.centerX, m_data.centerY ) ); // Center in UV space
       m_shader.setUniform( "numSegments", m_data.segments );
       m_shader.setUniform( "time", m_data.time );
@@ -85,7 +90,7 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t& m_winfo;
+    const GlobalInfo_t& m_globalInfo;
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;

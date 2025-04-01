@@ -7,12 +7,16 @@ namespace nx
   {
     bool isActive { false };
 
-    float glitchStrength { 1.f };       // How intense glitches are (0.0 to 1.0+)
+    float glitchBaseStrength { 1.f };   // this is adjustable
+    float glitchStrength { 1.f };       // [CALCULATED] How intense glitches are (0.0 to 1.0+)
     float glitchAmount { 0.4f };        // How frequent glitches are (0.0 to 1.0)
     float scanlineIntensity { 0.02f };  // Scanline brightness
     float chromaFlickerAmount { 0.4f };  // 0.0 = off, 1.0 = frequent flickers
     float strobeAmount { 0.2f };         // 0.0 = no strobe, 1.0 = frequent
     float pixelJumpAmount { 0.5f };      // 0.0 = off, 1.0 = chaos
+
+    float glitchPulseDecay { -0.5f };
+    float glitchPulseBoost { 2.f };
   };
 
   class GlitchShader final : public IShader
@@ -33,7 +37,7 @@ namespace nx
       {
         ImGui::Checkbox( "Glitch Active##1", &m_data.isActive );
 
-        ImGui::SliderFloat( "Glitch Strength##1", &m_data.glitchStrength, 0.f, 1.0f );
+        ImGui::SliderFloat( "Glitch Base Strength##1", &m_data.glitchBaseStrength, 0.f, 2.0f );
         ImGui::SliderFloat( "Glitch Amount##1", &m_data.glitchAmount, 0.f, 1.0f );
         ImGui::SliderFloat( "Scanline Strength##1", &m_data.scanlineIntensity, 0.f, 1.0f );
 
@@ -41,12 +45,21 @@ namespace nx
         ImGui::SliderFloat( "Strobe##1", &m_data.strobeAmount, 0.f, 1.0f );
         ImGui::SliderFloat( "Pixel Jumps##1", &m_data.pixelJumpAmount, 0.f, 1.0f );
 
+        ImGui::Separator();
+        ImGui::SliderFloat( "Glitch Burst Boost##1", &m_data.glitchPulseBoost, 0.f, 5.0f );
+        ImGui::SliderFloat( "Glitch Burst Decay##1", &m_data.glitchPulseDecay, -10.f, 0.f );
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
     }
 
     void update( const sf::Time &deltaTime ) override {}
+
+    void trigger( const Midi_t& midi ) override
+    {
+      m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+    }
 
     [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.glitchStrength > 0.f; }
@@ -62,10 +75,19 @@ namespace nx
 
       const float time = m_clock.getElapsedTime().asSeconds();
 
+      float pulse = exp( m_data.glitchPulseDecay * ( time - m_lastTriggerTime ) );
+      pulse = std::clamp(pulse, 0.0f, 1.0f);
+
+      // Boost glitchStrength with pulse burst
+      // TODO: make this adjustable
+      constexpr float baseStrength = 1.0f;
+      //constexpr float burstBoost = 2.0f; // Extra strength during burst
+      m_shader.setUniform( "glitchStrength", baseStrength + pulse * m_data.glitchPulseBoost );
+
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
       m_shader.setUniform("time", time);
-      m_shader.setUniform("glitchStrength", m_data.glitchStrength);
+      // m_shader.setUniform("glitchStrength", m_data.glitchStrength);
       m_shader.setUniform("glitchAmount", m_data.glitchAmount);
       m_shader.setUniform("scanlineIntensity", m_data.scanlineIntensity);
 
@@ -82,6 +104,7 @@ namespace nx
 
   private:
     const GlobalInfo_t& m_winfo;
+    float m_lastTriggerTime { INT32_MIN };
 
     GlitchData_t m_data;
 

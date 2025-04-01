@@ -18,6 +18,7 @@
 #include "models/shader/KaleidoscopeShader.hpp"
 #include "models/shader/GlitchShader.hpp"
 #include "models/shader/RippleShader.hpp"
+#include "models/shader/StrobeShader.hpp"
 
 namespace nx
 {
@@ -51,7 +52,8 @@ namespace nx
         m_shaders( { new GlitchShader( winfo ),
                      new KaleidoscopeShader( winfo ),
                      new RippleShader( winfo ),
-                     new BlurShader( winfo ) } )
+                     new BlurShader( winfo ),
+                     new StrobeShader( winfo ) } )
     {}
 
     ~ChannelPipeline()
@@ -65,6 +67,11 @@ namespace nx
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
       m_layout->addMidiEvent( midiEvent );
+
+      // notify all shaders of an incoming event
+      // which can be used for synchronizing effects on midi hits
+      for ( auto * shader : m_shaders )
+        shader->trigger( midiEvent );
     }
 
     void processEvent( const sf::Event &event ) const

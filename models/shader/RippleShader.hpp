@@ -12,6 +12,7 @@ namespace nx
     float amplitude { 0.05f };
     float frequency { 10.0f };
     float speed { 0.f };
+    float pulseDecay { -1.0f };
   };
 
   class RippleShader final : public IShader
@@ -35,9 +36,10 @@ namespace nx
 
         ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, -1.f, 1.f );
         ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, -1.f, 1.f );
-        ImGui::SliderFloat( "Ripple Amplitude##1", &m_data.amplitude, 0.f, 0.05f );
+        // ImGui::SliderFloat( "Ripple Amplitude##1", &m_data.amplitude, 0.f, 0.05f );
         ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 10.f, 50.f );
         ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
+        ImGui::SliderFloat( "Ripple Pulse Decay##1", &m_data.pulseDecay, -2.f, 0.f );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -45,6 +47,11 @@ namespace nx
     }
 
     void update( const sf::Time &deltaTime ) override {}
+
+    void trigger( const Midi_t& midi ) override
+    {
+      m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+    }
 
     [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.amplitude > 0.f; }
@@ -59,6 +66,16 @@ namespace nx
       }
 
       const float time = m_clock.getElapsedTime().asSeconds();
+      const float timeSinceTrigger = time - m_lastTriggerTime;
+
+      // Pulse decay: fast pulse that fades over ~1 second
+      float pulse = exp( m_data.pulseDecay * timeSinceTrigger );  // decays quickly
+      pulse = std::clamp( pulse, 0.0f, 1.0f ); // just in case
+
+      constexpr float baseAmplitude = 0.005f;
+      constexpr float maxPulseAmplitude = 0.03f;
+
+      m_data.amplitude = baseAmplitude + pulse * maxPulseAmplitude;
 
       m_shader.setUniform( "texture", inputTexture.getTexture() );
       m_shader.setUniform( "resolution", sf::Vector2f( inputTexture.getSize() ) );
@@ -71,7 +88,7 @@ namespace nx
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
-      m_outputTexture.display( );
+      m_outputTexture.display();
 
       return m_outputTexture;
     }
@@ -79,6 +96,8 @@ namespace nx
   private:
     const GlobalInfo_t& m_globalInfo;
     RippleData_t m_data;
+
+    float m_lastTriggerTime { INT32_MIN };
 
     sf::Clock m_clock;
     sf::Shader m_shader;

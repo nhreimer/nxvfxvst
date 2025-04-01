@@ -19,8 +19,8 @@ namespace nx
   {
   public:
 
-    explicit BlurShader( const GlobalInfo_t& winfo )
-      : m_winfo( winfo )
+    explicit BlurShader( const GlobalInfo_t& globalInfo )
+      : m_globalInfo( globalInfo )
     {
       assert( m_blurShader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
       LOG_INFO( "loaded blur shader" );
@@ -43,6 +43,11 @@ namespace nx
       }
     }
 
+    void trigger( const Midi_t& midi ) override
+    {
+
+    }
+
     [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.blurHorizontal + m_data.blurVertical > 0.f; }
 
@@ -50,9 +55,9 @@ namespace nx
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_winfo.windowSize )
+      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        if ( !m_outputTexture.resize( m_winfo.windowSize ) || !m_intermediary.resize( m_winfo.windowSize ) )
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) || !m_intermediary.resize( m_globalInfo.windowSize ) )
           LOG_ERROR( "failed to resize blur texture" );
         else
           LOG_INFO( "successfully resized blur texture" );
@@ -89,7 +94,7 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t& m_winfo;
+    const GlobalInfo_t& m_globalInfo;
 
     sf::Shader m_blurShader;
     sf::RenderTexture m_intermediary;

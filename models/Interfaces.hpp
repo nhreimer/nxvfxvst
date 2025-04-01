@@ -46,6 +46,8 @@ namespace nx
 
     virtual void update( const sf::Time& deltaTime ) = 0;
 
+    virtual void trigger( const Midi_t& midi ) = 0;
+
     [[nodiscard]]
     virtual bool isShaderActive() const = 0;
 
