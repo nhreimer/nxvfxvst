@@ -28,7 +28,8 @@ namespace nx
       auto& timeParticle = m_particles.emplace_back();
       auto& particle = timeParticle.shape;
 
-      particle.setRadius( m_options.radius );
+      particle.setRadius( m_options.radius +
+                          m_options.velocitySizeMultiplier * midiEvent.velocity );
 
       timeParticle.initialColor = ColorHelper::getColorPercentage(
         m_options.startColor,

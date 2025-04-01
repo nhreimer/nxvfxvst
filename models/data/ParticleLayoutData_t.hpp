@@ -20,6 +20,8 @@ namespace nx
 
     float boostVelocity { 0.f };
 
+    float velocitySizeMultiplier { 0.f }; // 0 = don't increase size based on velocity
+
     sf::BlendMode blendMode { sf::BlendNone };
   };
 }

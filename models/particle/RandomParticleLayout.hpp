@@ -76,6 +76,7 @@ private:
       // ImGui::SliderFloat( "Spread##1", &m_options.spreadMultiplier, 0.f, 5.f );
       // ImGui::SliderFloat( "Jitter##1", &m_options.jitterMultiplier, 0.f, 10.f );
       ImGui::SliderFloat( "Boost##1", &m_options.boostVelocity, 0.f, 1.f );
+      ImGui::SliderFloat( "Velocity Size Mult##1", &m_options.velocitySizeMultiplier, 0.f, 50.f );
       MenuHelper::drawBlendOptions( m_options.blendMode );
 
       ImGui::TreePop();
