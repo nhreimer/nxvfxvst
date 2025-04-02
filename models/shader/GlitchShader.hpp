@@ -23,6 +23,7 @@ namespace nx
 
   class GlitchShader final : public IShader
   {
+
   public:
     explicit GlitchShader( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
@@ -32,6 +33,48 @@ namespace nx
     }
 
     ~GlitchShader() override = default;
+
+    ///////////////////////////////////////////////////////
+    /// ISERIALIZABLE
+    ///////////////////////////////////////////////////////
+
+    nlohmann::json serialize() const override
+    {
+      return
+   {
+        { "type", getType() },
+        { "isActive", m_data.isActive },
+        { "glitchBaseStrength", m_data.glitchBaseStrength },
+        { "glitchAmount", m_data.glitchAmount },
+        { "scanlineIntensity", m_data.scanlineIntensity },
+        { "chromaFlickerAmount", m_data.chromaFlickerAmount },
+        { "strobeAmount", m_data.strobeAmount },
+        { "pixelJumpAmount", m_data.pixelJumpAmount },
+        { "glitchPulseDecay", m_data.glitchPulseDecay },
+        { "glitchPulseBoost", m_data.glitchPulseBoost },
+        { "bandCount", m_data.bandCount }
+      };
+    }
+
+    void deserialize( const nlohmann::json& j ) override
+    {
+      m_data.isActive = j.value("isActive", false);
+      m_data.glitchBaseStrength = j.value("glitchBaseStrength", 1.0f);
+      m_data.glitchAmount = j.value("glitchAmount", 0.4f);
+      m_data.scanlineIntensity = j.value("scanlineIntensity", 0.02f);
+      m_data.chromaFlickerAmount = j.value("chromaFlickerAmount", 0.4f);
+      m_data.strobeAmount = j.value("strobeAmount", 0.2f);
+      m_data.pixelJumpAmount = j.value("pixelJumpAmount", 0.5f);
+      m_data.glitchPulseDecay = j.value("glitchPulseDecay", -0.5f);
+      m_data.glitchPulseBoost = j.value("glitchPulseBoost", 2.0f);
+      m_data.bandCount = j.value("bandCount", 20.0f);
+    }
+
+    E_ShaderType getType() const override { return E_GlitchShader; }
+
+    ///////////////////////////////////////////////////////
+    /// IMENUABLE
+    ///////////////////////////////////////////////////////
 
     void drawMenu() override
     {
@@ -56,6 +99,10 @@ namespace nx
         ImGui::Spacing();
       }
     }
+
+    ///////////////////////////////////////////////////////
+    /// ISHADER
+    ///////////////////////////////////////////////////////
 
     void update( const sf::Time &deltaTime ) override {}
 

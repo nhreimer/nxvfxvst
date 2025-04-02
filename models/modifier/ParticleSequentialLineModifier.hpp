@@ -18,7 +18,7 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Sequential Lines" ) )
       {
-        ImGui::Checkbox( "Connect##1", &m_data.useConnectors );
+        ImGui::Checkbox( "Connect##1", &m_data.isActive );
         ImGui::SliderFloat( "Thickness##1", &m_data.lineThickness, 1.f, 100.f, "Thickness %0.2f" );
 
         MenuHelper::drawBlendOptions( m_data.blendMode );
@@ -27,6 +27,28 @@ namespace nx
         ImGui::Spacing();
       }
     }
+
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+        { "type", getType() },
+
+           { "isActive", m_data.isActive },
+          { "lineThickness", m_data.lineThickness },
+        { "blendMode", SerialHelper::convertBlendModeToString( m_data.blendMode ) }
+
+      };
+    }
+
+    void deserialize( const nlohmann::json& j ) override
+    {
+      m_data.isActive = j.value( "isActive", false );
+      m_data.lineThickness = j.value( "lineThickness", 1.0f );
+      m_data.blendMode = SerialHelper::convertBlendModeFromString( j.value( "blendMode", "BlendAdd" ) );
+    }
+
+    E_ModifierType getType() const override { return E_SequentialModifier; }
 
     void update( const sf::Time &deltaTime ) override
     {}
@@ -47,7 +69,7 @@ namespace nx
 
       for ( int i = 0; i < particles.size(); ++i )
       {
-        if ( m_data.useConnectors && i > 0 )
+        if ( m_data.isActive && i > 0 )
         {
           GradientLine line;
           line.setStart( particles[ i - 1 ].shape.getPosition() );

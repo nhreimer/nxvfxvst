@@ -27,6 +27,35 @@ namespace nx
     }
 
     ~PulseShader() override = default;
+
+    ///////////////////////////////////////////////////////
+    /// ISERIALIZABLE
+    ///////////////////////////////////////////////////////
+
+    nlohmann::json serialize() const override
+    {
+      return
+   {
+      { "type", getType() },
+      { "isActive", m_data.isActive },
+      { "threshold", m_data.threshold },
+      { "glowIntensity", m_data.glowIntensity },
+      { "pulseDecay", m_data.pulseDecay },
+      { "burstMultiplier", m_data.burstMultiplier }
+      };
+    }
+
+    void deserialize(const nlohmann::json& j) override
+    {
+      m_data.isActive = j.value("isActive", false);
+      m_data.threshold = j.value("threshold", 0.8f);
+      m_data.glowIntensity = j.value("glowIntensity", 1.2f);
+      m_data.pulseDecay = j.value("pulseDecay", -5.f);
+      m_data.burstMultiplier = j.value("burstMultiplier", 1.5f);
+    }
+
+    E_ShaderType getType() const override { return E_PulseShader; }
+
     void update( const sf::Time &deltaTime ) override {}
     void trigger(const Midi_t &midi) override
     {

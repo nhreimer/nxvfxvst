@@ -22,6 +22,8 @@
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/PulseShader.hpp"
 
+#include "models/ShaderManager.hpp"
+
 namespace nx
 {
   enum E_LayoutModels
@@ -38,26 +40,20 @@ namespace nx
     FullMesh
   };
 
-  struct ModelData_t
-  {
-    E_LayoutModels layoutModel { Spiral };
-    E_LineModels lineModel { None };
-  };
-
   class ChannelPipeline final
   {
   public:
 
-    explicit ChannelPipeline( const GlobalInfo_t& winfo )
-      : m_globalInfo( winfo ),
-        m_layout( new SpiralParticleLayout( winfo ) ),
-        m_modifier( new ParticleSequentialLineModifier( winfo ) ),
-        m_shaders( { new GlitchShader( winfo ),
-                     new KaleidoscopeShader( winfo ),
-                     new RippleShader( winfo ),
-                     new PulseShader( winfo ),
-                     new StrobeShader( winfo ),
-                     new BlurShader( winfo ) } )
+    explicit ChannelPipeline( const GlobalInfo_t& globalInfo )
+      : m_globalInfo( globalInfo ),
+        m_layout( new SpiralParticleLayout( globalInfo ) ),
+        m_modifier( new ParticleSequentialLineModifier( globalInfo ) ),
+        m_shaders( { new GlitchShader( globalInfo ),
+                     new KaleidoscopeShader( globalInfo ),
+                     new RippleShader( globalInfo ),
+                     new PulseShader( globalInfo ),
+                     new StrobeShader( globalInfo ),
+                     new BlurShader( globalInfo ) } )
     {}
 
     ~ChannelPipeline()
@@ -70,7 +66,6 @@ namespace nx
 
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
-      if ( !m_layout ) return;
       m_layout->addMidiEvent( midiEvent );
 
       // notify all shaders of an incoming event
@@ -87,8 +82,6 @@ namespace nx
 
     void update( const sf::Time& deltaTime ) const
     {
-      if ( !m_layout || !m_modifier ) return;
-
       m_layout->update( deltaTime );
       m_modifier->update( deltaTime );
       for ( auto * shader : m_shaders )
@@ -97,8 +90,6 @@ namespace nx
 
     void draw( sf::RenderWindow& window ) const
     {
-      if ( !m_layout || !m_modifier ) return;
-
       const auto& modifierTexture =
         m_modifier->modifyParticles( m_layout->getParticleOptions(), m_layout->getParticles() );
 
@@ -116,8 +107,6 @@ namespace nx
 
     void drawMenu()
     {
-      if ( !m_layout || !m_modifier ) return;
-
       m_layout->drawMenu();
       m_modifier->drawMenu();
       for ( auto * shader : m_shaders )

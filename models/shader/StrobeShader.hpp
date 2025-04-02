@@ -22,6 +22,30 @@ namespace nx
 
     ~StrobeShader() override = default;
 
+    ///////////////////////////////////////////////////////
+    /// ISERIALIZABLE
+    ///////////////////////////////////////////////////////
+
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+          { "type", getType() },
+          { "isActive", m_data.isActive },
+          { "flashAmount", m_data.flashAmount },
+          { "flashDecay", m_data.flashDecay }
+      };
+    }
+
+    void deserialize(const nlohmann::json& j) override
+    {
+      m_data.isActive = j.value("isActive", false);
+      m_data.flashAmount = j.value("flashAmount", 0.1f);
+      m_data.flashDecay = j.value("flashDecay", -15.f);
+    }
+
+    E_ShaderType getType() const override { return E_StrobeShader; }
+
     void drawMenu() override
     {
       if ( ImGui::TreeNode( "Strobe" ) )

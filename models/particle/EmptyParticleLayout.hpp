@@ -10,6 +10,14 @@ namespace nx
   public:
     explicit EmptyParticleLayout( const GlobalInfo_t& globalInfo ) {}
     ~EmptyParticleLayout() override = default;
+
+    nlohmann::json serialize() const override { return
+      { "type", getType() }; }
+
+    void deserialize( const nlohmann::json& j ) override {}
+
+    E_LayoutType getType() const override { return E_EmptyLayout; }
+
     void drawMenu() override {}
     void addMidiEvent( const Midi_t &midiEvent ) override {}
     void update( const sf::Time &deltaTime ) override {}

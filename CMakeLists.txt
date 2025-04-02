@@ -9,7 +9,7 @@ set(SFML_STATIC_LIBRARIES TRUE)
 find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(ImGui-SFML REQUIRED)
-#find_package(nlohmann_json CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 #find_package(EnTT CONFIG REQUIRED)
 
 add_executable(RVTestPlatform main.cpp)
@@ -30,7 +30,7 @@ target_link_libraries( RVTestPlatform
   SFML::Graphics
   ImGui-SFML::ImGui-SFML
   spdlog::spdlog_header_only
-#  nlohmann_json::nlohmann_json
+  nlohmann_json::nlohmann_json
 #  EnTT::EnTT
 )
 

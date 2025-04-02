@@ -5,16 +5,55 @@
 #include "models/data/Midi_t.hpp"
 
 #include <deque>
+#include <nlohmann/json.hpp>
 
 namespace nx
 {
+
+  enum E_ShaderType : uint8_t
+  {
+    E_GlitchShader,
+    E_BlurShader,
+    E_PulseShader,
+    E_RippleShader,
+    E_StrobeShader,
+    E_KaleidoscopeShader
+  };
+
+  enum E_LayoutType : uint8_t
+  {
+    E_EmptyLayout,
+    E_RandomLayout,
+    E_SpiralLayout
+  };
+
+  enum E_ModifierType : uint8_t
+  {
+    E_NoModifier,
+    E_SequentialModifier,
+    E_FullMeshModifier
+  };
+
+  template < typename T >
+  struct ISerializable
+  {
+    virtual ~ISerializable() = default;
+
+    virtual nlohmann::json serialize() const = 0;
+    virtual void deserialize( const nlohmann::json& j ) = 0;
+
+    // identify type for easier loading
+    virtual T getType() const = 0;
+  };
+
   struct IMenuable
   {
     virtual ~IMenuable() = default;
     virtual void drawMenu() = 0;
   };
 
-  struct IParticleLayout : public IMenuable
+  struct IParticleLayout : public IMenuable,
+                           public ISerializable< E_LayoutType >
   {
     ~IParticleLayout() override = default;
 
@@ -28,7 +67,8 @@ namespace nx
     virtual std::deque< TimedParticle_t >& getParticles() = 0;
   };
 
-  struct IParticleModifier : public IMenuable
+  struct IParticleModifier : public IMenuable,
+                             public ISerializable< E_ModifierType >
   {
     ~IParticleModifier() override = default;
 
@@ -40,7 +80,8 @@ namespace nx
       std::deque< TimedParticle_t >& particles ) = 0;
   };
 
-  struct IShader : public IMenuable
+  struct IShader : public IMenuable,
+                   public ISerializable< E_ShaderType >
   {
     ~IShader() override = default;
 

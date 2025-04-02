@@ -13,15 +13,34 @@ namespace nx
   {
   public:
 
-    explicit ParticleFullMeshLineModifier( const GlobalInfo_t& winfo )
-      : m_winfo( winfo )
+    explicit ParticleFullMeshLineModifier( const GlobalInfo_t& globalInfo )
+      : m_globalInfo( globalInfo )
     {}
+
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+      { "type", getType() },
+
+         { "isActive", m_data.isActive },
+        { "lineThickness", m_data.lineThickness }
+      };
+    }
+
+    void deserialize( const nlohmann::json& j ) override
+    {
+      m_data.isActive = j.value( "isActive", false );
+      m_data.lineThickness = j.value( "lineThickness", 1.0f );
+    }
+
+    E_ModifierType getType() const override { return E_FullMeshModifier; }
 
     void drawMenu() override
     {
       if ( ImGui::TreeNode( "Full Mesh Lines" ) )
       {
-        ImGui::Checkbox( "Connect##1", &m_data.useConnectors );
+        ImGui::Checkbox( "Connect##1", &m_data.isActive );
         ImGui::SliderFloat( "Thickness##1", &m_data.lineThickness, 1.f, 100.f, "Thickness %0.2f" );
 
         MenuHelper::drawBlendOptions( m_data.blendMode );
@@ -38,9 +57,9 @@ namespace nx
     sf::RenderTexture& modifyParticles( const ParticleLayoutData_t& particleLayoutData,
                                         std::deque< TimedParticle_t >& particles ) override
     {
-      if ( m_outputTexture.getSize() != m_winfo.windowSize )
+      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        if ( !m_outputTexture.resize( m_winfo.windowSize ) )
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
           LOG_ERROR( "failed to resize full-mesh particle texture" );
         else
           LOG_INFO( "successfully resized full-mesh particle texture" );
@@ -80,7 +99,7 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t& m_winfo;
+    const GlobalInfo_t& m_globalInfo;
     sf::RenderTexture m_outputTexture;
 
     ParticleLineData_t m_data;

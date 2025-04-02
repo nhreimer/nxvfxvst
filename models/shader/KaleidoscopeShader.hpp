@@ -21,6 +21,8 @@ namespace nx
   class KaleidoscopeShader final : public IShader
   {
 
+    const static inline std::string m_typeName = "KaleidoscopeShader";
+
   public:
 
     explicit KaleidoscopeShader( const GlobalInfo_t& globalInfo )
@@ -29,6 +31,42 @@ namespace nx
       assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
       LOG_INFO( "loaded kaleidoscope shader" );
     }
+
+    ~KaleidoscopeShader() override = default;
+
+
+    ///////////////////////////////////////////////////////
+    /// ISERIALIZABLE
+    ///////////////////////////////////////////////////////
+
+    nlohmann::json serialize() const override
+    {
+      return
+   {
+        { "type", getType() },
+        { "isActive", m_data.isActive },
+        { "centerX", m_data.centerX },
+        { "centerY", m_data.centerY },
+        { "segments", m_data.segments },
+        { "time", m_data.time },
+        { "rotationSpeed", m_data.rotationSpeed },
+        { "automateTime", m_data.automateTime }
+      };
+    }
+
+    void deserialize( const nlohmann::json& j ) override
+    {
+      m_data.isActive = j.value("isActive", false);
+      m_data.centerX = j.value("centerX", 0.5f);
+      m_data.centerY = j.value("centerY", 0.5f);
+      m_data.segments = j.value("segments", 0);
+      m_data.time = j.value("time", 0.f);
+      m_data.rotationSpeed = j.value("rotationSpeed", 0.1f);
+      m_data.automateTime = j.value("automateTime", false);
+    }
+
+
+    E_ShaderType getType() const override { return E_KaleidoscopeShader; }
 
     void update( const sf::Time& deltaTime ) override
     {

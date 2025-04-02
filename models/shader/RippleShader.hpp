@@ -28,6 +28,38 @@ namespace nx
 
     ~RippleShader() override = default;
 
+    ///////////////////////////////////////////////////////
+    /// ISERIALIZABLE
+    ///////////////////////////////////////////////////////
+
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+          { "type", getType() },
+          { "isActive", m_data.isActive },
+          { "rippleCenterX", m_data.rippleCenterX },
+          { "rippleCenterY", m_data.rippleCenterY },
+          { "amplitude", m_data.amplitude },
+          { "frequency", m_data.frequency },
+          { "speed", m_data.speed },
+          { "pulseDecay", m_data.pulseDecay }
+      };
+    }
+
+    void deserialize(const nlohmann::json& j) override
+    {
+      m_data.isActive = j.value("isActive", false);
+      m_data.rippleCenterX = j.value("rippleCenterX", 0.5f);
+      m_data.rippleCenterY = j.value("rippleCenterY", 0.5f);
+      m_data.amplitude = j.value("amplitude", 0.05f);
+      m_data.frequency = j.value("frequency", 10.0f);
+      m_data.speed = j.value("speed", 0.f);
+      m_data.pulseDecay = j.value("pulseDecay", -1.0f);
+    }
+
+    E_ShaderType getType() const override { return E_RippleShader; }
+
     void drawMenu() override
     {
       if ( ImGui::TreeNode( "Ripple" ) )

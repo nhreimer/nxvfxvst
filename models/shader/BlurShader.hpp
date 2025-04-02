@@ -26,6 +26,35 @@ namespace nx
       LOG_INFO( "loaded blur shader" );
     }
 
+    ///////////////////////////////////////////////////////
+    /// ISERIALIZABLE
+    ///////////////////////////////////////////////////////
+
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+          { "type", getType() },
+          { "isActive", m_data.isActive },
+          { "sigma", m_data.sigma },
+          { "brighten", m_data.brighten },
+          { "blurHorizontal", m_data.blurHorizontal },
+          { "blurVertical", m_data.blurVertical }
+      };
+    }
+
+    void deserialize(const nlohmann::json& j) override
+    {
+      m_data.isActive = j.value("isActive", false);
+      m_data.sigma = j.value("sigma", 7.f);
+      m_data.brighten = j.value("brighten", 1.f);
+      m_data.blurHorizontal = j.value("blurHorizontal", 0.f);
+      m_data.blurVertical = j.value("blurVertical", 0.f);
+    }
+
+    // identify type for easier loading
+    E_ShaderType getType() const override { return E_BlurShader; }
+
     void update( const sf::Time& deltaTime ) override {}
 
     void drawMenu() override
@@ -43,10 +72,7 @@ namespace nx
       }
     }
 
-    void trigger( const Midi_t& midi ) override
-    {
-
-    }
+    void trigger( const Midi_t& midi ) override {}
 
     [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.blurHorizontal + m_data.blurVertical > 0.f; }

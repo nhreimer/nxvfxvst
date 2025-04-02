@@ -12,6 +12,18 @@ namespace nx
 
     ~PassthroughParticleModifier() override = default;
 
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+        { "type", getType() }
+      };
+    }
+
+    void deserialize( const nlohmann::json& j ) override {}
+
+    E_ModifierType getType() const override { return E_NoModifier; }
+
     void drawMenu() override
     {
       if ( ImGui::TreeNode( "Passthrough" ) )
