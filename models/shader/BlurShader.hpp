@@ -34,7 +34,7 @@ namespace nx
     {
       return
       {
-          { "type", getType() },
+          { "type", SerialHelper::convertShaderTypeToString( getType() ) },
           { "isActive", m_data.isActive },
           { "sigma", m_data.sigma },
           { "brighten", m_data.brighten },

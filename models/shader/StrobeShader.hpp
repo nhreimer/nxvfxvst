@@ -30,7 +30,7 @@ namespace nx
     {
       return
       {
-          { "type", getType() },
+          { "type", SerialHelper::convertShaderTypeToString( getType() ) },
           { "isActive", m_data.isActive },
           { "flashAmount", m_data.flashAmount },
           { "flashDecay", m_data.flashDecay }

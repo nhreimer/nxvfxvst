@@ -36,7 +36,7 @@ namespace nx
     {
       return
    {
-      { "type", getType() },
+      { "type", SerialHelper::convertShaderTypeToString( getType() ) },
       { "isActive", m_data.isActive },
       { "threshold", m_data.threshold },
       { "glowIntensity", m_data.glowIntensity },

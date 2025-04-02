@@ -12,6 +12,7 @@ namespace nx
 
   enum E_ShaderType : uint8_t
   {
+    E_InvalidShader,
     E_GlitchShader,
     E_BlurShader,
     E_PulseShader,

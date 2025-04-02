@@ -6,6 +6,32 @@ namespace nx
   class SerialHelper
   {
   public:
+
+    static std::string convertShaderTypeToString( const E_ShaderType shaderType )
+    {
+      switch ( shaderType )
+      {
+        case E_ShaderType::E_GlitchShader: return "GlitchShader";
+        case E_ShaderType::E_PulseShader: return "PulseShader";
+        case E_ShaderType::E_KaleidoscopeShader: return "KaleidoscopeShader";
+        case E_ShaderType::E_BlurShader: return "BlurShader";
+        case E_ShaderType::E_StrobeShader: return "StrobeShader";
+        case E_ShaderType::E_RippleShader: return "RippleShader";
+        default: return "";
+      }
+    }
+
+    static E_ShaderType convertStringToShaderType( const std::string& shaderType )
+    {
+      if ( shaderType == "GlitchShader" ) return E_GlitchShader;
+      if ( shaderType == "PulseShader" ) return E_PulseShader;
+      if ( shaderType == "BlurShader" ) return E_BlurShader;
+      if ( shaderType == "StrobeShader" ) return E_StrobeShader;
+      if ( shaderType == "RippleShader" ) return E_RippleShader;
+      if ( shaderType == "KaleidoscopeShader" ) return E_KaleidoscopeShader;
+      return E_InvalidShader;
+    }
+
     static std::string convertBlendModeToString( const sf::BlendMode& mode )
     {
       if ( mode == sf::BlendAdd ) return "BlendAdd";

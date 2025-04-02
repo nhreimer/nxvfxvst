@@ -22,7 +22,7 @@
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/PulseShader.hpp"
 
-#include "models/ShaderManager.hpp"
+#include "models/ShaderPipeline.hpp"
 
 namespace nx
 {
@@ -46,23 +46,12 @@ namespace nx
 
     explicit ChannelPipeline( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo ),
-        m_layout( new SpiralParticleLayout( globalInfo ) ),
-        m_modifier( new ParticleSequentialLineModifier( globalInfo ) ),
-        m_shaders( { new GlitchShader( globalInfo ),
-                     new KaleidoscopeShader( globalInfo ),
-                     new RippleShader( globalInfo ),
-                     new PulseShader( globalInfo ),
-                     new StrobeShader( globalInfo ),
-                     new BlurShader( globalInfo ) } )
+        m_layout( std::make_unique< SpiralParticleLayout >( globalInfo ) ),
+        m_modifier( std::make_unique< ParticleSequentialLineModifier >( globalInfo ) ),
+        m_shaderPipeline( globalInfo )
     {}
 
-    ~ChannelPipeline()
-    {
-      delete m_layout;
-      delete m_modifier;
-      for ( const auto * shader : m_shaders )
-        delete shader;
-    }
+    ~ChannelPipeline() = default;
 
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
@@ -70,47 +59,43 @@ namespace nx
 
       // notify all shaders of an incoming event
       // which can be used for synchronizing effects on midi hits
-      for ( auto * shader : m_shaders )
-      {
-        if ( shader )
-          shader->trigger( midiEvent );
-      }
+      m_shaderPipeline.processMidiEvent( midiEvent );
     }
 
-    void processEvent( const sf::Event &event ) const
-    {}
+    void processEvent( const sf::Event &event ) const { m_shaderPipeline.processEvent( event ); }
 
     void update( const sf::Time& deltaTime ) const
     {
       m_layout->update( deltaTime );
       m_modifier->update( deltaTime );
-      for ( auto * shader : m_shaders )
-        shader->update( deltaTime );
+      m_shaderPipeline.update( deltaTime );
     }
 
-    void draw( sf::RenderWindow& window ) const
+    void draw( sf::RenderWindow& window )
     {
       const auto& modifierTexture =
         m_modifier->modifyParticles( m_layout->getParticleOptions(), m_layout->getParticles() );
 
-      const sf::RenderTexture * currentTexture = &modifierTexture;
+      // const sf::RenderTexture * currentTexture = &modifierTexture;
+      //
+      // for ( auto * shader : m_shaders )
+      // {
+      //   if ( shader->isShaderActive() )
+      //     currentTexture = &shader->applyShader( *currentTexture );
+      // }
 
-      for ( auto * shader : m_shaders )
-      {
-        if ( shader->isShaderActive() )
-          currentTexture = &shader->applyShader( *currentTexture );
-      }
+      // window.draw( sf::Sprite( currentTexture->getTexture() ),
+      //              m_blendMode );
 
-      window.draw( sf::Sprite( currentTexture->getTexture() ),
-                   m_blendMode );
+      const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
+      window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
     }
 
     void drawMenu()
     {
       m_layout->drawMenu();
       m_modifier->drawMenu();
-      for ( auto * shader : m_shaders )
-        shader->drawMenu();
+      m_shaderPipeline.drawMenu();
 
       ImGui::Separator();
       drawChannelPipelineMenu();
@@ -127,9 +112,9 @@ namespace nx
         ////////////////////////////////////////////////////////
         if ( ImGui::TreeNode( "Layouts" ) )
         {
-          selectModel( static_cast< EmptyParticleLayout * >( m_layout ), "Empty" );
-          selectModel( static_cast< SpiralParticleLayout * >( m_layout ), "Spiral" );
-          selectModel( static_cast< RandomParticleLayout * >( m_layout ), "Random" );
+          selectLayoutModel< EmptyParticleLayout >( "Empty" );
+          selectLayoutModel< SpiralParticleLayout >( "Spiral" );
+          selectLayoutModel< RandomParticleLayout >( "Random" );
 
           ImGui::TreePop();
           ImGui::Spacing();
@@ -138,9 +123,9 @@ namespace nx
         ////////////////////////////////////////////////////////
         if ( ImGui::TreeNode( "Lines" ) )
         {
-          selectModel( static_cast< PassthroughParticleModifier * >( m_modifier ), "None" );
-          selectModel( static_cast< ParticleSequentialLineModifier * >( m_modifier ), "Sequential" );
-          selectModel( static_cast< ParticleFullMeshLineModifier * >( m_modifier ), "Full Mesh" );
+          selectModifierModel< PassthroughParticleModifier >( "None" );
+          selectModifierModel< ParticleSequentialLineModifier >( "Sequential" );
+          selectModifierModel< ParticleFullMeshLineModifier >( "Full Mesh" );
 
           ImGui::TreePop();
           ImGui::Spacing();
@@ -162,17 +147,29 @@ namespace nx
     }
 
     template < typename TModel >
-    void selectModel( TModel * ptr,
-                      const std::string& name )
+    void selectLayoutModel( const std::string& name )
     {
-      bool isActive = typeid( *ptr ) == typeid( TModel );
+      bool isActive = typeid( *m_layout ) == typeid( TModel );
       if ( ImGui::Checkbox( name.c_str(), &isActive ) )
       {
         if ( isActive )
         {
           LOG_DEBUG( "selected {}", name );
-          delete ptr;
-          ptr = new TModel( m_globalInfo );
+          m_layout.reset( new TModel( m_globalInfo ) );
+        }
+      }
+    }
+
+    template < typename TModel >
+    void selectModifierModel( const std::string& name )
+    {
+      bool isActive = typeid( *m_modifier ) == typeid( TModel );
+      if ( ImGui::Checkbox( name.c_str(), &isActive ) )
+      {
+        if ( isActive )
+        {
+          LOG_DEBUG( "selected {}", name );
+          m_modifier.reset( new TModel( m_globalInfo ) );
         }
       }
     }
@@ -183,13 +180,10 @@ namespace nx
 
     sf::BlendMode m_blendMode { sf::BlendAdd };
 
-    // std::unique_ptr< IParticleLayout > m_layout;
-    // std::unique_ptr< IParticleModifier > m_modifier;
-    // std::unique_ptr< IShader > m_shader;
+    std::unique_ptr< IParticleLayout > m_layout;
+    std::unique_ptr< IParticleModifier > m_modifier;
 
-    IParticleLayout * m_layout { nullptr };
-    IParticleModifier * m_modifier { nullptr };
-    std::vector< IShader * > m_shaders;
+    ShaderPipeline m_shaderPipeline;
 
   };
 }

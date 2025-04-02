@@ -42,7 +42,7 @@ namespace nx
     {
       return
    {
-        { "type", getType() },
+        { "type", SerialHelper::convertShaderTypeToString( getType() ) },
         { "isActive", m_data.isActive },
         { "glitchBaseStrength", m_data.glitchBaseStrength },
         { "glitchAmount", m_data.glitchAmount },

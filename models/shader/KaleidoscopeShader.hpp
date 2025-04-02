@@ -43,7 +43,7 @@ namespace nx
     {
       return
    {
-        { "type", getType() },
+        { "type", SerialHelper::convertShaderTypeToString( getType() ) },
         { "isActive", m_data.isActive },
         { "centerX", m_data.centerX },
         { "centerY", m_data.centerY },
