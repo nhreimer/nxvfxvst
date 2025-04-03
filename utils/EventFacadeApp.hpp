@@ -4,7 +4,7 @@
 #include <deque>
 #include <pluginterfaces/vst/ivstevents.h>
 
-#include "Logger.hpp"
+#include "utils/Logger.hpp"
 
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/ChannelPipeline.hpp"
@@ -14,7 +14,8 @@
 namespace nx
 {
 
-  class EventFacade final
+  // Event Facade for the standalone, i.e., non-plugin version
+  class EventFacadeApp final
   {
   public:
 

@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include <imgui-SFML.h>
 
-#include "Logger.hpp"
+#include "utils/Logger.hpp"
 #include "EventFacade.hpp"
 
 void run()
@@ -19,7 +19,7 @@ void run()
 
   window.setFramerateLimit( 60 );
 
-  nx::EventFacade eventFacade;
+  nx::EventFacadeApp eventFacade;
   eventFacade.initialize( window );
 
   while ( window.isOpen() )
