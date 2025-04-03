@@ -24,7 +24,9 @@ namespace nx
 
     void processEvent( const sf::Event &event ) const
     {
-      for ( auto& shader : m_shaders ) processEvent( event );
+      // TODO: add processEvent for shaders to add mouse effects
+      // TODO: have way to hide mouse icon
+      //for ( auto& shader : m_shaders ) shader->processEvent( event );
     }
 
     void processMidiEvent( const Midi_t& midiEvent ) const
@@ -34,7 +36,8 @@ namespace nx
 
     void drawMenu()
     {
-      for ( auto& shader : m_shaders ) shader->drawMenu();
+      drawShadersAvailable();
+      drawShaderPipeline();
     }
 
     sf::RenderTexture& draw( const sf::RenderTexture& inTexture )
@@ -148,6 +151,14 @@ namespace nx
   private:
 
     template < typename T >
+    IShader * createShader()
+    {
+      auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
+        std::make_unique< T >( m_globalInfo ) );
+      return shader.get();
+    }
+
+    template < typename T >
     IShader * addShader( const nlohmann::json& j )
     {
       auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
@@ -156,11 +167,88 @@ namespace nx
       return shader.get();
     }
 
+    void drawShadersAvailable()
+    {
+      if ( ImGui::TreeNode( "Shader Pipeline" ) )
+      {
+        if ( ImGui::Button( "Blur##1" ) )
+          createShader< BlurShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Glitch##1" ) )
+          createShader< GlitchShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Kaleido##1" ) )
+          createShader< KaleidoscopeShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Pulse##1" ) )
+          createShader< PulseShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Ripple##1" ) )
+          createShader< RippleShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Strobe##1" ) )
+          createShader< StrobeShader >();
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+    }
+
+    void drawShaderPipeline()
+    {
+      ImGui::Separator();
+      ImGui::Text( "Shaders: %d", m_shaders.size() );
+
+      int deletePos = -1;
+      int swapA = -1;
+      int swapB = -1;
+
+      for ( int i = 0; i < m_shaders.size(); ++i )
+      {
+        ImGui::PushID( i );
+
+        if ( i > 0 )
+          ImGui::Separator();
+
+        if ( ImGui::Button( "x" ) )
+          deletePos = i;
+        else
+        {
+          ImGui::SameLine();
+          m_shaders[ i ]->drawMenu();
+
+          if ( ImGui::Button( "u" ) )
+          {
+            swapA = i;
+            swapB = i - 1;
+          }
+
+          ImGui::SameLine();
+
+          if ( ImGui::Button( "d" ) )
+          {
+            swapA = i;
+            swapB = i + 1;
+          }
+        }
+        ImGui::PopID();
+      }
+
+      if ( deletePos > -1 )
+        m_shaders.erase( m_shaders.begin() + deletePos );
+      else if ( swapA > -1 && swapB > -1 && swapA < m_shaders.size() && swapB < m_shaders.size() )
+        std::swap( m_shaders[ swapA ], m_shaders[ swapB ] );
+    }
+
   private:
     const GlobalInfo_t& m_globalInfo;
 
     std::vector< std::unique_ptr< IShader > > m_shaders;
-
     sf::RenderTexture m_outputTexture;
   };
 

@@ -53,6 +53,21 @@ namespace nx
 
     ~ChannelPipeline() = default;
 
+    nlohmann::json serialize() const
+    {
+      nlohmann::json j =
+        {
+        { "layout", {} },
+        { "modifier", {} },
+        { "shaders", {} }
+        };
+
+      j[ "layout" ] = m_layout->serialize();
+      j[ "modifier" ] = m_modifier->serialize();
+      j[ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
+      return j;
+    }
+
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
       m_layout->addMidiEvent( midiEvent );
@@ -75,17 +90,6 @@ namespace nx
     {
       const auto& modifierTexture =
         m_modifier->modifyParticles( m_layout->getParticleOptions(), m_layout->getParticles() );
-
-      // const sf::RenderTexture * currentTexture = &modifierTexture;
-      //
-      // for ( auto * shader : m_shaders )
-      // {
-      //   if ( shader->isShaderActive() )
-      //     currentTexture = &shader->applyShader( *currentTexture );
-      // }
-
-      // window.draw( sf::Sprite( currentTexture->getTexture() ),
-      //              m_blendMode );
 
       const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
       window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
@@ -143,6 +147,26 @@ namespace nx
 
         ImGui::TreePop();
         ImGui::Spacing();
+      }
+
+      ImGui::Separator();
+      if ( ImGui::Button( "export" ) )
+      {
+        const auto json = serialize();
+        ImGui::SetClipboardText( json.dump().c_str() );
+      }
+      ImGui::SameLine();
+      if ( ImGui::Button( "import" ) )
+      {
+        const auto json = std::string( ImGui::GetClipboardText() );
+        if ( !json.empty() )
+        {
+          const auto importedData = nlohmann::json::parse( json.c_str(), nullptr, false );
+          // layout and modifier need their own management systems
+          // to deal with switching between them and serialization
+          if ( importedData.contains( "shaders" ) )
+            m_shaderPipeline.loadShaderPipeline( importedData.at( "shaders" ) );
+        }
       }
     }
 

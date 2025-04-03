@@ -43,7 +43,7 @@ namespace nx
       };
     }
 
-    void deserialize(const nlohmann::json& j) override
+    void deserialize( const nlohmann::json& j ) override
     {
       m_data.isActive = j.value("isActive", false);
       m_data.sigma = j.value("sigma", 7.f);
