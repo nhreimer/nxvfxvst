@@ -1,5 +1,8 @@
 #pragma once
 
+#include <random>
+
+#include "helpers/MidiHelper.hpp"
 #include "helpers/ColorHelper.hpp"
 #include "helpers/SerialHelper.hpp"
 

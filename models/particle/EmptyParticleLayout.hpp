@@ -1,43 +1,46 @@
 #pragma once
 
+#include "models/particle/ParticleConsumer.hpp"
+
 namespace nx
 {
 
   /// this is useful for adding time-based effects to a screen without
   /// having particles on the screen.
-  class EmptyParticleLayout final : public IParticleLayout
+  class EmptyParticleLayout final : public ParticleConsumer
   {
   public:
-    explicit EmptyParticleLayout( const GlobalInfo_t& globalInfo ) {}
+    explicit EmptyParticleLayout( const GlobalInfo_t& globalInfo )
+      : ParticleConsumer( globalInfo )
+    {}
+
     ~EmptyParticleLayout() override = default;
-
-    nlohmann::json serialize() const override { return
-      { "type", getType() }; }
-
-    void deserialize( const nlohmann::json& j ) override {}
 
     E_LayoutType getType() const override { return E_EmptyLayout; }
 
-    void drawMenu() override {}
+    void drawMenu() override
+    {
+      ImGui::Text( "Particles: %d", m_particles.size() );
+      ImGui::Separator();
+      if ( ImGui::TreeNode( "Particle Layout" ) )
+      {
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+    }
+
     void addMidiEvent( const Midi_t &midiEvent ) override {}
     void update( const sf::Time &deltaTime ) override {}
 
-    [[nodiscard]]
-    const ParticleLayoutData_t &getParticleOptions() const override
-    {
-      return m_emptyParticleData;
-    }
+  protected:
 
-    [[nodiscard]]
-    std::deque< TimedParticle_t > &getParticles() override
+    sf::Vector2f getNextPosition( const std::tuple< int32_t, int32_t > &noteInfo ) override
     {
-      return m_emptyParticles;
+      return { 0.f, 0.f };
     }
 
   private:
 
-    std::deque< TimedParticle_t > m_emptyParticles;
-    ParticleLayoutData_t m_emptyParticleData;
 
   };
 

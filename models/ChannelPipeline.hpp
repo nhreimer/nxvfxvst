@@ -1,104 +1,80 @@
 #pragma once
 
-#include <memory>
-
 #include "models/Interfaces.hpp"
 
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/data/Midi_t.hpp"
 
-#include "models/particle/EmptyParticleLayout.hpp"
-#include "models/particle/SpiralParticleLayout.hpp"
-#include "models/particle/RandomParticleLayout.hpp"
-
-#include "models/modifier/PassthroughParticleModifier.hpp"
-#include "models/modifier/ParticleSequentialLineModifier.hpp"
-#include "models/modifier/ParticleFullMeshLineModifier.hpp"
-
-#include "models/shader/BlurShader.hpp"
-#include "models/shader/KaleidoscopeShader.hpp"
-#include "models/shader/GlitchShader.hpp"
-#include "models/shader/RippleShader.hpp"
-#include "models/shader/StrobeShader.hpp"
-#include "models/shader/PulseShader.hpp"
-
+#include "models/ParticlePipeline.hpp"
 #include "models/ShaderPipeline.hpp"
 
 namespace nx
 {
-  enum E_LayoutModels
-  {
-    Empty,
-    Spiral,
-    Random
-  };
-
-  enum E_LineModels
-  {
-    None,
-    Sequential,
-    FullMesh
-  };
-
   class ChannelPipeline final
   {
   public:
 
     explicit ChannelPipeline( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo ),
-        m_layout( std::make_unique< SpiralParticleLayout >( globalInfo ) ),
-        m_modifier( std::make_unique< ParticleSequentialLineModifier >( globalInfo ) ),
+        m_particlePipeline( globalInfo ),
         m_shaderPipeline( globalInfo )
     {}
 
     ~ChannelPipeline() = default;
 
-    nlohmann::json serialize() const
+    nlohmann::json saveChannelPipeline() const
     {
       nlohmann::json j =
         {
-        { "layout", {} },
-        { "modifier", {} },
+        { "particles", {} },
         { "shaders", {} }
         };
 
-      j[ "layout" ] = m_layout->serialize();
-      j[ "modifier" ] = m_modifier->serialize();
+      j[ "particles" ] = m_particlePipeline.saveParticlePipeline();
       j[ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
       return j;
     }
 
+    void loadChannelPipeline( const nlohmann::json& j )
+    {
+      if ( j.contains( "particles" ) )
+        m_particlePipeline.loadParticlePipeline( j.at( "particles" ) );
+
+      if ( j.contains( "shaders" ) )
+        m_shaderPipeline.loadShaderPipeline( j.at( "shaders" ) );
+    }
+
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
-      m_layout->addMidiEvent( midiEvent );
+      m_particlePipeline.processMidiEvent( midiEvent );
 
       // notify all shaders of an incoming event
       // which can be used for synchronizing effects on midi hits
       m_shaderPipeline.processMidiEvent( midiEvent );
     }
 
-    void processEvent( const sf::Event &event ) const { m_shaderPipeline.processEvent( event ); }
+    void processEvent( const sf::Event &event ) const
+    {
+      m_particlePipeline.processEvent( event );
+      m_shaderPipeline.processEvent( event );
+    }
 
     void update( const sf::Time& deltaTime ) const
     {
-      m_layout->update( deltaTime );
-      m_modifier->update( deltaTime );
+      m_particlePipeline.update( deltaTime );
       m_shaderPipeline.update( deltaTime );
     }
 
     void draw( sf::RenderWindow& window )
     {
-      const auto& modifierTexture =
-        m_modifier->modifyParticles( m_layout->getParticleOptions(), m_layout->getParticles() );
-
-      const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
+      const auto& particleTexture = m_particlePipeline.draw();
+      const auto& shaderTexture = m_shaderPipeline.draw( particleTexture );
       window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
     }
 
     void drawMenu()
     {
-      m_layout->drawMenu();
-      m_modifier->drawMenu();
+      m_particlePipeline.drawMenu();
       m_shaderPipeline.drawMenu();
 
       ImGui::Separator();
@@ -110,36 +86,6 @@ namespace nx
 
     void drawChannelPipelineMenu()
     {
-      if ( ImGui::TreeNode( "Models" ) )
-      {
-
-        ////////////////////////////////////////////////////////
-        if ( ImGui::TreeNode( "Layouts" ) )
-        {
-          selectLayoutModel< EmptyParticleLayout >( "Empty" );
-          selectLayoutModel< SpiralParticleLayout >( "Spiral" );
-          selectLayoutModel< RandomParticleLayout >( "Random" );
-
-          ImGui::TreePop();
-          ImGui::Spacing();
-        }
-
-        ////////////////////////////////////////////////////////
-        if ( ImGui::TreeNode( "Lines" ) )
-        {
-          selectModifierModel< PassthroughParticleModifier >( "None" );
-          selectModifierModel< ParticleSequentialLineModifier >( "Sequential" );
-          selectModifierModel< ParticleFullMeshLineModifier >( "Full Mesh" );
-
-          ImGui::TreePop();
-          ImGui::Spacing();
-        }
-
-        ////////////////////////////////////////////////////////
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-
       if ( ImGui::TreeNode( "Global Options" ) )
       {
         ImGui::Separator();
@@ -152,7 +98,7 @@ namespace nx
       ImGui::Separator();
       if ( ImGui::Button( "export" ) )
       {
-        const auto json = serialize();
+        const auto json = saveChannelPipeline();
         ImGui::SetClipboardText( json.dump().c_str() );
       }
       ImGui::SameLine();
@@ -162,38 +108,7 @@ namespace nx
         if ( !json.empty() )
         {
           const auto importedData = nlohmann::json::parse( json.c_str(), nullptr, false );
-          // layout and modifier need their own management systems
-          // to deal with switching between them and serialization
-          if ( importedData.contains( "shaders" ) )
-            m_shaderPipeline.loadShaderPipeline( importedData.at( "shaders" ) );
-        }
-      }
-    }
-
-    template < typename TModel >
-    void selectLayoutModel( const std::string& name )
-    {
-      bool isActive = typeid( *m_layout ) == typeid( TModel );
-      if ( ImGui::Checkbox( name.c_str(), &isActive ) )
-      {
-        if ( isActive )
-        {
-          LOG_DEBUG( "selected {}", name );
-          m_layout.reset( new TModel( m_globalInfo ) );
-        }
-      }
-    }
-
-    template < typename TModel >
-    void selectModifierModel( const std::string& name )
-    {
-      bool isActive = typeid( *m_modifier ) == typeid( TModel );
-      if ( ImGui::Checkbox( name.c_str(), &isActive ) )
-      {
-        if ( isActive )
-        {
-          LOG_DEBUG( "selected {}", name );
-          m_modifier.reset( new TModel( m_globalInfo ) );
+          loadChannelPipeline( importedData );
         }
       }
     }
@@ -202,11 +117,10 @@ namespace nx
 
     const GlobalInfo_t& m_globalInfo;
 
+    // the blend mode is important in case there are multiple channel pipelines
     sf::BlendMode m_blendMode { sf::BlendAdd };
 
-    std::unique_ptr< IParticleLayout > m_layout;
-    std::unique_ptr< IParticleModifier > m_modifier;
-
+    ParticlePipeline m_particlePipeline;
     ShaderPipeline m_shaderPipeline;
 
   };

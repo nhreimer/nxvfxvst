@@ -1,5 +1,12 @@
 #pragma once
 
+#include "models/shader/BlurShader.hpp"
+#include "models/shader/KaleidoscopeShader.hpp"
+#include "models/shader/GlitchShader.hpp"
+#include "models/shader/RippleShader.hpp"
+#include "models/shader/StrobeShader.hpp"
+#include "models/shader/PulseShader.hpp"
+
 namespace nx
 {
 
