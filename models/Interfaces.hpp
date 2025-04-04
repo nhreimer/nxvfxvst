@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Graphics/RenderTexture.hpp>
+
 #include "models/data/ParticleLayoutData_t.hpp"
 #include "models/data/TimedParticle_t.hpp"
 #include "models/data/Midi_t.hpp"

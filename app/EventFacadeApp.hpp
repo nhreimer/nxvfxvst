@@ -4,7 +4,7 @@
 #include <deque>
 #include <pluginterfaces/vst/ivstevents.h>
 
-#include "utils/Logger.hpp"
+#include "log/Logger.hpp"
 
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/ChannelPipeline.hpp"
@@ -161,13 +161,13 @@ namespace nx
     // and processes them on the controller thread
     Concurrency::concurrent_queue< Midi_t > m_queue;
 
-    const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent
-    {
-      [ & ]( const Steinberg::Vst::Event & event )
-      {
-        processVstEvent( event );
-      }
-    };
+//    const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent
+//    {
+//      [ & ]( const Steinberg::Vst::Event & event )
+//      {
+//        processVstEvent( event );
+//      }
+//    };
 
   };
 

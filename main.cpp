@@ -2,8 +2,8 @@
 #include <imgui.h>
 #include <imgui-SFML.h>
 
-#include "utils/Logger.hpp"
-#include "EventFacade.hpp"
+#include "log/Logger.hpp"
+#include "app/EventFacadeApp.hpp"
 
 void run()
 {

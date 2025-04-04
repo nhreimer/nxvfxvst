@@ -23,9 +23,41 @@ simulate VST's Processor thread.
 * ImGui (menus)
 * nlohmann json (serialization)
 * spdlog (logging)
-* VST3 SDK (if running as a plugin)
+* VST3 SDK
+
+For loading the dependencies using vcpkg, you can use the following:
+
+```bash
+vcpkg install nlohmann-json:x64-windows-static-md
+vcpkg install sfml:x64-windows-static-md
+vcpkg install imgui:x64-windows-static-md
+vcpkg install imgui-sfml:x64-windows-static-md
+vcpkg install spdlog:x64-windows-static-md
+```
+
+The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 
 ### Roadmap
 
 * Save and load from files
 * Multichannel
+
+# Getting Started
+
+Regardless of which version you build, you will need to specify where the 
+VST3 SDK lives and where your dependency manager resides:
+
+```bash
+-Dvst3sdk_SOURCE_DIR=C:/path/to/vst3sdk
+-DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+-DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+## Standalone Application
+
+## VST3 Plugin
+
+Using logging when debugging. You'll want to log to a file 
+and the plugin may crash if the directory cannot be found or 
+there are permissions issues. Set the directory in CMakeLists.txt
+or use -DNX_LOG_FILE=C:/path/to/log/file.log

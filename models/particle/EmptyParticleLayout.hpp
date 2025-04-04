@@ -1,5 +1,9 @@
 #pragma once
 
+#include "imgui.h"
+
+#include "models/Interfaces.hpp"
+
 #include "models/particle/ParticleConsumer.hpp"
 
 namespace nx

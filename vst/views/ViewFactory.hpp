@@ -1,0 +1,32 @@
+#pragma once
+
+#include "pluginterfaces/gui/iplugview.h"
+#include "vst/views/IVSTView.hpp"
+
+#ifdef WIN32
+#include "vst/views/Win32View.hpp"
+#endif
+
+namespace nx
+{
+
+  class ViewFactory
+  {
+    public:
+
+      static IVSTView * createView()
+      {
+
+#ifdef WIN32
+
+        return new Win32View( { 0, 0, 1280, 768 } );
+
+#else
+        LOG_ERROR( "IPlugView::createView() not implemented for this system." );
+        return nullptr;
+#endif
+
+      }
+  };
+
+}

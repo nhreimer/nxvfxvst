@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Graphics/CircleShape.hpp>
+
 namespace nx
 {
 

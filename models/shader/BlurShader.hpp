@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics/Shader.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 
 namespace nx
 {
