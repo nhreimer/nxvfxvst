@@ -32,6 +32,8 @@ namespace nx
 
     void processVstEvent( const Steinberg::Vst::Event & event )
     {
+      LOG_DEBUG( "eventfacade received event" );
+
       // forward it immediately. this should be as fast as
       // possible because this runs on the processor thread
 

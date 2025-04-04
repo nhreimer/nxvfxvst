@@ -6,6 +6,9 @@
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
+// forward decl
+namespace Steinberg::Vst { struct Event; }
+
 namespace nx {
 
 //------------------------------------------------------------------------
@@ -50,6 +53,10 @@ public:
 
 //------------------------------------------------------------------------
 protected:
+
+private:
+
+  void sendMidiNoteEventMessage( const Steinberg::Vst::Event& event ) const;
 
 };
 

@@ -19,21 +19,11 @@ simulate VST's Processor thread.
 ### Dependencies
 
 * C++20
-* SFML v3 (graphics)
+* SFML v2.6.2 (graphics: v3 has a bug)
 * ImGui (menus)
 * nlohmann json (serialization)
 * spdlog (logging)
 * VST3 SDK
-
-For loading the dependencies using vcpkg, you can use the following:
-
-```bash
-vcpkg install nlohmann-json:x64-windows-static-md
-vcpkg install sfml:x64-windows-static-md
-vcpkg install imgui:x64-windows-static-md
-vcpkg install imgui-sfml:x64-windows-static-md
-vcpkg install spdlog:x64-windows-static-md
-```
 
 The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 

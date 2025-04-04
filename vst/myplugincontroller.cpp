@@ -21,7 +21,7 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
   tresult result = kResultOk;
 
   // do not process message while UI is inactive
-  if ( !m_isViewActive || m_ptrView == nullptr ) return Steinberg::kResultFalse;
+  //if ( !m_isViewActive || m_ptrView == nullptr ) return Steinberg::kResultFalse;
 
   if ( Steinberg::FIDStringsEqual( message->getMessageID(), "midi" ) )
   {
@@ -31,6 +31,7 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
 
     if ( msgSize > 0 )
     {
+      LOG_DEBUG( "sending midi message" );
       auto event = *( ( Steinberg::Vst::Event * )ptrData );
       m_ptrView->notify( event );
     }

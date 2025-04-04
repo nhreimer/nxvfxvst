@@ -9,12 +9,13 @@ else()
   set( NX_LOG_FILE_DISABLED TRUE )
 endif()
 
+if(NOT vst3sdk_SOURCE_DIR)
+  message(FATAL_ERROR "Path to VST3 SDK is empty!")
+else()
+  message(STATUS "Path to VST3 SDK found")
+endif()
+
 if ( BUILD_PLUGIN )
-  if(NOT vst3sdk_SOURCE_DIR)
-    message(FATAL_ERROR "Path to VST3 SDK is empty!")
-  else()
-    message(STATUS "Path to VST3 SDK found")
-  endif()
 
   project(nxvfxvst
     # This is your plug-in version number. Change it here only.
@@ -24,8 +25,8 @@ if ( BUILD_PLUGIN )
     DESCRIPTION "nxvfxvst VST 3 Plug-in"
   )
 
-  set(SFML_STATIC_LIBRARIES TRUE)
-  find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
+#  set(SFML_STATIC_LIBRARIES TRUE)
+#  find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
   find_package(spdlog CONFIG REQUIRED)
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
@@ -47,14 +48,23 @@ if ( BUILD_PLUGIN )
     vst/mypluginentry.cpp
   )
 
+  target_include_directories( ${PROJECT_NAME}
+    PRIVATE
+
+    C:/Precision/projects/SFML/include
+  )
+
   target_link_libraries( ${PROJECT_NAME}
     PRIVATE
 
     sdk
     Rpcrt4.lib
 
-    SFML::Window
-    SFML::Graphics
+    C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
+    C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-window-s-d.lib
+    C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-graphics-s-d.lib
+#    SFML::Window
+#    SFML::Graphics
     ImGui-SFML::ImGui-SFML
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
@@ -88,7 +98,7 @@ else()
   # keep this set no matter what because we rely on some Vst constructs even in the
   # application version.
   # TODO: this should be set on the CLI
-  set(vst3sdk_SOURCE_DIR "C:/Precision/projects/VST_SDKs/VST_SDK_3.7.12/vst3sdk")
+  # set(vst3sdk_SOURCE_DIR "C:/Precision/projects/VST_SDKs/VST_SDK_3.7.12/vst3sdk")
 
   set(SFML_STATIC_LIBRARIES TRUE)
   find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)

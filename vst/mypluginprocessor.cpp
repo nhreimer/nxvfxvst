@@ -5,8 +5,8 @@
 #include "mypluginprocessor.h"
 #include "myplugincids.h"
 
+#include "pluginterfaces/vst/ivstevents.h"
 #include "base/source/fstreamer.h"
-#include "pluginterfaces/vst/ivstparameterchanges.h"
 
 using namespace Steinberg;
 
@@ -66,75 +66,20 @@ tresult PLUGIN_API nxvfxvstProcessor::setActive (TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
 {
-	//--- First : Read inputs parameter changes-----------
+  if ( data.inputEvents != nullptr )
+  {
+    for ( Steinberg::int32 i = 0; i < data.inputEvents->getEventCount(); ++i )
+    {
+      Steinberg::Vst::Event event {};
+      if ( data.inputEvents->getEvent( i, event ) != kResultFalse &&
+           event.type == Steinberg::Vst::Event::kNoteOnEvent )
+      {
+        sendMidiNoteEventMessage( event );
+      }
+    }
+  }
 
-	/*if (data.inputParameterChanges)
-	{
-		int32 numParamsChanged = data.inputParameterChanges->getParameterCount ();
-		for (int32 index = 0; index < numParamsChanged; index++)
-		{
-			if (auto* paramQueue = data.inputParameterChanges->getParameterData (index))
-			{
-				Vst::ParamValue value;
-				int32 sampleOffset;
-				int32 numPoints = paramQueue->getPointCount ();
-				switch (paramQueue->getParameterId ())
-				{
-				}
-			}
-		}
-	}*/
-	
-	//--- Here you have to implement your processing
-
-	if (data.numSamples > 0)
-	{
-		//--- ------------------------------------------
-		// here as example a default implementation where we try to copy the inputs to the outputs:
-		// if less input than outputs then clear outputs
-		//--- ------------------------------------------
-		
-		int32 minBus = std::min (data.numInputs, data.numOutputs);
-		for (int32 i = 0; i < minBus; i++)
-		{
-			int32 minChan = std::min (data.inputs[i].numChannels, data.outputs[i].numChannels);
-			for (int32 c = 0; c < minChan; c++)
-			{
-				// do not need to be copied if the buffers are the same
-				if (data.outputs[i].channelBuffers32[c] != data.inputs[i].channelBuffers32[c])
-				{
-					memcpy (data.outputs[i].channelBuffers32[c], data.inputs[i].channelBuffers32[c],
-							data.numSamples * sizeof (Vst::Sample32));
-				}
-			}
-			data.outputs[i].silenceFlags = data.inputs[i].silenceFlags;
-				
-			// clear the remaining output buffers
-			for (int32 c = minChan; c < data.outputs[i].numChannels; c++)
-			{
-				// clear output buffers
-				memset (data.outputs[i].channelBuffers32[c], 0,
-						data.numSamples * sizeof (Vst::Sample32));
-
-				// inform the host that this channel is silent
-				data.outputs[i].silenceFlags |= ((uint64)1 << c);
-			}
-		}
-		// clear the remaining output buffers
-		for (int32 i = minBus; i < data.numOutputs; i++)
-		{
-			// clear output buffers
-			for (int32 c = 0; c < data.outputs[i].numChannels; c++)
-			{
-				memset (data.outputs[i].channelBuffers32[c], 0,
-						data.numSamples * sizeof (Vst::Sample32));
-			}
-			// inform the host that this bus is silent
-			data.outputs[i].silenceFlags = ((uint64)1 << data.outputs[i].numChannels) - 1;
-		}
-	}
-
-	return kResultOk;
+  return kResultOk;
 }
 
 //------------------------------------------------------------------------
@@ -174,6 +119,30 @@ tresult PLUGIN_API nxvfxvstProcessor::getState (IBStream* state)
 	IBStreamer streamer (state, kLittleEndian);
 
 	return kResultOk;
+}
+
+  //------------------------------------------------------------------------
+void nxvfxvstProcessor::sendMidiNoteEventMessage( const Vst::Event &event ) const
+{
+  auto * ptrMsg = allocateMessage();
+  if ( ptrMsg == nullptr )
+  {
+    // LOG_ERROR("failed to allocate message");
+    return;
+  }
+
+  ptrMsg->setMessageID( "midi" );
+
+  if ( ptrMsg->getAttributes()->setBinary( "onEvent", &event, sizeof( Vst::Event ) ) == kResultOk )
+  {
+    // don't flood the error log with bogus messages. messages
+    // are rejected by the controller whenever the UI is inactive.
+    this->sendMessage( ptrMsg );
+  }
+  // else
+  //   LOG_ERROR( "failed to set midi data in message" );
+
+  ptrMsg->release();
 }
 
 //------------------------------------------------------------------------

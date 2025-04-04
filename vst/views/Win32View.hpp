@@ -48,11 +48,11 @@ namespace priv
       // successfully registered
       m_isRegistered = true;
 
-      const HWND handle = ::CreateWindowEx( WS_EX_CONTROLPARENT,		 // Extended possibilities for variation
+      HWND handle = ::CreateWindowEx( WS_EX_CONTROLPARENT,		 // Extended possibilities for variation
                                       INTERNAL_WINDOW_NAME,    // window class name
                                       WINDOW_NAME,	           // Title Text
                                       WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_CLIPSIBLINGS, // flags
-                                      r.position.x, r.position.y, r.size.x, r.size.y,       // pos & size
+                                      r.position.x, r.position.y, r.size.x, r.size.y, // pos & size
                                       //r.left, r.top, r.width, r.height,                   // pos & size
                                       parent,	                                              // the parent window
                                       nullptr,                                              // menu
@@ -65,7 +65,7 @@ namespace priv
         return nullptr;
       };
 
-      LOG_DEBUG( "CreateWindowEx successful" );
+      LOG_DEBUG( "CreateWindowEx successful: {}", static_cast< void * >( handle ) );
 
       return handle;
     }
@@ -135,10 +135,12 @@ namespace priv
 {
   public:
 
+    ////////////////////////////////////////////////////////////////////////////////
     explicit Win32View( Steinberg::ViewRect windowSize )
       : m_rect( windowSize )
     {}
 
+    ////////////////////////////////////////////////////////////////////////////////
     ~Win32View() override
     {
       // run the window shutdown process
@@ -168,20 +170,22 @@ namespace priv
         LOG_WARN( "child window has already been shut down" );
     }
 
+  ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override
   {
+    LOG_DEBUG( "received event" );
     m_eventFacade.processVstEvent( event );
   }
 
   ////////////////////////////////////////////////////////////////////////////////
   Steinberg::tresult isPlatformTypeSupported( Steinberg::FIDString type ) override
-    {
-      // Windows platform
-      if ( strcmp( type, Steinberg::kPlatformTypeHWND ) == 0 )
-        return Steinberg::kResultTrue;
+  {
+    // Windows platform
+    if ( strcmp( type, Steinberg::kPlatformTypeHWND ) == 0 )
+      return Steinberg::kResultTrue;
 
-      return Steinberg::kResultFalse;
-    }
+    return Steinberg::kResultFalse;
+  }
 
   ////////////////////////////////////////////////////////////////////////////////
   /***
@@ -281,13 +285,6 @@ namespace priv
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  void notifyEvent( const Steinberg::Vst::Event & event )
-  {
-    if ( !m_isActive ) return;
-
-    // this should only be reached whenever there's a UI
-    m_eventFacade.processVstEvent( event );
-  }
 
   //---Interface------
   OBJ_METHODS (Win32View, FObject)
@@ -324,9 +321,10 @@ private:
   /////////////////////////////////////////////////////////////////////////////
   void initializeRenderWindow()
   {
+    LOG_DEBUG( "initializing SFML render window" );
     m_sfWindow.create( m_win32.childHwnd, m_sfContext );
 
-    LOG_INFO( "OpenGL version {}.{}.",
+    LOG_INFO( "SFML Render Window OpenGL version {}.{}.",
       m_sfContext.majorVersion,
       m_sfContext.minorVersion );
       //m_sfContext.antialiasingLevel );
@@ -367,6 +365,8 @@ private:
   bool createChildWindow( HWND parentHwnd )
   {
 
+    LOG_INFO( "creating child window" );
+
     const auto childHwnd = priv::WinImpl::createChildWindow(
       parentHwnd,
       { { m_rect.left, m_rect.top },
@@ -378,10 +378,14 @@ private:
       return false;
     }
 
+    LOG_INFO( "created child window" );
+
     m_win32.parentHwnd = parentHwnd;
     m_win32.childHwnd = childHwnd;
 
     sm_wndMap.insert( { m_win32.childHwnd, this } );
+    LOG_INFO( "inserted child window to static map" );
+
     initializeRenderWindow();
 
     if ( !startMessagePump() )
