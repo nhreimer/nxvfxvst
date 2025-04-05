@@ -1,4 +1,4 @@
-# nxvfxvst (Nick's VFX VST)
+# nxvfx (Nick's VFX)
 
 ### Description
 
@@ -19,17 +19,40 @@ simulate VST's Processor thread.
 ### Dependencies
 
 * C++20
-* SFML v2.6.2 (graphics: v3 has a bug)
+* SFML v3 (graphics: small patch required)
 * ImGui (menus)
-* nlohmann json (serialization)
+* nlohmann json (serialization and state saving)
 * spdlog (logging)
 * VST3 SDK
 
 The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 
+WARNING: If you want to build the VST plugin version then there's a problem in 
+SFML's RenderWindow.cpp that MUST be fixed or SFML will crash.
+glCheck() is the culprit, but I haven't dug into more than this.
+
+```cpp
+void RenderWindow::onCreate()
+{
+    if (priv::RenderTextureImplFBO::isAvailable())
+    {
+        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
+        // We assume that this window's context is still active at this point
+        
+        // NX: something in glCheck causes this to crash when as a child window
+        // NX: and embedded, e.g., VST plugin
+        // glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
+        glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer));
+    }
+
+    // Just initialize the render target part
+    RenderTarget::initialize();
+}
+```
+
 ### Roadmap
 
-* Save and load from files
+* Save and load to/from files instead of copy/paste
 * Multichannel
 
 # Getting Started
