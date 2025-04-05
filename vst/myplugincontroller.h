@@ -17,7 +17,7 @@ class nxvfxvstController : public Steinberg::Vst::EditControllerEx1
 {
 public:
 //------------------------------------------------------------------------
-	nxvfxvstController () = default;
+	nxvfxvstController() { m_state = nlohmann::json::object(); }
 	~nxvfxvstController () SMTG_OVERRIDE = default;
 
     // Create function
@@ -54,6 +54,10 @@ protected:
 private:
   IVSTView * m_ptrView { nullptr };
   bool m_isViewActive { false };
+  bool m_hasState { false };
+
+  // used between closing and opening the window
+  nlohmann::json m_state;
 };
 
 //------------------------------------------------------------------------

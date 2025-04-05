@@ -21,7 +21,7 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
   tresult result = kResultOk;
 
   // do not process message while UI is inactive
-  //if ( !m_isViewActive || m_ptrView == nullptr ) return Steinberg::kResultFalse;
+  if ( !m_isViewActive || m_ptrView == nullptr ) return Steinberg::kResultFalse;
 
   if ( Steinberg::FIDStringsEqual( message->getMessageID(), "midi" ) )
   {
@@ -125,7 +125,22 @@ IPlugView* PLUGIN_API nxvfxvstController::createView (FIDString name)
 	{
     LOG_DEBUG( "creating view controller" );
 
-	  m_ptrView = ViewFactory::createView();
+	  // save state whenever the view closes
+	  m_ptrView = ViewFactory::createView(
+	    [&] ( IVSTView* view )
+	    {
+	      view->saveState( m_state );
+	      m_hasState = true;
+	      LOG_DEBUG( "saved view state" );
+	    } );
+
+	  // restore any state
+    if ( m_hasState )
+    {
+      m_ptrView->restoreState( m_state );
+      LOG_DEBUG( "restored view state" );
+    }
+
 	  return m_ptrView;
 	}
 	return nullptr;

@@ -134,10 +134,14 @@ namespace priv
                           public Steinberg::IPlugFrame
 {
   public:
+    void saveState(nlohmann::json &j) override { m_eventFacade.saveState( j ); }
+    void restoreState(nlohmann::json &j) override { m_eventFacade.restoreState( j ); }
 
     ////////////////////////////////////////////////////////////////////////////////
-    explicit Win32View( Steinberg::ViewRect windowSize )
-      : m_rect( windowSize )
+    explicit Win32View( const Steinberg::ViewRect windowSize,
+                        std::function< void( IVSTView * ) >&& onRemoved )
+      : m_rect( windowSize ),
+        m_onRemoved( onRemoved )
     {}
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -213,6 +217,7 @@ namespace priv
   {
     m_isActive = false;
     LOG_DEBUG( "event processing turned off" );
+    m_onRemoved( this );
     // the destructor handles the shutdown process.
     // do NOT add another shutdown here or undefined behavior will occur
     return Steinberg::kResultTrue;
@@ -420,6 +425,13 @@ private:
 
 private:
 
+  // used for the initial size only
+  Steinberg::ViewRect m_rect;
+
+  // used for notifying the controller that we're closing and
+  // state or cleanup is required
+  std::function< void( IVSTView* ) > m_onRemoved;
+
   bool m_isActive { false };
 
   nx::EventFacadeVst m_eventFacade;
@@ -432,9 +444,6 @@ private:
 
   // holds Win32 window specifics
   priv::Win32Details_t m_win32;
-
-  // used for the initial size only
-  Steinberg::ViewRect m_rect;
 
   // required for timer callbacks across multiple instances
   // each child HWND is mapped to Win32SfmlWindow instance

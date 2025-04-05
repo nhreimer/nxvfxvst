@@ -30,6 +30,16 @@ namespace nx
 
     ~EventFacadeVst() = default;
 
+    void saveState(nlohmann::json &j) const
+    {
+      j = m_channelPipeline.saveChannelPipeline();
+    }
+
+    void restoreState(nlohmann::json &j)
+    {
+      m_channelPipeline.loadChannelPipeline( j );
+    }
+
     void processVstEvent( const Steinberg::Vst::Event & event )
     {
       // forward it immediately. this should be as fast as

@@ -14,12 +14,13 @@ namespace nx
   {
     public:
 
-      static IVSTView * createView()
+      static IVSTView * createView( std::function< void( IVSTView * ) >&& onRemoved )
       {
 
 #ifdef WIN32
 
-        return new Win32View( { 0, 0, 1280, 768 } );
+        return new Win32View( { 0, 0, 1280, 768 },
+                              std::forward< std::function< void( IVSTView * ) > >( onRemoved ) );
 
 #else
         LOG_ERROR( "IPlugView::createView() not implemented for this system." );
