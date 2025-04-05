@@ -31,7 +31,6 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
 
     if ( msgSize > 0 )
     {
-      LOG_DEBUG( "sending midi message" );
       auto event = *( ( Steinberg::Vst::Event * )ptrData );
       m_ptrView->notify( event );
     }
@@ -63,11 +62,9 @@ Steinberg::tresult PLUGIN_API nxvfxvstController::disconnect( IConnectionPoint* 
 tresult PLUGIN_API nxvfxvstController::initialize (FUnknown* context)
 {
 	// Here the Plug-in will be instantiated
-#ifdef DEBUG && !NX_LOG_FILE_DISABLED
+#ifdef DEBUG
   nx::SLog::initializeFileWriter( NX_LOG_FILE );
   nx::SLog::log->flush_on( spdlog::level::trace );
-#else
-  nx::SLog::initializeNullWriter();
 #endif
 
   LOG_INFO( "initializing controller" );

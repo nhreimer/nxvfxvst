@@ -173,7 +173,6 @@ namespace priv
   ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override
   {
-    LOG_DEBUG( "received event" );
     m_eventFacade.processVstEvent( event );
   }
 
@@ -330,10 +329,14 @@ private:
       //m_sfContext.antialiasingLevel );
 
     if ( !::AllowSetForegroundWindow( ASFW_ANY ) )
+    {
       LOG_WARN( "failed to allow foreground. interactivity may be limited." );
+    }
 
     if ( !m_sfWindow.setActive( true ) )
+    {
       LOG_WARN( "failed to activate window." );
+    }
 
     m_sfWindow.requestFocus();
     m_sfWindow.clear();

@@ -176,7 +176,7 @@ namespace nx
 
     void drawShadersAvailable()
     {
-      if ( ImGui::TreeNode( "Shader Pipeline" ) )
+      if ( ImGui::TreeNode( "FX Available" ) )
       {
         if ( ImGui::Button( "Blur##1" ) )
           createShader< BlurShader >();
@@ -215,35 +215,41 @@ namespace nx
       int swapA = -1;
       int swapB = -1;
 
-      for ( int i = 0; i < m_shaders.size(); ++i )
+      if ( ImGui::TreeNode( "Active FX" ) )
       {
-        ImGui::PushID( i );
-
-        if ( i > 0 )
-          ImGui::Separator();
-
-        if ( ImGui::Button( "x" ) )
-          deletePos = i;
-        else
+        for ( int i = 0; i < m_shaders.size(); ++i )
         {
-          ImGui::SameLine();
-          m_shaders[ i ]->drawMenu();
+          ImGui::PushID( i );
 
-          if ( ImGui::Button( "u" ) )
+          if ( i > 0 )
+            ImGui::Separator();
+
+          if ( ImGui::Button( "x" ) )
+            deletePos = i;
+          else
           {
-            swapA = i;
-            swapB = i - 1;
-          }
+            ImGui::SameLine();
+            m_shaders[ i ]->drawMenu();
 
-          ImGui::SameLine();
+            if ( ImGui::Button( "u" ) )
+            {
+              swapA = i;
+              swapB = i - 1;
+            }
 
-          if ( ImGui::Button( "d" ) )
-          {
-            swapA = i;
-            swapB = i + 1;
+            ImGui::SameLine();
+
+            if ( ImGui::Button( "d" ) )
+            {
+              swapA = i;
+              swapB = i + 1;
+            }
           }
+          ImGui::PopID();
         }
-        ImGui::PopID();
+
+        ImGui::TreePop();
+        ImGui::Spacing();
       }
 
       if ( deletePos > -1 )

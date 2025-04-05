@@ -32,8 +32,6 @@ namespace nx
 
     void processVstEvent( const Steinberg::Vst::Event & event )
     {
-      LOG_DEBUG( "eventfacade received event" );
-
       // forward it immediately. this should be as fast as
       // possible because this runs on the processor thread
 
@@ -53,7 +51,9 @@ namespace nx
     {
       LOG_INFO( "initializing event receiver" );
       if ( !ImGui::SFML::Init( window ) )
+      {
         LOG_ERROR( "failed to initialize imgui" );
+      }
 
       onResize( window, window.getSize().x, window.getSize().y );
     }
@@ -118,8 +118,9 @@ namespace nx
     void onResize( sf::RenderWindow & window, uint32_t width, uint32_t height )
     {
       m_globalInfo.windowSize = { width, height };
-      m_globalInfo.windowView.setSize( { ( float )width, ( float )height } );
-      m_globalInfo.windowView.setCenter( { ( float )width / 2.f, ( float )height / 2.f } );
+      window.setSize( m_globalInfo.windowSize );
+      m_globalInfo.windowView.setSize( { static_cast< float >(width), static_cast< float >(height) } );
+      m_globalInfo.windowView.setCenter( { static_cast< float >(width) / 2.f, static_cast< float >(height) / 2.f } );
     }
 
   private:

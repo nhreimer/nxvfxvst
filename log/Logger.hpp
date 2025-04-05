@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef DEBUG
+
 // Must: define SPDLOG_ACTIVE_LEVEL before `#include "spdlog/spdlog.h"`
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #define SPDLOG_TRACE_ON
@@ -76,3 +78,17 @@ namespace nx
 
 #endif
 
+#else
+
+#ifndef PLOG_LOGGER
+#define PLOG_LOGGER
+
+#define LOG_DEBUG( ... )
+#define LOG_INFO( ... )
+#define LOG_ERROR( ... )
+#define LOG_WARN( ... )
+#define LOG_CRITICAL( ... )
+
+#endif
+
+#endif

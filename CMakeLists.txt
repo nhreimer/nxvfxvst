@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.30)
 
 set(CMAKE_CXX_STANDARD 20)
 
+message( "BUILD: ${CMAKE_BUILD_TYPE}" )
+
 if ( NX_LOG_FILE )
   message(STATUS "Logging directory set to: ${NX_LOG_FILE}")
   set( NX_LOG_FILE_DISABLED FALSE )
@@ -27,7 +29,7 @@ if ( BUILD_PLUGIN )
 
 #  set(SFML_STATIC_LIBRARIES TRUE)
 #  find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
-  find_package(spdlog CONFIG REQUIRED)
+#  find_package(spdlog CONFIG REQUIRED)
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
 
@@ -51,24 +53,53 @@ if ( BUILD_PLUGIN )
   target_include_directories( ${PROJECT_NAME}
     PRIVATE
 
+    # must used the patched version
     C:/Precision/projects/SFML/include
   )
 
-  target_link_libraries( ${PROJECT_NAME}
-    PRIVATE
+  if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 
-    sdk
-    Rpcrt4.lib
+    find_package(spdlog CONFIG REQUIRED)
 
-    C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
-    C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-window-s-d.lib
-    C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-graphics-s-d.lib
-#    SFML::Window
-#    SFML::Graphics
-    ImGui-SFML::ImGui-SFML
-    spdlog::spdlog_header_only
-    nlohmann_json::nlohmann_json
-  )
+    target_link_libraries( ${PROJECT_NAME}
+      PRIVATE
+
+      sdk
+      Rpcrt4.lib
+
+      # must use the patched version
+      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
+      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-window-s-d.lib
+      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-graphics-s-d.lib
+  #    SFML::Window
+  #    SFML::Graphics
+      ImGui-SFML::ImGui-SFML
+      spdlog::spdlog_header_only
+      nlohmann_json::nlohmann_json
+    )
+
+  else()
+
+    target_link_libraries( ${PROJECT_NAME}
+      PRIVATE
+
+      sdk
+      Rpcrt4.lib
+
+      nlohmann_json::nlohmann_json
+
+      # must use the patched version
+      C:/Precision/projects/SFML/cmake-build-release/lib/sfml-system-s.lib
+      C:/Precision/projects/SFML/cmake-build-release/lib/sfml-window-s.lib
+      C:/Precision/projects/SFML/cmake-build-release/lib/sfml-graphics-s.lib
+      #    SFML::Window
+      #    SFML::Graphics
+      ImGui-SFML::ImGui-SFML
+#      spdlog::spdlog_header_only
+    )
+
+  endif()
+
   smtg_target_configure_version_file(nxvfxvst)
 
   if(SMTG_MAC)
@@ -130,8 +161,6 @@ target_include_directories( ${PROJECT_NAME}
 )
 
 if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
-
-  message( "DEBUG BUILD" )
 
   set( COMPILE_DEFS
     -DNOMINMAX
