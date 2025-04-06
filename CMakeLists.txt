@@ -19,6 +19,8 @@ endif()
 
 if ( BUILD_PLUGIN )
 
+  message( STATUS "BUILDING VST3 PLUGIN" )
+
   project(nxvfxvst
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
@@ -123,6 +125,8 @@ if ( BUILD_PLUGIN )
   endif(SMTG_MAC)
 
 else()
+
+  message( STATUS "BUILDING STANDALONE APPLICATION" )
 
   project(RVTestPlatform)
 

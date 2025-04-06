@@ -107,8 +107,6 @@ namespace nx
 
     void onResize( sf::RenderWindow & window, uint32_t width, uint32_t height )
     {
-      // TODO: in the plugin, you must uncomment this
-      //window.setSize( { width, height } );
       m_windowInfo.windowSize = { width, height };
       m_windowInfo.windowView.setSize( { static_cast< float >(width),
                                               static_cast< float >(height) } );
@@ -161,13 +159,13 @@ namespace nx
     // and processes them on the controller thread
     Concurrency::concurrent_queue< Midi_t > m_queue;
 
-//    const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent
-//    {
-//      [ & ]( const Steinberg::Vst::Event & event )
-//      {
-//        processVstEvent( event );
-//      }
-//    };
+    const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent
+    {
+      [ & ]( const Steinberg::Vst::Event & event )
+      {
+        processVstEvent( event );
+      }
+    };
 
   };
 

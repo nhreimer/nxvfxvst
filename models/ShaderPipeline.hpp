@@ -6,6 +6,7 @@
 #include "models/shader/RippleShader.hpp"
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/PulseShader.hpp"
+#include "models/shader/RumbleShader.hpp"
 
 namespace nx
 {
@@ -147,6 +148,10 @@ namespace nx
           shader = addShader< RippleShader >( j );
           break;
 
+        case E_ShaderType::E_RumbleShader:
+          shader = addShader< RumbleShader >( j );
+          break;
+
         default:
           LOG_ERROR( "Unsupported shader type" );
           break;
@@ -200,6 +205,10 @@ namespace nx
         ImGui::SameLine();
         if ( ImGui::Button( "Strobe##1" ) )
           createShader< StrobeShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Rumble##1" ) )
+          createShader< RumbleShader >();
 
         ImGui::TreePop();
         ImGui::Spacing();

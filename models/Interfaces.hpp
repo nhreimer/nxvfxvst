@@ -20,7 +20,8 @@ namespace nx
     E_PulseShader,
     E_RippleShader,
     E_StrobeShader,
-    E_KaleidoscopeShader
+    E_KaleidoscopeShader,
+    E_RumbleShader
   };
 
   enum E_LayoutType : uint8_t
