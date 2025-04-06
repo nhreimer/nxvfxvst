@@ -8,8 +8,33 @@
 #include "models/ParticlePipeline.hpp"
 #include "models/ShaderPipeline.hpp"
 
+#include <future>
+
 namespace nx
 {
+  class MessageClock
+  {
+
+  public:
+    void setMessage( std::string&& msg, int32_t timeoutInSeconds = 5 )
+    {
+      m_message = msg;
+      m_messageClock.restart();
+    }
+
+    bool hasExpired() const
+    {
+      return m_messageClock.getElapsedTime().asSeconds() >= m_timeoutInSeconds;
+    }
+
+    std::string_view getMessage() const { return m_message; }
+
+  private:
+    std::string m_message;
+    sf::Clock m_messageClock;
+    int32_t m_timeoutInSeconds { 5 };
+  };
+
   class ChannelPipeline final
   {
   public:
@@ -100,6 +125,7 @@ namespace nx
       {
         const auto json = saveChannelPipeline();
         ImGui::SetClipboardText( json.dump().c_str() );
+        m_messageClock.setMessage( "data copied to clipboard." );
       }
       ImGui::SameLine();
       if ( ImGui::Button( "import" ) )
@@ -107,9 +133,25 @@ namespace nx
         const auto json = std::string( ImGui::GetClipboardText() );
         if ( !json.empty() )
         {
-          const auto importedData = nlohmann::json::parse( json.c_str(), nullptr, false );
-          loadChannelPipeline( importedData );
+          const auto importedData =
+            nlohmann::json::parse( json.c_str(), nullptr, false );
+
+          if ( !importedData.is_discarded() )
+          {
+            loadChannelPipeline( importedData );
+            m_messageClock.setMessage( "data copied from clipboard." );
+          }
+          else
+            m_messageClock.setMessage( "failed to import: invalid json." );
         }
+        else
+          m_messageClock.setMessage( "failed to import: empty clipboard." );
+      }
+
+      if ( !m_messageClock.hasExpired() )
+      {
+        ImGui::Separator();
+        ImGui::TextUnformatted( m_messageClock.getMessage().data() );
       }
     }
 
@@ -123,5 +165,6 @@ namespace nx
     ParticlePipeline m_particlePipeline;
     ShaderPipeline m_shaderPipeline;
 
+    MessageClock m_messageClock;
   };
 }
