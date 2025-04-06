@@ -2,13 +2,12 @@
 
 #include <random>
 
-#include "helpers/MidiHelper.hpp"
 #include "helpers/MathHelper.hpp"
+#include "helpers/MenuHelper.hpp"
 
 #include "models/particle/ParticleConsumer.hpp"
 
-#include "helpers/MenuHelper.hpp"
-
+#include "shapes/TimedCursorPosition.hpp"
 
 namespace nx
 {
@@ -38,6 +37,9 @@ namespace nx
         ImGui::TreePop();
         ImGui::Spacing();
       }
+
+      if ( !m_timedDrawing.hasExpired() )
+        m_timedDrawing.drawPosition();
     }
 
   protected:
@@ -142,11 +144,16 @@ namespace nx
 
         float xOffset = m_data.positionOffset.x;
         if ( ImGui::SliderFloat( "x-axis##1", &xOffset, -halfWindow.x, halfWindow.x ) )
+        {
           m_data.positionOffset.x = xOffset;
-
+          m_timedDrawing.setPosition( { halfWindow.x + xOffset, halfWindow.y + m_data.positionOffset.y } );
+        }
         float yOffset = m_data.positionOffset.y;
         if ( ImGui::SliderFloat( "y-axis##1", &yOffset, -halfWindow.y, halfWindow.y ) )
+        {
           m_data.positionOffset.y = yOffset;
+          m_timedDrawing.setPosition( { halfWindow.x + m_data.positionOffset.x, halfWindow.y + yOffset } );
+        }
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -157,6 +164,8 @@ namespace nx
   private:
 
     std::mt19937 m_rand;
+
+    TimedCursorPosition m_timedDrawing;
 
   };
 

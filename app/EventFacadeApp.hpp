@@ -133,7 +133,6 @@ namespace nx
           m_midiGen.run( m_onEvent );
       }
 
-
       ImGui::Separator();
       ImGui::Text( "build %s", BUILD_NUMBER );
       ImGui::End();

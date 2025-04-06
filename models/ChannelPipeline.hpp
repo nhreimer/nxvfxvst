@@ -148,6 +148,8 @@ namespace nx
           m_messageClock.setMessage( "failed to import: empty clipboard." );
       }
 
+      // TODO: add color wheel and slider for cursor time out
+
       if ( !m_messageClock.hasExpired() )
       {
         ImGui::Separator();
