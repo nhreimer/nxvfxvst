@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.30)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(GitVersion)
+
 set(CMAKE_CXX_STANDARD 20)
 
 message( "BUILD: ${CMAKE_BUILD_TYPE}" )
@@ -25,7 +28,7 @@ if ( BUILD_PLUGIN )
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 1.0.0.0
+    VERSION 1.0.1.0
     DESCRIPTION "nxvfxvst VST 3 Plug-in"
   )
 
@@ -175,6 +178,7 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
     -DUNICODE
     -DSPDLOG_USE_STD_FORMAT
     -DDEBUG
+    -DBUILD_NUMBER="${BUILD_NUMBER}"
   )
   add_definitions( ${COMPILE_DEFS} )
 
@@ -188,6 +192,7 @@ else()
     -D_UNICODE
     -DUNICODE
     -DSPDLOG_USE_STD_FORMAT
+    -DBUILD_NUMBER="${BUILD_NUMBER}"
   )
 
   add_definitions( ${COMPILE_DEFS} )

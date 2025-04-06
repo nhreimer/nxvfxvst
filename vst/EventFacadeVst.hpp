@@ -146,6 +146,8 @@ namespace nx
       {
         m_channelPipeline.drawMenu();
       }
+      ImGui::Separator();
+      ImGui::Text( "build %s", BUILD_NUMBER );
       ImGui::End();
     }
 

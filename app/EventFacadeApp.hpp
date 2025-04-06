@@ -117,7 +117,7 @@ namespace nx
     void drawMenu()
     {
       // draw ImGui last so it sits on top of the screen
-      ImGui::Begin( "Midi Visualizer", nullptr, ImGuiWindowFlags_AlwaysAutoResize );
+      ImGui::Begin( "nxvfx", nullptr, ImGuiWindowFlags_AlwaysAutoResize );
       ImGui::Text( "FPS %0.2f", ImGui::GetIO().Framerate );
       // TODO: draw ONLY the active one
       m_channelPipeline.drawMenu();
@@ -133,6 +133,9 @@ namespace nx
           m_midiGen.run( m_onEvent );
       }
 
+
+      ImGui::Separator();
+      ImGui::Text( "build %s", BUILD_NUMBER );
       ImGui::End();
     }
 
