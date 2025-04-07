@@ -1,5 +1,7 @@
 #pragma once
 
+#include "shapes/TimedCursorPosition.hpp"
+
 namespace nx
 {
   struct RippleData_t
@@ -66,8 +68,14 @@ namespace nx
       {
         ImGui::Checkbox( "Ripple Active##1", &m_data.isActive );
 
-        ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, -1.f, 1.f );
-        ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, -1.f, 1.f );
+        if ( ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, -1.f, 1.f ) ||
+             ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, -1.f, 1.f ) )
+        {
+          const sf::Vector2f calibrated { ( m_data.rippleCenterX + 1.f ) / 2.f * m_globalInfo.windowSize.x,
+                                          ( m_data.rippleCenterY + 1.f ) / 2.f * m_globalInfo.windowSize.y };
+          m_timedCursor.setPosition( calibrated );
+        }
+
         // ImGui::SliderFloat( "Ripple Amplitude##1", &m_data.amplitude, 0.f, 0.05f );
         ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 10.f, 50.f );
         ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
@@ -76,6 +84,9 @@ namespace nx
         ImGui::TreePop();
         ImGui::Spacing();
       }
+
+      if ( !m_timedCursor.hasExpired() )
+        m_timedCursor.drawPosition();
     }
 
     void update( const sf::Time &deltaTime ) override {}
@@ -134,6 +145,8 @@ namespace nx
     sf::Clock m_clock;
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+
+    TimedCursorPosition m_timedCursor;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;

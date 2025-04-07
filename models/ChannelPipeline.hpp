@@ -8,33 +8,12 @@
 #include "models/ParticlePipeline.hpp"
 #include "models/ShaderPipeline.hpp"
 
+#include "shapes/TimedMessage.hpp"
+
 #include <future>
 
 namespace nx
 {
-  class MessageClock
-  {
-
-  public:
-    void setMessage( std::string&& msg, int32_t timeoutInSeconds = 5 )
-    {
-      m_message = msg;
-      m_messageClock.restart();
-    }
-
-    bool hasExpired() const
-    {
-      return m_messageClock.getElapsedTime().asSeconds() >= m_timeoutInSeconds;
-    }
-
-    std::string_view getMessage() const { return m_message; }
-
-  private:
-    std::string m_message;
-    sf::Clock m_messageClock;
-    int32_t m_timeoutInSeconds { 5 };
-  };
-
   class ChannelPipeline final
   {
   public:
@@ -167,6 +146,6 @@ namespace nx
     ParticlePipeline m_particlePipeline;
     ShaderPipeline m_shaderPipeline;
 
-    MessageClock m_messageClock;
+    TimedMessage m_messageClock;
   };
 }
