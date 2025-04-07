@@ -1,4 +1,5 @@
 #pragma once
+#include "shapes/MidiNoteControl.hpp"
 
 namespace nx
 {
@@ -57,6 +58,9 @@ namespace nx
         ImGui::SliderFloat( "Flash Amount##1", &m_data.flashAmount, 0.f, 1.f );
         ImGui::SliderFloat( "Flash Decay##1", &m_data.flashDecay, -20.f, 0.f );
 
+        ImGui::Separator();
+        m_midiNoteControl.drawMenu();
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -66,7 +70,8 @@ namespace nx
 
     void trigger( const Midi_t &midi ) override
     {
-      m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
+        m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
     }
 
     [[nodiscard]]
@@ -106,6 +111,8 @@ namespace nx
     sf::Clock m_clock;
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+
+    MidiNoteControl m_midiNoteControl;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform float flashAmount; // 0.0 = no flash, 1.0 = full white
