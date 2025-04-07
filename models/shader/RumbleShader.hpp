@@ -1,5 +1,7 @@
 #pragma once
 
+#include "shapes/MidiNoteControl.hpp"
+
 namespace nx
 {
 
@@ -83,6 +85,9 @@ namespace nx
         ImGui::SliderFloat("Modulation Frequency", &m_data.modFrequency, 0.f, 50.f);
         ImGui::SliderFloat("Color Desync", &m_data.colorDesync, 0.f, 5.0f);
 
+        ImGui::Separator();
+        m_midiNoteControl.drawMenu();
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -92,7 +97,8 @@ namespace nx
 
     void trigger( const Midi_t &midi ) override
     {
-      m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
+        m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
     }
 
     [[nodiscard]]
@@ -144,6 +150,7 @@ namespace nx
     sf::Clock m_clock;
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+    MidiNoteControl m_midiNoteControl;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;

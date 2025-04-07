@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics/Shader.hpp>
 
+#include "shapes/TimedCursorPosition.hpp"
+
 namespace nx
 {
 
@@ -83,8 +85,13 @@ namespace nx
         ImGui::Checkbox( "Kaleidoscope Active##1", &m_data.isActive );
 
         ImGui::SliderInt( "Segments##1", &m_data.segments, 0, 255 );
-        ImGui::SliderFloat( "Center x##1", &m_data.centerX, -1.0f, 1.0f );
-        ImGui::SliderFloat( "Center y##1", &m_data.centerY, -1.0f, 1.0f );
+        if ( ImGui::SliderFloat( "Center x##1", &m_data.centerX, 0.0f, 1.0f ) ||
+             ImGui::SliderFloat( "Center y##1", &m_data.centerY, 0.0f, 1.0f ) )
+        {
+          const sf::Vector2f calibrated { m_data.centerX * m_globalInfo.windowSize.x,
+                                          m_data.centerY * m_globalInfo.windowSize.y };
+          m_timedCursor.setPosition( calibrated );
+        }
 
         ImGui::SliderFloat( "Rotate##1", &m_data.time, 0.f, 1.f );
 
@@ -95,6 +102,9 @@ namespace nx
         ImGui::TreePop();
         ImGui::Spacing();
       }
+
+      if ( !m_timedCursor.hasExpired() )
+        m_timedCursor.drawPosition();
     }
 
     void trigger( const Midi_t& midi ) override
@@ -139,6 +149,8 @@ namespace nx
     sf::RenderTexture m_outputTexture;
 
     KaleidoscopeData_t m_data;
+
+    TimedCursorPosition m_timedCursor;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;     // Window size

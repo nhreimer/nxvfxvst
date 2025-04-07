@@ -54,6 +54,7 @@ protected:
 private:
   IVSTView * m_ptrView { nullptr };
   bool m_hasState { false };
+  bool m_isViewActive { false };
 
   // used between closing and opening the window
   nlohmann::json m_state;

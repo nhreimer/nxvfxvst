@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shapes/TimedCursorPosition.hpp"
+#include "shapes/MidiNoteControl.hpp"
 
 namespace nx
 {
@@ -83,6 +84,9 @@ namespace nx
         ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
         ImGui::SliderFloat( "Ripple Pulse Decay##1", &m_data.pulseDecay, -2.f, 0.f );
 
+        ImGui::Separator();
+        m_midiNoteControl.drawMenu();
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -95,7 +99,8 @@ namespace nx
 
     void trigger( const Midi_t& midi ) override
     {
-      m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
+        m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
     }
 
     [[nodiscard]]
@@ -151,6 +156,7 @@ namespace nx
     sf::RenderTexture m_outputTexture;
 
     TimedCursorPosition m_timedCursor;
+    MidiNoteControl m_midiNoteControl;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "shapes/MidiNoteControl.hpp"
+
 namespace nx
 {
 
@@ -61,7 +63,8 @@ namespace nx
     void update( const sf::Time &deltaTime ) override {}
     void trigger(const Midi_t &midi) override
     {
-      m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
+        m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
     }
 
     [[nodiscard]]
@@ -78,6 +81,9 @@ namespace nx
         ImGui::SliderFloat("Glow Intensity##1", &m_data.glowIntensity, 0.0f, 3.0f);
         ImGui::SliderFloat("Pulse Pulse Decay##1", &m_data.pulseDecay, -20.0f, 0.0f);
         ImGui::SliderFloat("Pulse Burst Mult##1", &m_data.burstMultiplier, 0.0f, 5.0f);
+
+        ImGui::Separator();
+        m_midiNoteControl.drawMenu();
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -139,6 +145,8 @@ namespace nx
 
     sf::RenderTexture m_brightTexture;
     sf::RenderTexture m_outputTexture;
+
+    MidiNoteControl m_midiNoteControl;
 
     const static inline std::string m_brightPassFragmentShader = R"(uniform sampler2D texture;
 uniform float threshold; // e.g. 0.8
