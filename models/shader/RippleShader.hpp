@@ -6,7 +6,7 @@ namespace nx
 {
   struct RippleData_t
   {
-    bool isActive { false };
+    bool isActive { true };
 
     float rippleCenterX { 0.5f };
     float rippleCenterY { 0.5f };
@@ -24,8 +24,10 @@ namespace nx
     explicit RippleShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
-      LOG_INFO( "loaded ripple shader" );
+      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      {
+        LOG_ERROR( "Failed to load ripple fragment shader" );
+      }
     }
 
     ~RippleShader() override = default;
@@ -104,8 +106,10 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        assert( m_outputTexture.resize( m_globalInfo.windowSize ) );
-        LOG_INFO( "successfully resized ripple texture" );
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        {
+          LOG_ERROR( "failed to resize ripple texture" );
+        }
       }
 
       const float time = m_clock.getElapsedTime().asSeconds();

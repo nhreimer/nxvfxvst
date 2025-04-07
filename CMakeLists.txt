@@ -178,7 +178,7 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
     -DUNICODE
     -DSPDLOG_USE_STD_FORMAT
     -DDEBUG
-    -DBUILD_NUMBER="${BUILD_NUMBER}"
+    -DBUILD_NUMBER="d${BUILD_NUMBER}"
   )
   add_definitions( ${COMPILE_DEFS} )
 
@@ -192,7 +192,7 @@ else()
     -D_UNICODE
     -DUNICODE
     -DSPDLOG_USE_STD_FORMAT
-    -DBUILD_NUMBER="${BUILD_NUMBER}"
+    -DBUILD_NUMBER="r${BUILD_NUMBER}"
   )
 
   add_definitions( ${COMPILE_DEFS} )

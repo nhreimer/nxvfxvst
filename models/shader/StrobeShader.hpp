@@ -5,8 +5,8 @@ namespace nx
 
   struct StrobeData_t
   {
-    bool isActive { false };
-    float flashAmount { 0.1f };
+    bool isActive { true };
+    float flashAmount { 0.1f };   // 0.0 = no flash, 1.0 = full white
     float flashDecay { -15.f };
   };
 
@@ -16,8 +16,10 @@ namespace nx
     explicit StrobeShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
-      LOG_INFO( "loaded strobe shader" );
+      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      {
+        LOG_ERROR( "Failed to load strobe fragment shader" );
+      }
     }
 
     ~StrobeShader() override = default;
@@ -75,8 +77,10 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        assert( m_outputTexture.resize( m_globalInfo.windowSize ) );
-        LOG_INFO( "successfully resized strobe texture" );
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        {
+          LOG_ERROR( "failed to resize strobe texture" );
+        }
       }
 
       const float time = m_clock.getElapsedTime().asSeconds();

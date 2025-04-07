@@ -8,12 +8,12 @@ namespace nx
 
   struct BlurData_t
   {
-    bool isActive { false };
+    bool isActive { true };
 
     float sigma { 7.f };
     float brighten { 1.f };
-    float blurHorizontal { 0.f };
-    float blurVertical { 0.f };
+    float blurHorizontal { 0.1f };
+    float blurVertical { 0.1f };
   };
 
   class BlurShader final : public IShader
@@ -23,8 +23,14 @@ namespace nx
     explicit BlurShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      assert( m_blurShader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
-      LOG_INFO( "loaded blur shader" );
+      if ( !m_blurShader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      {
+        LOG_ERROR( "Failed to load blur fragment shader" );
+      }
+      else
+      {
+        LOG_INFO( "loaded blur shader" );
+      }
     }
 
     ///////////////////////////////////////////////////////
@@ -84,10 +90,11 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) || !m_intermediary.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) ||
+             !m_intermediary.resize( m_globalInfo.windowSize ) )
+        {
           LOG_ERROR( "failed to resize blur texture" );
-        else
-          LOG_INFO( "successfully resized blur texture" );
+        }
       }
 
       const sf::Sprite sprite( inputTexture.getTexture() );

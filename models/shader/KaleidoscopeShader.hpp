@@ -7,7 +7,7 @@ namespace nx
 
   struct KaleidoscopeData_t
   {
-    bool isActive { false };
+    bool isActive { true };
 
     float centerX { 0.5f };
     float centerY { 0.5f };
@@ -28,8 +28,10 @@ namespace nx
     explicit KaleidoscopeShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
-      LOG_INFO( "loaded kaleidoscope shader" );
+      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      {
+        LOG_ERROR( "Failed to load kaleidoscope fragment shader" );
+      }
     }
 
     ~KaleidoscopeShader() override = default;
@@ -109,8 +111,10 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        assert( m_outputTexture.resize( m_globalInfo.windowSize ) );
-        LOG_INFO( "successfully resized kaleidoscope texture" );
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        {
+          LOG_ERROR( "failed to resize kaleidoscope texture" );
+        }
       }
 
       m_shader.setUniform( "texture", sf::Shader::CurrentTexture );

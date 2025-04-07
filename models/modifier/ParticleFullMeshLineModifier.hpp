@@ -60,9 +60,9 @@ namespace nx
       if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
         if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        {
           LOG_ERROR( "failed to resize full-mesh particle texture" );
-        else
-          LOG_INFO( "successfully resized full-mesh particle texture" );
+        }
       }
 
       m_outputTexture.clear();

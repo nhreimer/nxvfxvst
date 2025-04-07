@@ -31,7 +31,7 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
 
     if ( msgSize > 0 )
     {
-      auto event = *( ( Steinberg::Vst::Event * )ptrData );
+      auto event = *( ( Vst::Event * )ptrData );
       m_ptrView->notify( event );
     }
     else
@@ -64,7 +64,7 @@ tresult PLUGIN_API nxvfxvstController::initialize (FUnknown* context)
 	// Here the Plug-in will be instantiated
 #ifdef DEBUG
   nx::SLog::initializeFileWriter( NX_LOG_FILE );
-  nx::SLog::log->flush_on( spdlog::level::trace );
+  nx::SLog::log->flush_on( spdlog:: level::trace );
 #endif
 
   LOG_INFO( "initializing controller" );

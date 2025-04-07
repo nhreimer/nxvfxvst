@@ -34,7 +34,7 @@ namespace nx
       {
         { "type", getType() },
 
-           { "isActive", m_data.isActive },
+          { "isActive", m_data.isActive },
           { "lineThickness", m_data.lineThickness },
         { "blendMode", SerialHelper::convertBlendModeToString( m_data.blendMode ) }
 
@@ -60,9 +60,9 @@ namespace nx
       if ( m_outputTexture.getSize() != m_winfo.windowSize )
       {
         if ( !m_outputTexture.resize( m_winfo.windowSize ) )
+        {
           LOG_ERROR( "failed to resize sequential line texture" );
-        else
-          LOG_INFO( "successfully resized sequential line texture" );
+        }
       }
 
       m_outputTexture.clear();

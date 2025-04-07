@@ -52,8 +52,10 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        assert( m_outputTexture.resize( inTexture.getSize() ) );
-        LOG_INFO( "Resized shader pipline texture" );
+        if ( !m_outputTexture.resize( inTexture.getSize() ) )
+        {
+          LOG_ERROR( "failed to resize shader pipeline texture!" );
+        }
       }
 
       const sf::RenderTexture * currentTexture = &inTexture;
@@ -203,12 +205,12 @@ namespace nx
           createShader< RippleShader >();
 
         ImGui::SameLine();
-        if ( ImGui::Button( "Strobe##1" ) )
-          createShader< StrobeShader >();
-
-        ImGui::SameLine();
         if ( ImGui::Button( "Rumble##1" ) )
           createShader< RumbleShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Strobe##1" ) )
+          createShader< StrobeShader >();
 
         ImGui::TreePop();
         ImGui::Spacing();

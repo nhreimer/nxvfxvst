@@ -40,9 +40,9 @@ namespace nx
       if ( m_outputTexture.getSize() != m_winfo.windowSize )
       {
         if ( !m_outputTexture.resize( m_winfo.windowSize ) )
+        {
           LOG_ERROR( "failed to resize texture" );
-        else
-          LOG_INFO( "successfully resized texture" );
+        }
       }
       m_outputTexture.clear();
 

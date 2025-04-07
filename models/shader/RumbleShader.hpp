@@ -5,7 +5,7 @@ namespace nx
 
   struct RumbleData_t
   {
-    bool isActive { false };
+    bool isActive { true };
 
     float rumbleStrength { 20.f };      // max px offset
     float frequency { 40.f };           // wiggle speed
@@ -25,8 +25,10 @@ namespace nx
     explicit RumbleShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
-      LOG_INFO( "loaded rumble shader" );
+      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      {
+        LOG_ERROR( "Failed to load rumble fragment shader" );
+      }
     }
 
     [[nodiscard]]
@@ -101,8 +103,10 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        assert( m_outputTexture.resize( inputTexture.getSize() ) );
-        LOG_INFO( "resized rumble output texture" );
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
+        {
+          LOG_ERROR( "failed to resize rumble texture" );
+        }
       }
 
       const float time = m_clock.getElapsedTime().asSeconds();

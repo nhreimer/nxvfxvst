@@ -5,14 +5,14 @@ namespace nx
 
   struct GlitchData_t
   {
-    bool isActive { false };
+    bool isActive { true };
 
     float glitchBaseStrength { 1.f };   // this is adjustable
     float glitchStrength { 1.f };       // [CALCULATED] How intense glitches are (0.0 to 1.0+)
     float glitchAmount { 0.4f };        // How frequent glitches are (0.0 to 1.0)
     float scanlineIntensity { 0.02f };  // Scanline brightness
     float chromaFlickerAmount { 0.4f };  // 0.0 = off, 1.0 = frequent flickers
-    float strobeAmount { 0.2f };         // 0.0 = no strobe, 1.0 = frequent
+    float strobeAmount { 0.0f };         // 0.0 = no strobe, 1.0 = frequent
     float pixelJumpAmount { 0.5f };      // 0.0 = off, 1.0 = chaos
 
     float glitchPulseDecay { -0.5f };
@@ -28,8 +28,10 @@ namespace nx
     explicit GlitchShader( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
     {
-      assert( m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) );
-      LOG_INFO( "loaded glitch shader" );
+      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      {
+        LOG_ERROR( "Failed to load glitch fragment shader" );
+      }
     }
 
     ~GlitchShader() override = default;
@@ -119,8 +121,10 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != m_winfo.windowSize )
       {
-        assert( m_outputTexture.resize( m_winfo.windowSize ) );
-        LOG_INFO( "successfully resized glitch texture" );
+        if ( !m_outputTexture.resize( m_winfo.windowSize ) )
+        {
+          LOG_ERROR( "failed to resize blur texture" );
+        }
       }
 
       const float time = m_clock.getElapsedTime().asSeconds();

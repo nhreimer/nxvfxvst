@@ -30,7 +30,7 @@ namespace nx
     {
       return
       {
-           { "type", getType() },
+        { "type", getType() },
         { "startColor", SerialHelper::convertColorToJson(m_data.startColor) },
         { "endColor", SerialHelper::convertColorToJson(m_data.endColor) },
         { "outlineColor", SerialHelper::convertColorToJson(m_data.outlineColor) },

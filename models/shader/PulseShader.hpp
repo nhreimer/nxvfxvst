@@ -5,7 +5,7 @@ namespace nx
 
   struct PulseData_t
   {
-    bool isActive { false };
+    bool isActive { true };
     float threshold { 0.8f };
 
     float glowIntensity { 1.2f };
@@ -21,9 +21,11 @@ namespace nx
     explicit PulseShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      assert( m_brightPassShader.loadFromMemory( m_brightPassFragmentShader, sf::Shader::Type::Fragment ) );
-      assert( m_compositeShader.loadFromMemory( m_bloomCompositeFragmentShader, sf::Shader::Type::Fragment ) );
-      LOG_INFO( "loaded bloom shaders" );
+      if ( !m_brightPassShader.loadFromMemory( m_brightPassFragmentShader, sf::Shader::Type::Fragment ) ||
+           !m_compositeShader.loadFromMemory( m_bloomCompositeFragmentShader, sf::Shader::Type::Fragment ) )
+      {
+        LOG_ERROR( "Failed to load pulse fragment shader" );
+      }
     }
 
     ~PulseShader() override = default;
@@ -116,8 +118,11 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        assert( m_outputTexture.resize( m_globalInfo.windowSize ) );
-        assert( m_brightTexture.resize( m_globalInfo.windowSize ) );
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) ||
+             !m_brightTexture.resize( m_globalInfo.windowSize ) )
+        {
+          LOG_ERROR( "failed to resize pulse texture" );
+        }
       }
     }
 
