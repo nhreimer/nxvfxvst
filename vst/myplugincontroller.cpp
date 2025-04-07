@@ -21,7 +21,7 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
   tresult result = kResultOk;
 
   // do not process message while UI is inactive
-  if ( !m_isViewActive || m_ptrView == nullptr ) return Steinberg::kResultFalse;
+  if ( !m_ptrView ) return Steinberg::kResultFalse;
 
   if ( Steinberg::FIDStringsEqual( message->getMessageID(), "midi" ) )
   {

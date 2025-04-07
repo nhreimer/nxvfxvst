@@ -53,7 +53,6 @@ protected:
 
 private:
   IVSTView * m_ptrView { nullptr };
-  bool m_isViewActive { false };
   bool m_hasState { false };
 
   // used between closing and opening the window

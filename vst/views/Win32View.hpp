@@ -177,6 +177,7 @@ namespace priv
   ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override
   {
+      LOG_DEBUG( "Win32View::notify()" );
     m_eventFacade.processVstEvent( event );
   }
 
