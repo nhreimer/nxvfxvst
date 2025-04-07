@@ -13,7 +13,7 @@ namespace nx
 
     float centerX { 0.5f };
     float centerY { 0.5f };
-    int32_t segments { 0 };
+    int32_t segments { 5 };
     float time { 0.f };
     float rotationSpeed { 0.1f };
 
