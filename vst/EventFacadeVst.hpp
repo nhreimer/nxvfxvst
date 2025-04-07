@@ -1,6 +1,8 @@
 #pragma once
 
+#include <unordered_map>
 #include <concurrent_queue.h>
+#include <fmt/core.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
@@ -8,6 +10,7 @@
 
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/ChannelPipeline.hpp"
+#include "models/MultichannelPipeline.hpp"
 
 #include "imgui.h"
 #include "imgui-SFML.h"
@@ -25,19 +28,19 @@ namespace nx
   public:
 
     EventFacadeVst()
-      : m_channelPipeline( m_globalInfo )
+      : m_pipelines( m_globalInfo )
     {}
 
     ~EventFacadeVst() = default;
 
-    void saveState(nlohmann::json &j) const
+    void saveState( nlohmann::json &j ) const
     {
-      j = m_channelPipeline.saveChannelPipeline();
+      //j = m_channelPipeline.saveChannelPipeline();
     }
 
-    void restoreState(nlohmann::json &j)
+    void restoreState( nlohmann::json &j )
     {
-      m_channelPipeline.loadChannelPipeline( j );
+      //m_channelPipeline.loadChannelPipeline( j );
     }
 
     void processVstEvent( const Steinberg::Vst::Event & event )
@@ -106,7 +109,7 @@ namespace nx
         const auto delta = m_clock.restart();
         ImGui::SFML::Update( window, delta );
         consumeMidiEvents();
-        m_channelPipeline.update( delta );
+        m_pipelines.update( delta );
       }
 
       // draw
@@ -114,7 +117,7 @@ namespace nx
         window.clear();
 
         // the problem seems to be part of this!
-        m_channelPipeline.draw( window );
+        m_pipelines.draw( window );
         drawMenu();
         ImGui::SFML::Render( window );
 
@@ -144,11 +147,14 @@ namespace nx
         nullptr,
         ImGuiWindowFlags_AlwaysAutoResize );
       {
-        m_channelPipeline.drawMenu();
+        if ( ImGui::Button( "Add Channel" ) )
+          m_pipelines.addChannel();
       }
       ImGui::Separator();
       ImGui::Text( "%s", BUILD_NUMBER );
       ImGui::End();
+
+      m_pipelines.drawMenu();
     }
 
     void consumeMidiEvents()
@@ -156,13 +162,14 @@ namespace nx
       // this occurs on the controller thread
       Midi_t midiEvent;
       while ( m_queue.try_pop( midiEvent ) )
-        m_channelPipeline.processMidiEvent( midiEvent );
+        m_pipelines.processMidiEvent( midiEvent );
     }
 
   private:
 
     GlobalInfo_t m_globalInfo;
-    ChannelPipeline m_channelPipeline;
+    MultichannelPipeline m_pipelines;
+
     sf::Clock m_clock;
 
     // receives midi events on the processor thread
