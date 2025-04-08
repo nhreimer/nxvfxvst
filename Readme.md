@@ -34,6 +34,10 @@ that react to midi events.
     * Sequential (connects one particle to the next particle)
     * Mesh (connects one particle to all other particles)
     * None (no lines)
+  * Easings (for time decays)
+    * linear
+    * quadratic
+    * 
 
 ### Dependencies
 

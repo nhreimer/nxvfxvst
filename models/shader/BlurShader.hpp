@@ -4,6 +4,8 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <shapes/MidiNoteControl.hpp>
 
+#include "shapes/TimeEasing.hpp"
+
 namespace nx
 {
 
@@ -15,12 +17,6 @@ namespace nx
     float brighten { 1.f };
     float blurHorizontal { 0.1f };
     float blurVertical { 0.1f };
-
-    // used for triggers
-    float impactIntensity { 0.f };  // [calculated for us]
-    float impactTimeDecay { 1.5f }; // in seconds
-
-    bool useQuadraticImpact { false }; // uses linear otherwise
   };
 
   class BlurShader final : public IShader
@@ -54,9 +50,8 @@ namespace nx
           { "brighten", m_data.brighten },
           { "blurHorizontal", m_data.blurHorizontal },
           { "blurVertical", m_data.blurVertical },
-          { "impactTimeDecay", m_data.impactTimeDecay },
-          { "useQuadraticImpactCurve", m_data.useQuadraticImpact },
-          { "midiTriggers", m_midiNoteControl.serialize() }
+          { "midiTriggers", m_midiNoteControl.serialize() },
+          { "easing", m_easing.serialize() }
       };
     }
 
@@ -67,9 +62,8 @@ namespace nx
       m_data.brighten = j.value("brighten", 1.f);
       m_data.blurHorizontal = j.value("blurHorizontal", 0.f);
       m_data.blurVertical = j.value("blurVertical", 0.f);
-      m_data.impactTimeDecay = j.value("impactTimeDecay", 0.5f);
-      m_data.useQuadraticImpact = j.value("useQuadraticImpactCurve", false);
       m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+      m_easing.deserialize( j[ "easing" ] );
     }
 
     // identify type for easier loading
@@ -88,9 +82,8 @@ namespace nx
         ImGui::SliderFloat( "Vertical##1", &m_data.blurVertical, 0.f, 5.f );
 
         ImGui::Separator();
-        ImGui::Checkbox( "Use Quadratic Curve##1", &m_data.useQuadraticImpact );
-        ImGui::SliderFloat("Impact Decay##1", &m_data.impactTimeDecay, 0.f, 1.f);
-        ImGui::Text("Impact Intensity %0.2f", &m_data.impactIntensity);
+
+        m_easing.drawMenu();
 
         ImGui::Separator();
         m_midiNoteControl.drawMenu();
@@ -103,11 +96,7 @@ namespace nx
     void trigger( const Midi_t& midi ) override
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-      {
-        // Set intensity to max and restart the clock
-        m_data.impactIntensity = 1.0f;
-        m_clock.restart();
-      }
+        m_easing.trigger();
     }
 
     [[nodiscard]]
@@ -126,21 +115,7 @@ namespace nx
         }
       }
 
-      // Compute time since last trigger
-      const float elapsed = m_clock.getElapsedTime().asSeconds();
-
-      // TODO: abstract this away
-      if ( !m_data.useQuadraticImpact )
-      {
-        // Linear decay
-        m_data.impactIntensity = std::max( 0.f, 1.0f - ( elapsed / m_data.impactTimeDecay ) );
-      }
-      else
-      {
-        // Quadratic decay
-        const float t = std::min(elapsed / m_data.impactTimeDecay, 1.0f);
-        m_data.impactIntensity = 1.0f * ( 1.0f - t * t ); // quadratic decay
-      }
+      const float easing = m_easing.getEasing();
 
       const sf::Sprite sprite( inputTexture.getTexture() );
 
@@ -151,7 +126,7 @@ namespace nx
       m_blurShader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
       m_blurShader.setUniform( "sigma", m_data.sigma );
       m_blurShader.setUniform( "brighten", m_data.brighten );
-      m_blurShader.setUniform( "intensity", m_data.impactIntensity );
+      m_blurShader.setUniform( "intensity", easing );
 
       m_intermediary.clear(sf::Color::Transparent);
       m_intermediary.draw(sprite, &m_blurShader);
@@ -164,7 +139,7 @@ namespace nx
       m_blurShader.setUniform("blurRadiusY", m_data.blurVertical);
       m_blurShader.setUniform( "sigma", m_data.sigma );
       m_blurShader.setUniform( "brighten", m_data.brighten );
-      m_blurShader.setUniform( "intensity", m_data.impactIntensity );
+      m_blurShader.setUniform( "intensity",easing );
 
       m_outputTexture.clear(sf::Color::Transparent);
       m_outputTexture.draw(sprite, &m_blurShader);
@@ -183,9 +158,8 @@ namespace nx
 
     BlurData_t m_data;
 
-    sf::Clock m_clock;
     MidiNoteControl m_midiNoteControl;
-    float m_lastTriggerTime { INT32_MIN };
+    TimeEasing m_easing;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform float blurRadiusX;
