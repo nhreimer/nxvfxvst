@@ -45,7 +45,8 @@ namespace nx
       { "threshold", m_data.threshold },
       { "glowIntensity", m_data.glowIntensity },
       { "pulseDecay", m_data.pulseDecay },
-      { "burstMultiplier", m_data.burstMultiplier }
+      { "burstMultiplier", m_data.burstMultiplier },
+         { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
 
@@ -56,6 +57,7 @@ namespace nx
       m_data.glowIntensity = j.value("glowIntensity", 1.2f);
       m_data.pulseDecay = j.value("pulseDecay", -5.f);
       m_data.burstMultiplier = j.value("burstMultiplier", 1.5f);
+      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
     E_ShaderType getType() const override { return E_PulseShader; }

@@ -6,6 +6,17 @@ namespace nx
   {
   public:
 
+    nlohmann::json serialize() const
+    {
+      nlohmann::json j = m_midiNotes;
+      return j;
+    }
+
+    void deserialize( const nlohmann::json & j )
+    {
+      m_midiNotes = j.get< std::vector< int16_t > >();
+    }
+
     void drawMenu()
     {
       ImGui::Text("Add MIDI Note:");
@@ -27,12 +38,12 @@ namespace nx
       }
 
       ImGui::Separator();
-      ImGui::Text("Stored Notes:");
+      ImGui::Text( "Stored Notes:" );
       for ( int i = 0; i < m_midiNotes.size(); ++i )
       {
         const int note = m_midiNotes[ i ];
         const int noteIndex = note % 12;
-        const int octave = (note / 12) - 1;
+        const int octave = ( note / 12 ) - 1;
 
         ImGui::Text("%s%d (%d)", m_kNoteNames[ noteIndex ], octave, note );
         ImGui::SameLine();

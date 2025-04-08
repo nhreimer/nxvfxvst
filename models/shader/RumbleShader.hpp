@@ -47,7 +47,8 @@ namespace nx
           { "useNoise", m_data.useNoise },
           { "modAmplitude", m_data.modAmplitude },
           { "modFrequency", m_data.modFrequency },
-          { "colorDesync", m_data.colorDesync }
+          { "colorDesync", m_data.colorDesync },
+          { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
     void deserialize( const nlohmann::json &j ) override
@@ -61,6 +62,7 @@ namespace nx
       m_data.modAmplitude = j.value("modAmplitude", 0.5f);
       m_data.modFrequency = j.value("modFrequency", 10.f);
       m_data.colorDesync = j.value("colorDesync", 1.0f);
+      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
     [[nodiscard]]

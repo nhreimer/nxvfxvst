@@ -56,7 +56,8 @@ namespace nx
         { "pixelJumpAmount", m_data.pixelJumpAmount },
         { "glitchPulseDecay", m_data.glitchPulseDecay },
         { "glitchPulseBoost", m_data.glitchPulseBoost },
-        { "bandCount", m_data.bandCount }
+        { "bandCount", m_data.bandCount },
+        { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
 
@@ -72,6 +73,7 @@ namespace nx
       m_data.glitchPulseDecay = j.value("glitchPulseDecay", -0.5f);
       m_data.glitchPulseBoost = j.value("glitchPulseBoost", 2.0f);
       m_data.bandCount = j.value("bandCount", 20.0f);
+      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
     E_ShaderType getType() const override { return E_GlitchShader; }

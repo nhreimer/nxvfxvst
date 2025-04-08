@@ -36,7 +36,8 @@ namespace nx
           { "type", SerialHelper::convertShaderTypeToString( getType() ) },
           { "isActive", m_data.isActive },
           { "flashAmount", m_data.flashAmount },
-          { "flashDecay", m_data.flashDecay }
+          { "flashDecay", m_data.flashDecay },
+          { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
 
@@ -45,6 +46,7 @@ namespace nx
       m_data.isActive = j.value("isActive", false);
       m_data.flashAmount = j.value("flashAmount", 0.1f);
       m_data.flashDecay = j.value("flashDecay", -15.f);
+      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
     E_ShaderType getType() const override { return E_StrobeShader; }

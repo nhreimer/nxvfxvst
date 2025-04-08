@@ -48,7 +48,8 @@ namespace nx
           { "amplitude", m_data.amplitude },
           { "frequency", m_data.frequency },
           { "speed", m_data.speed },
-          { "pulseDecay", m_data.pulseDecay }
+          { "pulseDecay", m_data.pulseDecay },
+             { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
 
@@ -61,6 +62,7 @@ namespace nx
       m_data.frequency = j.value("frequency", 10.0f);
       m_data.speed = j.value("speed", 0.f);
       m_data.pulseDecay = j.value("pulseDecay", -1.0f);
+      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
     E_ShaderType getType() const override { return E_RippleShader; }
