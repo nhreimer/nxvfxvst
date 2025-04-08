@@ -12,7 +12,9 @@ that react to midi events.
 * Midi Generator that pushes events on a different thread in order to 
 simulate VST's Processor thread. 
 * Ability to run in Standalone (for testing only) and VST3 Plugin
+* Multichannel support
 * Infinite shader chaining
+* Each shader can be assigned user-specified midi notes for triggers
 * JSON serialization for importing/exporting (via clipboard at the moment)
 * Real-time visual effects that synchronize to midi
   * Blur (Gaussian -- directional, strength, brighten, adjustable blur granularity)
@@ -44,8 +46,6 @@ The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 ### Feature Roadmap
 
 * Save and load to/from files instead of copy/paste
-* Multichannel support
-* Support for different triggers on user-specified midi notes
 * Add parameters for VST3 for automation
 * Add OS support for Linux and Mac
 * More VFX, more particles, more particle modifiers!
