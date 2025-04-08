@@ -38,7 +38,7 @@ namespace nx
       }
 
       ImGui::Separator();
-      ImGui::Text( "Stored Notes:" );
+      ImGui::Text( "Active Triggers:" );
       for ( int i = 0; i < m_midiNotes.size(); ++i )
       {
         const int note = m_midiNotes[ i ];

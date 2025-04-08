@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <shapes/MidiNoteControl.hpp>
 
 namespace nx
 {
@@ -14,6 +15,10 @@ namespace nx
     float brighten { 1.f };
     float blurHorizontal { 0.1f };
     float blurVertical { 0.1f };
+
+    // used for triggers
+    float impactIntensity { 0.f };  // [calculated for us]
+    float impactTimeDecay { 1.5f }; // in seconds
   };
 
   class BlurShader final : public IShader
@@ -46,7 +51,9 @@ namespace nx
           { "sigma", m_data.sigma },
           { "brighten", m_data.brighten },
           { "blurHorizontal", m_data.blurHorizontal },
-          { "blurVertical", m_data.blurVertical }
+          { "blurVertical", m_data.blurVertical },
+          { "impactTimeDecay", m_data.impactTimeDecay },
+          { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
 
@@ -57,6 +64,8 @@ namespace nx
       m_data.brighten = j.value("brighten", 1.f);
       m_data.blurHorizontal = j.value("blurHorizontal", 0.f);
       m_data.blurVertical = j.value("blurVertical", 0.f);
+      m_data.impactTimeDecay = j.value("impactTimeDecay", 0.5f);
+      m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
     }
 
     // identify type for easier loading
@@ -74,12 +83,27 @@ namespace nx
         ImGui::SliderFloat( "Horizontal##1", &m_data.blurHorizontal, 0.f, 5.f );
         ImGui::SliderFloat( "Vertical##1", &m_data.blurVertical, 0.f, 5.f );
 
+        ImGui::Separator();
+        ImGui::SliderFloat("Impact Decay##1", &m_data.impactTimeDecay, 0.f, 1.f);
+        ImGui::Text("Impact Intensity %0.2f##1", &m_data.impactIntensity);
+
+        ImGui::Separator();
+        m_midiNoteControl.drawMenu();
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
     }
 
-    void trigger( const Midi_t& midi ) override {}
+    void trigger( const Midi_t& midi ) override
+    {
+      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
+      {
+        // Set intensity to max and restart the clock
+        m_data.impactIntensity = 1.0f;
+        m_clock.restart();
+      }
+    }
 
     [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive && m_data.blurHorizontal + m_data.blurVertical > 0.f; }
@@ -97,6 +121,12 @@ namespace nx
         }
       }
 
+      // Compute time since last trigger
+      const float elapsed = m_clock.getElapsedTime().asSeconds();
+
+      // Decay intensity over time
+      m_data.impactIntensity = std::max( 0.f, 1.0f - ( elapsed / m_data.impactTimeDecay ) );
+
       const sf::Sprite sprite( inputTexture.getTexture() );
 
       // Apply horizontal blur
@@ -106,6 +136,7 @@ namespace nx
       m_blurShader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
       m_blurShader.setUniform( "sigma", m_data.sigma );
       m_blurShader.setUniform( "brighten", m_data.brighten );
+      m_blurShader.setUniform( "intensity", m_data.impactIntensity );
 
       m_intermediary.clear(sf::Color::Transparent);
       m_intermediary.draw(sprite, &m_blurShader);
@@ -118,6 +149,7 @@ namespace nx
       m_blurShader.setUniform("blurRadiusY", m_data.blurVertical);
       m_blurShader.setUniform( "sigma", m_data.sigma );
       m_blurShader.setUniform( "brighten", m_data.brighten );
+      m_blurShader.setUniform( "intensity", m_data.impactIntensity );
 
       m_outputTexture.clear(sf::Color::Transparent);
       m_outputTexture.draw(sprite, &m_blurShader);
@@ -136,35 +168,49 @@ namespace nx
 
     BlurData_t m_data;
 
+    sf::Clock m_clock;
+    MidiNoteControl m_midiNoteControl;
+    float m_lastTriggerTime { INT32_MIN };
+
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
-uniform float blurRadiusX; // Controls horizontal blur
-uniform float blurRadiusY; // Controls vertical blur
-uniform vec2 direction;    // (1,0) for horizontal, (0,1) for vertical
+uniform float blurRadiusX;
+uniform float blurRadiusY;
+uniform vec2 direction;
 uniform float sigma;
 uniform float brighten;
+uniform float intensity; // Amplifies both blur and brightness
+uniform float decay;
 
-// Gaussian function approximation for weights
+// Gaussian function
 float gaussian(float x, float sigma) {
-    return exp(-(x * x) / (2.0 * sigma * sigma)) / (2.50662827463 * sigma); // 1/sqrt(2πσ²)
+    return exp(-(x * x) / (2.0 * sigma * sigma)) / (2.50662827463 * sigma);
 }
 
 void main() {
     vec2 texSize = textureSize(texture, 0);
+
+    // Apply intensity to sigma (blur)
+    float amplifiedSigma = sigma * (1.0 + intensity);
     vec2 texOffset = direction * vec2(blurRadiusX / texSize.x, blurRadiusY / texSize.y);
 
-    //float sigma = 7.0;  // Standard deviation: Higher = smoother
-    vec4 color = texture2D(texture, gl_TexCoord[0].xy) * gaussian(0.0, sigma);
-    float totalWeight = gaussian(0.0, sigma);
+    // Center sample
+    vec4 color = texture2D(texture, gl_TexCoord[0].xy) * gaussian(0.0, amplifiedSigma);
+    float totalWeight = gaussian(0.0, amplifiedSigma);
 
-    // Use 10 samples on each side (21 total samples)
+    // Blur samples
     for (int i = 1; i <= 10; i++) {
-        float weight = gaussian(float(i), sigma);
-        color += texture2D(texture, gl_TexCoord[0].xy + texOffset * float(i)) * weight;
-        color += texture2D(texture, gl_TexCoord[0].xy - texOffset * float(i)) * weight;
-        totalWeight += 2.0 * weight;  // Account for both sides
+        float offset = float(i);
+        float weight = gaussian(offset, amplifiedSigma);
+
+        color += texture2D(texture, gl_TexCoord[0].xy + texOffset * offset) * weight;
+        color += texture2D(texture, gl_TexCoord[0].xy - texOffset * offset) * weight;
+        totalWeight += 2.0 * weight;
     }
 
-    gl_FragColor = ( color * brighten ) / totalWeight;  // Normalize to prevent brightening
+    // Apply brighten + intensity boost
+    float amplifiedBrighten = brighten + intensity;
+
+    gl_FragColor = ( color * amplifiedBrighten ) / totalWeight;
 })";
 
   };

@@ -82,6 +82,7 @@ namespace nx
         }
 
         // ImGui::SliderFloat( "Ripple Amplitude##1", &m_data.amplitude, 0.f, 0.05f );
+        ImGui::Text( "Ripple Amplitude %0.2f##1", m_data.amplitude );
         ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 10.f, 50.f );
         ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
         ImGui::SliderFloat( "Ripple Pulse Decay##1", &m_data.pulseDecay, -2.f, 0.f );
