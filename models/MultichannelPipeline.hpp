@@ -68,11 +68,20 @@ namespace nx
         ImGuiWindowFlags_AlwaysAutoResize );
 
       ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
-      ImGui::SliderInt( "##ChannelSelector",
-        &m_selectedChannel,
-        0,
-        static_cast< int32_t >( m_channels.size() ) - 1,
-        "Channel %d" );
+      ImGui::Text( "Window Size: %d, %d", m_globalInfo.windowSize.x, m_globalInfo.windowSize.y );
+
+      int32_t offsetChannel = m_selectedChannel + 1;
+
+      // we do this so that the channel is 1 and not 0. it's just a convenience thing
+      // but please note that the channel is 0-based index!
+      if ( ImGui::SliderInt( "##ChannelSelector",
+        &offsetChannel,
+        1,
+        static_cast< int32_t >( m_channels.size() ),
+        "Channel %d" ) )
+      {
+        m_selectedChannel = offsetChannel - 1;
+      }
 
       ImGui::Separator();
 

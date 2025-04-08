@@ -19,6 +19,8 @@ namespace nx
     // used for triggers
     float impactIntensity { 0.f };  // [calculated for us]
     float impactTimeDecay { 1.5f }; // in seconds
+
+    bool useQuadraticImpact { false }; // uses linear otherwise
   };
 
   class BlurShader final : public IShader
@@ -53,6 +55,7 @@ namespace nx
           { "blurHorizontal", m_data.blurHorizontal },
           { "blurVertical", m_data.blurVertical },
           { "impactTimeDecay", m_data.impactTimeDecay },
+          { "useQuadraticImpactCurve", m_data.useQuadraticImpact },
           { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
@@ -65,6 +68,7 @@ namespace nx
       m_data.blurHorizontal = j.value("blurHorizontal", 0.f);
       m_data.blurVertical = j.value("blurVertical", 0.f);
       m_data.impactTimeDecay = j.value("impactTimeDecay", 0.5f);
+      m_data.useQuadraticImpact = j.value("useQuadraticImpactCurve", false);
       m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
     }
 
@@ -79,13 +83,14 @@ namespace nx
       {
         ImGui::Checkbox( "Blur Active##1", &m_data.isActive );
         ImGui::SliderFloat( "Smoothing##1", &m_data.sigma, 0.f, 50.f );
-        ImGui::SliderFloat( "Brighten##1", &m_data.brighten, 1.f, 5.f );
+        ImGui::SliderFloat( "Brighten##1", &m_data.brighten, 0.0f, 5.f );
         ImGui::SliderFloat( "Horizontal##1", &m_data.blurHorizontal, 0.f, 5.f );
         ImGui::SliderFloat( "Vertical##1", &m_data.blurVertical, 0.f, 5.f );
 
         ImGui::Separator();
+        ImGui::Checkbox( "Use Quadratic Curve##1", &m_data.useQuadraticImpact );
         ImGui::SliderFloat("Impact Decay##1", &m_data.impactTimeDecay, 0.f, 1.f);
-        ImGui::Text("Impact Intensity %0.2f##1", &m_data.impactIntensity);
+        ImGui::Text("Impact Intensity %0.2f", &m_data.impactIntensity);
 
         ImGui::Separator();
         m_midiNoteControl.drawMenu();
@@ -124,8 +129,18 @@ namespace nx
       // Compute time since last trigger
       const float elapsed = m_clock.getElapsedTime().asSeconds();
 
-      // Decay intensity over time
-      m_data.impactIntensity = std::max( 0.f, 1.0f - ( elapsed / m_data.impactTimeDecay ) );
+      // TODO: abstract this away
+      if ( !m_data.useQuadraticImpact )
+      {
+        // Linear decay
+        m_data.impactIntensity = std::max( 0.f, 1.0f - ( elapsed / m_data.impactTimeDecay ) );
+      }
+      else
+      {
+        // Quadratic decay
+        const float t = std::min(elapsed / m_data.impactTimeDecay, 1.0f);
+        m_data.impactIntensity = 1.0f * ( 1.0f - t * t ); // quadratic decay
+      }
 
       const sf::Sprite sprite( inputTexture.getTexture() );
 

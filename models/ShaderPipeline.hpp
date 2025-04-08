@@ -200,7 +200,7 @@ namespace nx
         if ( ImGui::Button( "Pulse##1" ) )
           createShader< PulseShader >();
 
-        ImGui::SameLine();
+        //ImGui::SameLine();
         if ( ImGui::Button( "Ripple##1" ) )
           createShader< RippleShader >();
 

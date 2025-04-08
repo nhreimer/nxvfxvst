@@ -100,7 +100,7 @@ namespace nx
         ImGui::Separator();
         ImGui::SliderFloat( "Glitch Burst Boost##1", &m_data.glitchPulseBoost, 0.f, 5.0f );
         ImGui::SliderFloat( "Glitch Burst Decay##1", &m_data.glitchPulseDecay, -10.f, 0.f );
-        ImGui::Text( "Glitch Strength %0.2f##1", m_data.glitchStrength );
+        ImGui::Text( "Glitch Strength %0.2f", m_data.glitchStrength );
 
         ImGui::Separator();
         m_midiNoteControl.drawMenu();

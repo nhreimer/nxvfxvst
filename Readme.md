@@ -1,43 +1,46 @@
-# nxvfx (Nick's VFX)
+# nxvfx VST3
 
 ### Description
 
-A header-only VFX VST (and standalone playground) for Midi events. 
+A midi event VFX engine for VST3 that comes with a standalone test playground application. 
 
 This is a highly configurable and modular graphics plugin for implementing your own algorithms or shaders 
 that react to midi events.
 
 ### Features
 
-* Midi Generator that pushes events on a different thread in order to 
-simulate VST's Processor thread. 
-* Ability to run in Standalone (for testing only) and VST3 Plugin
+* Ability to run in Standalone and VST3 Plugin
+  * In Standalone (testing only, no audio)
+    * Midi Generator that pushes events on different threads in order to
+      simulate DAW Processor threads.
 * Multichannel support
-* Infinite shader chaining
-* Each shader can be assigned user-specified midi notes for triggers
+  * Route midi output to independent VFX chains
+  * Infinite shader chaining per channel
+* Each effect can be assigned user-specified midi notes for triggers
 * JSON serialization for importing/exporting (via clipboard at the moment)
-* Real-time visual effects that synchronize to midi
-  * Blur (Gaussian -- directional, strength, brighten, adjustable blur granularity)
-  * Glitch (chroma flicker, noise, scanlines, pixel jumps, band counts, strobe)
-  * Kaleidoscope (segments, rotation, centering)
-  * Ripple (position, decay, speed, frequency, amplitude)
-  * Rumble (noise, color desync, decay, direction, frequency, strength)
-  * Strobe (decay, strength)
-* Particle generator
-  * Random (entirely random)
-  * Spiral (spiral positions around the screen based on midi note)
-  * None (good for strobing without particles)
-* Particle connectors
-  * Sequential (connects one particle to the next particle)
-  * Mesh (connects one particle to all other particles)
-  * None (no lines)
+* Real-time VFX Engine that synchronize to midi events
+  * Effects
+    * Blur (Gaussian -- directional, strength, brighten, adjustable blur granularity)
+    * Glitch (chroma flicker, noise, scanlines, pixel jumps, band counts, strobe)
+    * Kaleidoscope (segments, rotation, centering)
+    * Ripple (position, decay, speed, frequency, amplitude)
+    * Rumble (noise, color desync, decay, direction, frequency, strength)
+    * Strobe (decay, strength)
+  * Particle generator
+    * Random (entirely random)
+    * Spiral (spiral positions around the screen based on midi note)
+    * None (good for strobing without particles)
+  * Particle connectors
+    * Sequential (connects one particle to the next particle)
+    * Mesh (connects one particle to all other particles)
+    * None (no lines)
 
 ### Dependencies
 
 * C++20
 * SFML v3 (graphics: small patch required)
 * ImGui (menus)
-* nlohmann json (serialization and state saving)
+* nlohmann json (serialization and state management)
 * spdlog (logging)
 * VST3 SDK
 
@@ -145,4 +148,9 @@ target_link_libraries( ${PROJECT_NAME}
 
 ## Contributing
 
-Contributions are welcome! 
+Contributions, ideas, and suggestions are welcome! 
+
+## Media
+
+### Reaper v7.28. nxvfxvst v1.0.1.0a. 1 channel, 2 effects
+![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWd1ZXEwMHl0NDJlczVmYnQ3YzAzY2w3bGU3dDE1M3QwZjloY3JiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJvrv2p5RFCdWlpItl/giphy.gif)
