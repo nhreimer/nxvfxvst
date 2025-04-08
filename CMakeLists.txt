@@ -20,6 +20,10 @@ else()
   message(STATUS "Path to VST3 SDK found")
 endif()
 
+# required for fmt and msvc to force utf-8
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 if ( BUILD_PLUGIN )
 
   message( STATUS "BUILDING VST3 PLUGIN" )
