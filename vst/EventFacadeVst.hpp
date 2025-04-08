@@ -33,12 +33,12 @@ namespace nx
 
     void saveState( nlohmann::json &j ) const
     {
-      //j = m_channelPipeline.saveChannelPipeline();
+      j = m_pipelines.saveState();
     }
 
     void restoreState( nlohmann::json &j )
     {
-      //m_channelPipeline.loadChannelPipeline( j );
+      m_pipelines.restoreState( j );
     }
 
     void processVstEvent( const Steinberg::Vst::Event & event )

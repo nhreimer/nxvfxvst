@@ -1,6 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <imgui.h>
-#include <imgui-SFML.h>
 
 #include "log/Logger.hpp"
 #include "app/EventFacadeApp.hpp"

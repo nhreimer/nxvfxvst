@@ -180,6 +180,11 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
     -DDEBUG
     -DBUILD_NUMBER="d${BUILD_NUMBER}"
   )
+
+  if ( BUILD_PLUGIN )
+    list( APPEND COMPILE_DEFS -DBUILD_PLUGIN )
+  endif()
+
   add_definitions( ${COMPILE_DEFS} )
 
 else()
@@ -194,6 +199,10 @@ else()
     -DSPDLOG_USE_STD_FORMAT
     -DBUILD_NUMBER="r${BUILD_NUMBER}"
   )
+
+  if ( BUILD_PLUGIN )
+    list( APPEND COMPILE_DEFS -DBUILD_PLUGIN )
+  endif()
 
   add_definitions( ${COMPILE_DEFS} )
 

@@ -5,10 +5,12 @@ namespace nx::test
 {
   class MidiGenerator
   {
+    static inline int m_seed { 1 };
+
   public:
 
     MidiGenerator( int16_t channel, int32_t maxDelay )
-      : m_rand( ::time( nullptr ) ),
+      : m_rand( ++m_seed ),
         m_channel( channel ),
         m_maxDelay( maxDelay )
     {}

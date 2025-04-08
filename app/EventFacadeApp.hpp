@@ -1,13 +1,17 @@
 #pragma once
 
+#include <imgui.h>
+#include <imgui-SFML.h>
+
 #include <concurrent_queue.h>
 #include <deque>
 #include <pluginterfaces/vst/ivstevents.h>
 
 #include "log/Logger.hpp"
 
+#include "models/data/Midi_t.hpp"
 #include "models/data/GlobalInfo_t.hpp"
-#include "models/ChannelPipeline.hpp"
+#include "models/MultichannelPipeline.hpp"
 
 #include "MidiGenerator.hpp"
 
@@ -18,6 +22,10 @@ namespace nx
   class EventFacadeApp final
   {
   public:
+
+    EventFacadeApp()
+      : m_pipelines( m_globalInfo )
+    {}
 
     void processVstEvent( const Steinberg::Vst::Event & event )
     {
@@ -42,15 +50,17 @@ namespace nx
       if ( !ImGui::SFML::Init( window ) )
         LOG_ERROR( "initializing imgui failed" );
 
-      m_windowInfo.windowSize = window.getSize();
-      m_windowInfo.windowView.setSize( { static_cast< float >(m_windowInfo.windowSize.x), ( float )m_windowInfo.windowSize.y } );
+      m_globalInfo.windowSize = window.getSize();
+      m_globalInfo.windowView.setSize( { static_cast< float >(m_globalInfo.windowSize.x), ( float )m_globalInfo.windowSize.y } );
     }
 
     void shutdown( const sf::RenderWindow & window )
     {
       LOG_INFO( "shutting down event receiver" );
       ImGui::SFML::Shutdown( window );
-      m_midiGen.stop();
+
+      for ( auto& midiGen : m_midiGen )
+        midiGen.stop();
     }
 
     // gets called whenever the OS indicates it's time to update
@@ -74,7 +84,7 @@ namespace nx
         else if ( const auto * mouseEvent = event->getIf< sf::Event::MouseButtonReleased >() )
         {
           if ( mouseEvent->button == sf::Mouse::Button::Right )
-            m_windowInfo.hideMenu = !m_windowInfo.hideMenu;
+            m_globalInfo.hideMenu = !m_globalInfo.hideMenu;
         }
       }
 
@@ -83,7 +93,7 @@ namespace nx
         const auto delta = m_timer.restart();
         ImGui::SFML::Update( window, delta );
         consumeMidiEvents();
-        m_channelPipeline.update( delta );
+        m_pipelines.update( delta );
       }
 
       // draw
@@ -91,9 +101,9 @@ namespace nx
         window.clear();
 
         // the problem seems to be part of this!
-        m_channelPipeline.draw( window );
+        m_pipelines.draw( window );
 
-        if ( !m_windowInfo.hideMenu )
+        if ( !m_globalInfo.hideMenu )
           drawMenu();
 
         ImGui::SFML::Render( window );
@@ -107,8 +117,8 @@ namespace nx
 
     void onResize( sf::RenderWindow & window, uint32_t width, uint32_t height )
     {
-      m_windowInfo.windowSize = { width, height };
-      m_windowInfo.windowView.setSize( { static_cast< float >(width),
+      m_globalInfo.windowSize = { width, height };
+      m_globalInfo.windowView.setSize( { static_cast< float >(width),
                                               static_cast< float >(height) } );
     }
 
@@ -120,22 +130,31 @@ namespace nx
       ImGui::Begin( "nxvfx", nullptr, ImGuiWindowFlags_AlwaysAutoResize );
       ImGui::Text( "FPS %0.2f", ImGui::GetIO().Framerate );
       // TODO: draw ONLY the active one
-      m_channelPipeline.drawMenu();
 
-      if ( m_midiGen.isRunning() )
+      if ( m_midiGenIsRunning )
       {
         if ( ImGui::Button( "Stop MIDI" ) )
-          m_midiGen.stop();
+        {
+          for ( auto& midiGen : m_midiGen )
+            midiGen.stop();
+
+          m_midiGenIsRunning = false;
+        }
       }
       else
       {
         if ( ImGui::Button( "Start MIDI" ) )
-          m_midiGen.run( m_onEvent );
+        {
+          for ( auto& midiGen : m_midiGen )
+            midiGen.run( m_onEvent );
+
+          m_midiGenIsRunning = true;
+        }
       }
 
-      ImGui::Separator();
-      ImGui::Text( "%s", BUILD_NUMBER );
       ImGui::End();
+
+      m_pipelines.drawMenu();
     }
 
     void consumeMidiEvents()
@@ -143,19 +162,25 @@ namespace nx
       // this occurs on the controller thread
       Midi_t midiEvent;
       while ( m_queue.try_pop( midiEvent ) )
-        m_channelPipeline.processMidiEvent( midiEvent );
+        m_pipelines.processMidiEvent( midiEvent );
     }
 
   private:
 
-    test::MidiGenerator m_midiGen { 1, 1000 };
+    bool m_midiGenIsRunning { false };
 
-    GlobalInfo_t m_windowInfo;
+    std::array< test::MidiGenerator, 4 > m_midiGen {
+      test::MidiGenerator { 0, 1000 },
+      test::MidiGenerator { 1, 1100 },
+      test::MidiGenerator { 2, 1200 },
+      test::MidiGenerator { 3, 1300 } };
+
+    GlobalInfo_t m_globalInfo;
 
     sf::Clock m_timer;
 
     // only one right now
-    ChannelPipeline m_channelPipeline { m_windowInfo };
+    MultichannelPipeline m_pipelines;
 
     // receives midi events on the processor thread
     // and processes them on the controller thread
