@@ -26,13 +26,16 @@ namespace nx
 
     ~ChannelPipeline() = default;
 
+    void toggleBypass() { m_isBypassed = !m_isBypassed; }
+    bool isBypassed() const { return m_isBypassed; }
+
     nlohmann::json saveChannelPipeline() const
     {
       nlohmann::json j =
-        {
-        { "particles", {} },
-        { "shaders", {} }
-        };
+      {
+      { "particles", {} },
+      { "shaders", {} }
+      };
 
       j[ "particles" ] = m_particlePipeline.saveParticlePipeline();
       j[ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
@@ -147,5 +150,7 @@ namespace nx
     ShaderPipeline m_shaderPipeline;
 
     TimedMessage m_messageClock;
+
+    bool m_isBypassed { false };
   };
 }

@@ -17,8 +17,6 @@
 
 #include "log/Logger.hpp"
 
-#include "vst/version.h"
-
 namespace nx
 {
 
@@ -141,18 +139,6 @@ namespace nx
     void drawMenu()
     {
       if ( m_globalInfo.hideMenu ) return;
-
-      ImGui::Begin(
-        FULL_PRODUCT_NAME,
-        nullptr,
-        ImGuiWindowFlags_AlwaysAutoResize );
-      {
-        if ( ImGui::Button( "Add Channel" ) )
-          m_pipelines.addChannel();
-      }
-      ImGui::Separator();
-      ImGui::Text( "%s", BUILD_NUMBER );
-      ImGui::End();
 
       m_pipelines.drawMenu();
     }
