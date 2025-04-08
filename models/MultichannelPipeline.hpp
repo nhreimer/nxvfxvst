@@ -13,6 +13,9 @@ namespace nx
   class MultichannelPipeline
   {
 
+    // TODO: This is hardcoded for now, but it should be adjustable by the user
+    static constexpr int MAX_CHANNELS = 4;
+
   public:
     explicit MultichannelPipeline( const GlobalInfo_t &globalInfo )
       : m_globalInfo( globalInfo )
@@ -64,6 +67,7 @@ namespace nx
         nullptr,
         ImGuiWindowFlags_AlwaysAutoResize );
 
+      ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
       ImGui::SliderInt( "##ChannelSelector",
         &m_selectedChannel,
         0,
@@ -82,8 +86,7 @@ namespace nx
   private:
     const GlobalInfo_t &m_globalInfo;
 
-    // TODO: more than 2 throws an error with ImGui somewhere
-    std::array< std::unique_ptr< ChannelPipeline >, 4 > m_channels;
+    std::array< std::unique_ptr< ChannelPipeline >, MAX_CHANNELS > m_channels;
 
     int m_selectedChannel = 0;
   };
