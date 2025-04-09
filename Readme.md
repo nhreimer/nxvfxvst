@@ -35,9 +35,7 @@ that react to midi events.
     * Mesh (connects one particle to all other particles)
     * None (no lines)
   * Easings (for time decays)
-    * linear
-    * quadratic
-    * 
+    * many! (for better or worse)
 
 ### Dependencies
 

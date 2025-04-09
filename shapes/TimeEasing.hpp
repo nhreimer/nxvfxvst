@@ -52,7 +52,7 @@ namespace nx
 
     void deserialize( const nlohmann::json& j )
     {
-      m_easingType = j.template get< E_TimeEasingType >();
+      m_easingType = j.get< E_TimeEasingType >();
 
       switch ( m_easingType )
       {
@@ -84,31 +84,22 @@ namespace nx
     [[nodiscard]]
     float getEasing() const
     {
+      const float decay = m_decayRate == 0.f ? 0.f : m_clock.getElapsedTime().asSeconds() / m_decayRate;
+
       switch ( m_easingType )
       {
         // use elapsed over decay by a multiplier
         case E_Impulse:
-          return m_easingFunction( m_clock.getElapsedTime().asSeconds() / m_decayRate * m_scale );
+          return m_easingFunction( decay * m_scale );
 
+        // TODO: fix bug in RippleShader that causes the shader to stop working entirely!
+        // TODO: as soon as intensity > 0.f
         case E_SparkleFlicker:
-          return m_easingFunction( m_clock.getElapsedTime().asSeconds() / m_decayRate ) * m_intensity;
-        // case E_PulseSine:
-        //   return m_easingFunction( m_clock.getElapsedTime().asSeconds() );
+          return m_easingFunction( decay ) * m_intensity;
 
-        // use elapsed over decay
-        // case E_Linear:
-        // case E_Quadratic:
-        // case E_Cubic:
-        // case E_Quartic:
-        // case E_Sine:
-        // case E_Expo:
-        // case E_Bounce:
-        // case E_Back:
-        // case E_SmoothPulseDecay:
-        // case E_PulsePing:
         default:
          return m_easingFunction( std::clamp(
-           m_clock.getElapsedTime().asSeconds() / m_decayRate,
+           decay,
            0.f,
            1.f ) );
       }
@@ -118,7 +109,7 @@ namespace nx
     {
       ImGui::PushID( this );
 
-      ImGui::SliderFloat( "##DecayRate", &m_decayRate, 0.f, 1.5f, "Decay Rate %0.2f seconds" );
+      ImGui::SliderFloat( "##DecayRate", &m_decayRate, 0.0f, 1.5f, "Decay Rate %0.2f seconds" );
       if ( m_easingType == E_SparkleFlicker )
         ImGui::SliderFloat( "##Sparkle Intensity", &m_intensity, 0.f, 3.f, "Intensity %0.2f" );
       else if ( m_easingType == E_Impulse )

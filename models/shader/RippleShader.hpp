@@ -12,10 +12,9 @@ namespace nx
     float rippleCenterX { 0.5f };
     float rippleCenterY { 0.5f };
 
-    float amplitude { 0.05f };
+    float amplitude { 0.05f };    // calculated for us
     float frequency { 10.0f };
     float speed { 0.f };
-    float pulseDecay { -1.0f };
   };
 
   class RippleShader final : public IShader
@@ -45,10 +44,9 @@ namespace nx
           { "isActive", m_data.isActive },
           { "rippleCenterX", m_data.rippleCenterX },
           { "rippleCenterY", m_data.rippleCenterY },
-          { "amplitude", m_data.amplitude },
+          // { "amplitude", m_data.amplitude },
           { "frequency", m_data.frequency },
           { "speed", m_data.speed },
-          { "pulseDecay", m_data.pulseDecay },
              { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
@@ -58,10 +56,9 @@ namespace nx
       m_data.isActive = j.value("isActive", false);
       m_data.rippleCenterX = j.value("rippleCenterX", 0.5f);
       m_data.rippleCenterY = j.value("rippleCenterY", 0.5f);
-      m_data.amplitude = j.value("amplitude", 0.05f);
+      // m_data.amplitude = j.value("amplitude", 0.05f);
       m_data.frequency = j.value("frequency", 10.0f);
       m_data.speed = j.value("speed", 0.f);
-      m_data.pulseDecay = j.value("pulseDecay", -1.0f);
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
@@ -73,19 +70,31 @@ namespace nx
       {
         ImGui::Checkbox( "Ripple Active##1", &m_data.isActive );
 
-        if ( ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, -1.f, 1.f ) ||
-             ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, -1.f, 1.f ) )
+        if ( ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, 0.f, 1.f ) ||
+             ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, 0.f, 1.f ) )
         {
-          const sf::Vector2f calibrated { ( m_data.rippleCenterX + 1.f ) / 2.f * m_globalInfo.windowSize.x,
-                                          ( m_data.rippleCenterY + 1.f ) / 2.f * m_globalInfo.windowSize.y };
+          const sf::Vector2f calibrated { m_data.rippleCenterX * m_globalInfo.windowSize.x,
+                                          m_data.rippleCenterY * m_globalInfo.windowSize.y };
           m_timedCursor.setPosition( calibrated );
         }
 
-        // ImGui::SliderFloat( "Ripple Amplitude##1", &m_data.amplitude, 0.f, 0.05f );
-        ImGui::Text( "Ripple Amplitude %0.2f##1", m_data.amplitude );
         ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 10.f, 50.f );
         ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
-        ImGui::SliderFloat( "Ripple Pulse Decay##1", &m_data.pulseDecay, -2.f, 0.f );
+
+        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 8.f );
+        // ImGui::SameLine();
+        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 4.f );
+        // ImGui::SameLine();
+        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 2.f );
+        // ImGui::SameLine();
+        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm / 2.f );
+        // ImGui::SameLine();
+        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm / 4.f );
+        // ImGui::SameLine();
+        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm / 8.f );
+
+        ImGui::Separator();
+        m_easing.drawMenu();
 
         ImGui::Separator();
         m_midiNoteControl.drawMenu();
@@ -103,7 +112,7 @@ namespace nx
     void trigger( const Midi_t& midi ) override
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-        m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+        m_easing.trigger();
     }
 
     [[nodiscard]]
@@ -120,21 +129,15 @@ namespace nx
         }
       }
 
-      const float time = m_clock.getElapsedTime().asSeconds();
-      const float timeSinceTrigger = time - m_lastTriggerTime;
-
-      // Pulse decay: fast pulse that fades over ~1 second
-      float pulse = exp( m_data.pulseDecay * timeSinceTrigger );  // decays quickly
-      pulse = std::clamp( pulse, 0.0f, 1.0f ); // just in case
-
       constexpr float baseAmplitude = 0.005f;
       constexpr float maxPulseAmplitude = 0.03f;
 
-      m_data.amplitude = baseAmplitude + pulse * maxPulseAmplitude;
+      const float eased = m_easing.getEasing();
+      m_data.amplitude = baseAmplitude + eased * maxPulseAmplitude;
 
       m_shader.setUniform( "texture", inputTexture.getTexture() );
       m_shader.setUniform( "resolution", sf::Vector2f( inputTexture.getSize() ) );
-      m_shader.setUniform( "time", time );
+      m_shader.setUniform( "time", m_clock.getElapsedTime().asSeconds() );
 
       m_shader.setUniform( "rippleCenter", sf::Vector2f( m_data.rippleCenterX, m_data.rippleCenterY) );
       m_shader.setUniform( "amplitude", m_data.amplitude );     // 0.0f – 0.05f
@@ -152,35 +155,35 @@ namespace nx
     const GlobalInfo_t& m_globalInfo;
     RippleData_t m_data;
 
-    float m_lastTriggerTime { INT32_MIN };
-
     sf::Clock m_clock;
+
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
     TimedCursorPosition m_timedCursor;
     MidiNoteControl m_midiNoteControl;
+    TimeEasing m_easing;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;
 uniform float time;
 
 uniform vec2 rippleCenter;
-uniform float amplitude;
+uniform float amplitude;   // base amplitude
 uniform float frequency;
 uniform float speed;
+
+uniform float intensity;   // added: easing-controlled value [0..1]
 
 void main() {
     vec2 uv = gl_FragCoord.xy / resolution;
 
-    // Offset from ripple center (in UV space)
     vec2 delta = uv - rippleCenter;
     float dist = length(delta);
 
-    // Ripple offset
-    float ripple = sin(dist * frequency - time * speed) * amplitude;
+    // Ripple effect, scaled by intensity
+    float ripple = sin(dist * frequency - time * speed) * amplitude;// * intensity;
 
-    // Normalize direction
     vec2 dir = normalize(delta);
     uv += dir * ripple;
 
