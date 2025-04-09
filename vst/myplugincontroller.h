@@ -56,6 +56,8 @@ private:
   bool m_hasState { false };
   bool m_isViewActive { false };
 
+  double m_lastBPM { 0.f };
+
   // used between closing and opening the window
   nlohmann::json m_state;
 };

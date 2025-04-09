@@ -57,7 +57,11 @@ protected:
 private:
 
   void sendMidiNoteEventMessage( const Steinberg::Vst::Event& event ) const;
+  void sendBPMMessage() const;
 
+private:
+
+  double m_lastBPM { 0.f };
 };
 
 //------------------------------------------------------------------------

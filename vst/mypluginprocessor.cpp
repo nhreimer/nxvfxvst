@@ -66,6 +66,12 @@ tresult PLUGIN_API nxvfxvstProcessor::setActive (TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
 {
+  if ( data.processContext != nullptr )
+  {
+    m_lastBPM = data.processContext->tempo;
+    sendBPMMessage();
+  }
+
   if ( data.inputEvents != nullptr )
   {
     for ( Steinberg::int32 i = 0; i < data.inputEvents->getEventCount(); ++i )
@@ -144,6 +150,21 @@ void nxvfxvstProcessor::sendMidiNoteEventMessage( const Vst::Event &event ) cons
 
   ptrMsg->release();
 }
+//------------------------------------------------------------------------
+
+void nxvfxvstProcessor::sendBPMMessage() const
+{
+  auto * ptrMsg = allocateMessage();
+  if ( ptrMsg == nullptr ) return;
+
+  ptrMsg->setMessageID( "bpm" );
+
+  if ( ptrMsg->getAttributes()->setFloat( "bpm", m_lastBPM ) == kResultOk )
+    this->sendMessage( ptrMsg );
+
+  ptrMsg->release();
+}
+
 
 //------------------------------------------------------------------------
 } // namespace nx

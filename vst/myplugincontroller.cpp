@@ -40,6 +40,17 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
       LOG_WARN( "received empty message" );
     }
   }
+  else if ( Steinberg::FIDStringsEqual( message->getMessageID(), "bpm" ) )
+  {
+    if ( message->getAttributes()->getFloat( "bpm", m_lastBPM ) == kResultOk )
+    {
+      m_ptrView->notifyBPMChange( m_lastBPM );
+    }
+    else
+    {
+      LOG_ERROR( "BPM notification failed" );
+    }
+  }
 
   return result;
 

@@ -9,6 +9,7 @@ namespace nx
   {
     bool isActive { true };
     float pulseSpeed { 20.f };
+    sf::Color targetColor { sf::Color::White };
   };
 
   class StrobeShader final : public IShader
@@ -54,7 +55,6 @@ namespace nx
       if ( ImGui::TreeNode( "Strobe" ) )
       {
         ImGui::Checkbox( "Strobe Active##1", &m_data.isActive );
-        ImGui::SliderFloat( "##Pulse Speed", &m_data.pulseSpeed, 0.f, 50.f, "Speed %0.2f" );
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -93,10 +93,11 @@ namespace nx
 
       m_shader.setUniform( "texture", inputTexture.getTexture() );
       m_shader.setUniform( "intensity", intensity );
-      m_shader.setUniform( "pulseSpeed", m_data.pulseSpeed );
+      //m_shader.setUniform( "pulseSpeed", m_data.pulseSpeed );
+      // m_shader.setUniform( "time", m_clock.getElapsedTime().asSeconds() / m_easing.getDecayRate() );
 
       // const auto targetColor = sf::Glsl::Vec3( m_data.flashColor.r, m_data.flashColor.g, m_data.flashColor.b );
-      // m_shader.setUniform( "flashColor", targetColor );
+      // m_shader.setUniform( "flashColor", sf::Glsl::Vec4( m_data.targetColor ) );
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -114,11 +115,12 @@ namespace nx
 
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
+    sf::Clock m_clock;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
-uniform float intensity;    // From CPU, decays or pulses
-uniform float time;         // Total global time (in seconds)
-uniform float pulseSpeed;
+uniform float intensity;    // decays or pulses
+//uniform float time;         //
+//uniform float pulseSpeed;
 //uniform vec3 flashColor; // The target color for strobing/fade
 
 void main() {
@@ -128,11 +130,12 @@ void main() {
     float flash = intensity;
 
     // Rhythmic pulsing like a heartbeat (triggered + decaying pulse)
-    //flash *= sin(time * pulseSpeed) * exp(-4.0 * intensity); // change 20.0 for pulse speed
+    //flash *= sin(time * pulseSpeed) * intensity; //exp(-4.0 * intensity); // change 20.0 for pulse speed
 
     base.rgb = mix(base.rgb, vec3(1.0), flash); // fade-to-white instead of just adding
     //base.rgb += flash;
-    //base.rgb = mix(base.rgb, flashColor, flashAmount);
+    //base.rgb = mix(base.rgb, flashColor.rgb, flash);
+
     gl_FragColor = base;
 })";
   };

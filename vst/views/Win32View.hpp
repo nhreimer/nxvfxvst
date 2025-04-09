@@ -177,7 +177,15 @@ namespace priv
   ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override
   {
+    // NOTE: don't do anything CPU intensive here
     m_eventFacade.processVstEvent( event );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  void notifyBPMChange( const double bpm ) override
+  {
+    // NOTE: don't do anything CPU intensive here
+    m_eventFacade.processBPMChange( bpm );
   }
 
   ////////////////////////////////////////////////////////////////////////////////

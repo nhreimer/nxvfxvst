@@ -74,6 +74,8 @@ namespace nx
       }
     }
 
+    float getDecayRate() const { return m_decayRate; }
+
     void trigger()
     {
       m_clock.restart();

@@ -51,11 +51,19 @@ namespace nx
       if ( event.type != Steinberg::Vst::Event::kNoteOnEvent ) return;
 
       // push to a non-blocking queue
+      // until the next frame gets executed by the controller thread
       m_queue.push( {
         .channel = event.noteOn.channel,
         .pitch = event.noteOn.pitch,
         .velocity = event.noteOn.velocity
       } );
+    }
+
+    void processBPMChange( const double bpm )
+    {
+      // WARNING:
+      // comes in on the processor thread and not on the controller thread!
+      m_globalInfo.bpm = bpm;
     }
 
     void initialize( sf::RenderWindow & window )

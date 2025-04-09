@@ -69,6 +69,7 @@ namespace nx
 
       ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
       ImGui::Text( "Window Size: %d, %d", m_globalInfo.windowSize.x, m_globalInfo.windowSize.y );
+      ImGui::Text( "BPM: %0.2f", m_globalInfo.bpm );
 
       int32_t offsetChannel = m_selectedChannel + 1;
 
