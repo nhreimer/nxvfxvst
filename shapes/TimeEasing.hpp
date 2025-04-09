@@ -76,7 +76,7 @@ namespace nx
 
     void trigger()
     {
-      m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+      m_clock.restart();
     }
 
     [[nodiscard]]
@@ -116,7 +116,7 @@ namespace nx
     {
       ImGui::PushID( this );
 
-      ImGui::SliderFloat( "##DecayRate", &m_decayRate, 0.f, 5.f, "Decay Rate %0.2f seconds" );
+      ImGui::SliderFloat( "##DecayRate", &m_decayRate, 0.f, 1.5f, "Decay Rate %0.2f seconds" );
       if ( m_easingType == E_SparkleFlicker )
         ImGui::SliderFloat( "##Sparkle Intensity", &m_intensity, 0.f, 3.f, "Intensity %0.2f" );
       else if ( m_easingType == E_Impulse )
@@ -265,8 +265,7 @@ namespace nx
     }
 
   private:
-    float m_lastTriggerTime { INT32_MIN };
-    float m_decayRate { 0.f };
+    float m_decayRate { 1.f };
     float m_intensity { 0.f }; // used for certain ones
     float m_scale { 3.f }; // used for certain ones
 

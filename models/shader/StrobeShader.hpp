@@ -4,11 +4,11 @@
 namespace nx
 {
 
+  // TODO: SERIALIZE ALL PARTS OF THIS!
   struct StrobeData_t
   {
     bool isActive { true };
-    float flashAmount { 0.1f };   // 0.0 = no flash, 1.0 = full white
-    float flashDecay { -15.f };
+    float pulseSpeed { 20.f };
   };
 
   class StrobeShader final : public IShader
@@ -35,18 +35,16 @@ namespace nx
       {
           { "type", SerialHelper::convertShaderTypeToString( getType() ) },
           { "isActive", m_data.isActive },
-          { "flashAmount", m_data.flashAmount },
-          { "flashDecay", m_data.flashDecay },
-          { "midiTriggers", m_midiNoteControl.serialize() }
+          { "midiTriggers", m_midiNoteControl.serialize() },
+            { "easing", m_easing.serialize() }
       };
     }
 
     void deserialize(const nlohmann::json& j) override
     {
       m_data.isActive = j.value("isActive", false);
-      m_data.flashAmount = j.value("flashAmount", 0.1f);
-      m_data.flashDecay = j.value("flashDecay", -15.f);
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      m_easing.deserialize( j.at( "easing" ) );
     }
 
     E_ShaderType getType() const override { return E_StrobeShader; }
@@ -56,9 +54,10 @@ namespace nx
       if ( ImGui::TreeNode( "Strobe" ) )
       {
         ImGui::Checkbox( "Strobe Active##1", &m_data.isActive );
+        ImGui::SliderFloat( "##Pulse Speed", &m_data.pulseSpeed, 0.f, 50.f, "Speed %0.2f" );
 
-        ImGui::SliderFloat( "Flash Amount##1", &m_data.flashAmount, 0.f, 1.f );
-        ImGui::SliderFloat( "Flash Decay##1", &m_data.flashDecay, -20.f, 0.f );
+        ImGui::Separator();
+        m_easing.drawMenu();
 
         ImGui::Separator();
         m_midiNoteControl.drawMenu();
@@ -73,11 +72,11 @@ namespace nx
     void trigger( const Midi_t &midi ) override
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-        m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+        m_easing.trigger();
     }
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive && m_data.flashAmount > 0.f; };
+    bool isShaderActive() const override { return m_data.isActive; }
 
     [[nodiscard]]
     sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override
@@ -90,12 +89,14 @@ namespace nx
         }
       }
 
-      const float time = m_clock.getElapsedTime().asSeconds();
-      float pulse = exp( m_data.flashDecay * ( time - m_lastTriggerTime ) );
-      pulse = std::clamp( pulse, 0.0f, 1.0f );
+      const float intensity = m_easing.getEasing();
 
       m_shader.setUniform( "texture", inputTexture.getTexture() );
-      m_shader.setUniform( "flashAmount", pulse );
+      m_shader.setUniform( "intensity", intensity );
+      m_shader.setUniform( "pulseSpeed", m_data.pulseSpeed );
+
+      // const auto targetColor = sf::Glsl::Vec3( m_data.flashColor.r, m_data.flashColor.g, m_data.flashColor.b );
+      // m_shader.setUniform( "flashColor", targetColor );
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -108,20 +109,30 @@ namespace nx
     const GlobalInfo_t& m_globalInfo;
     StrobeData_t m_data;
 
-    float m_lastTriggerTime { INT32_MIN };
-
-    sf::Clock m_clock;
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
     MidiNoteControl m_midiNoteControl;
+    TimeEasing m_easing;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
-uniform float flashAmount; // 0.0 = no flash, 1.0 = full white
+uniform float intensity;    // From CPU, decays or pulses
+uniform float time;         // Total global time (in seconds)
+uniform float pulseSpeed;
+//uniform vec3 flashColor; // The target color for strobing/fade
 
 void main() {
-    vec4 base = texture2D(texture, gl_FragCoord.xy / vec2(textureSize(texture, 0)));
-    base.rgb += flashAmount;
+    vec2 uv = gl_FragCoord.xy / vec2(textureSize(texture, 0));
+    vec4 base = texture2D(texture, uv);
+
+    float flash = intensity;
+
+    // Rhythmic pulsing like a heartbeat (triggered + decaying pulse)
+    //flash *= sin(time * pulseSpeed) * exp(-4.0 * intensity); // change 20.0 for pulse speed
+
+    base.rgb = mix(base.rgb, vec3(1.0), flash); // fade-to-white instead of just adding
+    //base.rgb += flash;
+    //base.rgb = mix(base.rgb, flashColor, flashAmount);
     gl_FragColor = base;
 })";
   };
