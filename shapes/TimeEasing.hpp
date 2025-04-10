@@ -4,77 +4,51 @@
 
 namespace nx
 {
+
+  enum E_TimeEasingType : int8_t
+  {
+    E_Linear,
+    E_Quadratic,
+    E_Cubic,
+    E_Quartic,
+    E_Sine,
+    E_Expo,
+    E_Bounce,
+    E_Back,
+
+    E_SmoothPulseDecay,
+    E_Impulse,
+    E_SparkleFlicker,
+    E_PulsePing,
+    E_PulseSine
+  };
+
+  struct TimeEasingData_t
+  {
+    float decayRate { 1.f };
+    float intensity { 0.f }; // used for certain ones
+
+    E_TimeEasingType easingType { E_Linear };
+  };
+
   class TimeEasing
   {
-
-    enum E_TimeEasingType : int8_t
-    {
-      E_Linear,
-      E_Quadratic,
-      E_Cubic,
-      E_Quartic,
-      E_Sine,
-      E_Expo,
-      E_Bounce,
-      E_Back,
-
-      E_SmoothPulseDecay,
-      E_Impulse,
-      E_SparkleFlicker,
-      E_PulsePing,
-      E_PulseSine
-    };
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
-    {
-      { E_Linear, "Linear" },
-      { E_Quadratic, "Quadratic" },
-      { E_Cubic, "Cubic" },
-      { E_Quartic, "Quartic" },
-      { E_Sine, "Sine" },
-      { E_Expo, "Expo" },
-      { E_Bounce, "Bounce" },
-      { E_Back, "Back" },
-      { E_SmoothPulseDecay, "SmoothPulse" },
-      { E_Impulse, "Impulse" },
-      { E_SparkleFlicker, "SparkleFlicker" },
-      { E_PulsePing, "PulsePing" },
-      { E_PulseSine, "PulseSine" }
-    })
 
   public:
 
     nlohmann::json serialize() const
     {
-      nlohmann::json json = m_easingType;
+      nlohmann::json json = m_data.easingType;
       return json;
     }
 
     void deserialize( const nlohmann::json& j )
     {
-      m_easingType = j.get< E_TimeEasingType >();
-
-      switch ( m_easingType )
-      {
-        case E_Quadratic: m_easingFunction = easeOutQuad; break;
-        case E_Cubic: m_easingFunction = easeOutCubic; break;
-        case E_Quartic: m_easingFunction = easeOutQuart; break;
-        case E_Sine: m_easingFunction = easeOutSine; break;
-        case E_Expo: m_easingFunction = easeOutExpo; break;
-        case E_Bounce: m_easingFunction = easeOutBounce; break;
-        case E_Back: m_easingFunction = easeOutBack; break;
-        case E_PulsePing: m_easingFunction = pulsePing; break;
-        case E_PulseSine: m_easingFunction = pulseSine; break;
-        case E_Impulse: m_easingFunction = impulse; break;
-        case E_SparkleFlicker: m_easingFunction = sparkleFlicker; break;
-        case E_SmoothPulseDecay: m_easingFunction = smoothDecayPulse; break;
-
-        // always default to linear
-        default: m_easingFunction = easeOutLinear; break;
-      }
+      m_data.easingType = j.get< E_TimeEasingType >();
+      setEasingFunction( m_data.easingType );
     }
 
-    float getDecayRate() const { return m_decayRate; }
+    float getDecayRate() const { return m_data.decayRate; }
 
     void trigger()
     {
@@ -83,22 +57,28 @@ namespace nx
 
     float getElapsedTime() const { return m_clock.getElapsedTime().asSeconds(); }
 
+    TimeEasingData_t& getData() { return m_data; }
+    void setData( const TimeEasingData_t& data )
+    {
+      m_data = data;
+      setEasingFunction( m_data.easingType );
+    }
+
     [[nodiscard]]
     float getEasing() const
     {
-      const float decay = m_decayRate == 0.f ? 0.f : m_clock.getElapsedTime().asSeconds() / m_decayRate;
+      const float decay = m_data.decayRate == 0.f ? 0.f : m_clock.getElapsedTime().asSeconds() / m_data.decayRate;
 
-      switch ( m_easingType )
+      switch ( m_data.easingType )
       {
         // use elapsed over decay by a multiplier
         case E_Impulse:
-          return m_easingFunction( decay * m_scale );
+          return m_easingFunction( decay * m_data.intensity );
 
         // TODO: fix bug in RippleShader that causes the shader to stop working entirely!
         // TODO: as soon as intensity > 0.f
-        // TODO: same happens with Glitch
         case E_SparkleFlicker:
-          return m_easingFunction( decay ) * m_intensity;
+          return m_easingFunction( decay ) * m_data.intensity;
 
         default:
          return m_easingFunction( std::clamp(
@@ -112,11 +92,11 @@ namespace nx
     {
       ImGui::PushID( this );
 
-      ImGui::SliderFloat( "##DecayRate", &m_decayRate, 0.0f, 1.5f, "Decay Rate %0.2f seconds" );
-      if ( m_easingType == E_SparkleFlicker )
-        ImGui::SliderFloat( "##Sparkle Intensity", &m_intensity, 0.f, 3.f, "Intensity %0.2f" );
-      else if ( m_easingType == E_Impulse )
-        ImGui::SliderFloat( "##Impulse Scale", &m_scale, 0.f, 10.f, "Scale %0.2f" );
+      ImGui::SliderFloat( "##DecayRate", &m_data.decayRate, 0.0f, 1.5f, "Decay Rate %0.2f seconds" );
+      if ( m_data.easingType == E_SparkleFlicker )
+        ImGui::SliderFloat( "##Sparkle Intensity", &m_data.intensity, 0.f, 3.f, "Intensity %0.2f" );
+      else if ( m_data.easingType == E_Impulse )
+        ImGui::SliderFloat( "##Impulse Scale", &m_data.intensity, 0.f, 10.f, "Scale %0.2f" );
 
       ImGui::Text( "Time Easing Functions:" );
 
@@ -147,15 +127,36 @@ namespace nx
     {
       if ( useSameLine ) ImGui::SameLine();
 
-      if ( ImGui::RadioButton( label.c_str(), easingType == m_easingType ) )
+      if ( ImGui::RadioButton( label.c_str(), easingType == m_data.easingType ) )
       {
-        m_easingType = easingType;
+        m_data.easingType = easingType;
         m_easingFunction = easeOutLinear;
 
         return true;
       }
 
       return false;
+    }
+
+    void setEasingFunction( const E_TimeEasingType easingType )
+    {
+      switch ( easingType )
+      {
+        case E_Quadratic: m_easingFunction = easeOutQuad; break;
+        case E_Cubic: m_easingFunction = easeOutCubic; break;
+        case E_Quartic: m_easingFunction = easeOutQuart; break;
+        case E_Sine: m_easingFunction = easeOutSine; break;
+        case E_Expo: m_easingFunction = easeOutExpo; break;
+        case E_Bounce: m_easingFunction = easeOutBounce; break;
+        case E_Back: m_easingFunction = easeOutBack; break;
+        case E_PulsePing: m_easingFunction = pulsePing; break;
+        case E_PulseSine: m_easingFunction = pulseSine; break;
+        case E_Impulse: m_easingFunction = impulse; break;
+        case E_SparkleFlicker: m_easingFunction = sparkleFlicker; break;
+        case E_SmoothPulseDecay: m_easingFunction = smoothDecayPulse; break;
+        default:
+          m_easingFunction = easeOutLinear; break;
+      }
     }
 
     static float easeOutLinear( const float t )
@@ -261,14 +262,29 @@ namespace nx
     }
 
   private:
-    float m_decayRate { 1.f };
-    float m_intensity { 0.f }; // used for certain ones
-    float m_scale { 3.f }; // used for certain ones
+
+    TimeEasingData_t m_data;
 
     sf::Clock m_clock;
 
-    E_TimeEasingType m_easingType { E_Linear };
     std::function< float( float t ) > m_easingFunction { easeOutLinear };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
+    {
+      { E_Linear, "Linear" },
+      { E_Quadratic, "Quadratic" },
+      { E_Cubic, "Cubic" },
+      { E_Quartic, "Quartic" },
+      { E_Sine, "Sine" },
+      { E_Expo, "Expo" },
+      { E_Bounce, "Bounce" },
+      { E_Back, "Back" },
+      { E_SmoothPulseDecay, "SmoothPulse" },
+      { E_Impulse, "Impulse" },
+      { E_SparkleFlicker, "SparkleFlicker" },
+      { E_PulsePing, "PulsePing" },
+      { E_PulseSine, "PulseSine" }
+    })
 
   };
 }

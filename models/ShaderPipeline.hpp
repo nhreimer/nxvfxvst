@@ -2,11 +2,12 @@
 
 #include "models/shader/BlurShader.hpp"
 #include "models/shader/KaleidoscopeShader.hpp"
-#include "models/shader/GlitchShader.hpp"
+// #include "models/shader/GlitchShader.hpp"
 #include "models/shader/RippleShader.hpp"
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/PulseShader.hpp"
 #include "models/shader/RumbleShader.hpp"
+#include "models/shader/LayeredGlitchShader.hpp"
 
 namespace nx
 {
@@ -127,7 +128,8 @@ namespace nx
       switch ( shaderType )
       {
         case E_ShaderType::E_GlitchShader:
-          shader = addShader< GlitchShader >( j );
+          //shader = addShader< GlitchShader >( j );
+            shader = addShader< LayeredGlitchShader >( j );
           break;
 
         case E_ShaderType::E_PulseShader:
@@ -190,7 +192,8 @@ namespace nx
 
         ImGui::SameLine();
         if ( ImGui::Button( "Glitch##1" ) )
-          createShader< GlitchShader >();
+          createShader< LayeredGlitchShader >();
+          //createShader< GlitchShader >();
 
         ImGui::SameLine();
         if ( ImGui::Button( "Kaleido##1" ) )

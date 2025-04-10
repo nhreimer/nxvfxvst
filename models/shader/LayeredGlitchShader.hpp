@@ -5,14 +5,55 @@
 namespace nx
 {
 
-  struct GlitchData_t
+  class GlitchBurstManager
+  {
+  public:
+    void triggerNewBurst()
+    {
+      auto& burst = m_bursts.emplace_back();
+      burst.setData( m_data );
+      burst.trigger();
+    }
+
+    void setEasings( const TimeEasingData_t& data )
+    {
+      m_data = data;
+      // affects all easings afterwards
+    }
+
+    void update( float /*dt*/ )
+    {
+      std::erase_if( m_bursts,
+      []( const TimeEasing& burst )
+      {
+        return burst.getEasing() <= 0.001f;
+      });
+    }
+
+    float getCumulativeEasing() const
+    {
+      float total = 0.f;
+      for ( const auto& b : m_bursts )
+        total += b.getEasing();
+
+      // prevent nuclear meltdown
+      return std::clamp( total, 0.f, 1.5f );
+    }
+
+  private:
+
+    TimeEasingData_t m_data;
+    std::vector< TimeEasing > m_bursts;
+  };
+
+  struct LayeredGlitchData_t
   {
     bool isActive { true };
 
     float glitchBaseStrength { 0.1f };   // this is adjustable
     float glitchStrength { 1.f };       // [CALCULATED] How intense glitches are (0.0 to 1.0+)
     float glitchAmount { 0.1f };        // How frequent glitches are (0.0 to 1.0)
-    float scanlineIntensity { 0.02f };  // Scanline brightness
+    // float scanlineIntensity { 0.02f };  // Scanline brightness
     float chromaFlickerAmount { 0.4f };  // 0.0 = off, 1.0 = frequent flickers
     // float strobeAmount { 0.0f };         // 0.0 = no strobe, 1.0 = frequent
     float pixelJumpAmount { 0.1f };      // 0.0 = off, 1.0 = chaos
@@ -23,12 +64,11 @@ namespace nx
     float bandCount { 20.f };            // smaller value = bigger chunks
   };
 
-  // deprecated: use the LayeredGlitchShader because it uses layered easings and is smoother
-  class GlitchShader final : public IShader
+  class LayeredGlitchShader final : public IShader
   {
 
   public:
-    explicit GlitchShader( const GlobalInfo_t& winfo )
+    explicit LayeredGlitchShader( const GlobalInfo_t& winfo )
       : m_winfo( winfo )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
@@ -37,7 +77,7 @@ namespace nx
       }
     }
 
-    ~GlitchShader() override = default;
+    ~LayeredGlitchShader() override = default;
 
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
@@ -51,7 +91,7 @@ namespace nx
         { "isActive", m_data.isActive },
         { "glitchBaseStrength", m_data.glitchBaseStrength },
         { "glitchAmount", m_data.glitchAmount },
-        { "scanlineIntensity", m_data.scanlineIntensity },
+        // { "scanlineIntensity", m_data.scanlineIntensity },
         { "chromaFlickerAmount", m_data.chromaFlickerAmount },
         { "pixelJumpAmount", m_data.pixelJumpAmount },
         { "glitchPulseDecay", m_data.glitchPulseDecay },
@@ -67,7 +107,7 @@ namespace nx
       m_data.isActive = j.value("isActive", false);
       m_data.glitchBaseStrength = j.value("glitchBaseStrength", 1.0f);
       m_data.glitchAmount = j.value("glitchAmount", 0.4f);
-      m_data.scanlineIntensity = j.value("scanlineIntensity", 0.02f);
+      // m_data.scanlineIntensity = j.value("scanlineIntensity", 0.02f);
       m_data.chromaFlickerAmount = j.value("chromaFlickerAmount", 0.4f);
       m_data.pixelJumpAmount = j.value("pixelJumpAmount", 0.5f);
       m_data.glitchPulseDecay = j.value("glitchPulseDecay", -0.5f);
@@ -92,7 +132,7 @@ namespace nx
         ImGui::SliderFloat( "Glitch Band Count##1", &m_data.bandCount, 0.f, 50.f );
         ImGui::SliderFloat( "Glitch Base Strength##1", &m_data.glitchBaseStrength, 0.f, 2.0f );
         ImGui::SliderFloat( "Glitch Amount##1", &m_data.glitchAmount, 0.f, 1.0f );
-        ImGui::SliderFloat( "Scanline Strength##1", &m_data.scanlineIntensity, 0.f, 1.0f );
+        // ImGui::SliderFloat( "Scanline Strength##1", &m_data.scanlineIntensity, 0.f, 1.0f );
 
         ImGui::SliderFloat( "Chroma Flicker##1", &m_data.chromaFlickerAmount, 0.f, 1.0f );
         ImGui::SliderFloat( "Pixel Jumps##1", &m_data.pixelJumpAmount, 0.f, 1.0f );
@@ -104,6 +144,8 @@ namespace nx
 
         ImGui::Separator();
         m_easing.drawMenu();
+
+        m_burstManager.setEasings( m_easing.getData() );
 
         ImGui::Separator();
         m_midiNoteControl.drawMenu();
@@ -117,12 +159,18 @@ namespace nx
     /// ISHADER
     ///////////////////////////////////////////////////////
 
-    void update( const sf::Time &deltaTime ) override {}
+    void update( const sf::Time &deltaTime ) override
+    {
+      m_burstManager.update( deltaTime.asSeconds() );
+    }
 
     void trigger( const Midi_t& midi ) override
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-        m_easing.trigger();
+      {
+        m_burstManager.triggerNewBurst();
+        m_clock.restart();
+      }
     }
 
     [[nodiscard]]
@@ -139,21 +187,20 @@ namespace nx
         }
       }
 
-      const float easedTime = m_easing.getElapsedTime();
-      const float easingValue = m_easing.getEasing();
+      const float cumulative = m_burstManager.getCumulativeEasing();
+      const float boostedStrength = m_data.glitchBaseStrength + cumulative * m_data.glitchPulseBoost;
 
-      float boostedStrength = m_data.glitchBaseStrength + easingValue * m_data.glitchPulseBoost;
-      m_data.glitchStrength = boostedStrength;
+      m_shader.setUniform("glitchStrength", boostedStrength);
+      m_shader.setUniform("easingValue", cumulative); // optional, for shader-side sync
+      m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
 
-      m_shader.setUniform("easedTime", easedTime);
-      m_shader.setUniform("easingValue", easingValue);
       m_shader.setUniform("glitchStrength", boostedStrength);
 
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
 
       m_shader.setUniform("glitchAmount", m_data.glitchAmount);
-      m_shader.setUniform("scanlineIntensity", m_data.scanlineIntensity);
+      // m_shader.setUniform("scanlineIntensity", m_data.scanlineIntensity);
       m_shader.setUniform("chromaFlickerAmount", m_data.chromaFlickerAmount);
       m_shader.setUniform("pixelJumpAmount", m_data.pixelJumpAmount);
       m_shader.setUniform("bandCount", m_data.bandCount);
@@ -168,7 +215,7 @@ namespace nx
   private:
     const GlobalInfo_t& m_winfo;
 
-    GlitchData_t m_data;
+    LayeredGlitchData_t m_data;
 
     sf::Clock m_clock;
     sf::Shader m_shader;
@@ -176,6 +223,8 @@ namespace nx
 
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
+
+    GlitchBurstManager m_burstManager;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;
@@ -244,8 +293,8 @@ void main() {
     vec4 color = vec4(r.r, g.g, b.b, 1.0);
 
     // Scanlines (synced to trigger)
-    float scanline = sin(uv.y * resolution.y * 10.0 + easedTime * 40.0) * scanlineIntensity * (0.5 + 0.5 * pulse);
-    color.rgb += scanline;
+    //float scanline = sin(uv.y * resolution.y * 10.0 + easedTime * 40.0) * scanlineIntensity * (0.5 + 0.5 * pulse);
+    //color.rgb += scanline;
 
     gl_FragColor = color;
 })";
