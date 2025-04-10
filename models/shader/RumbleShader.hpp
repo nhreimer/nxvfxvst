@@ -51,7 +51,8 @@ namespace nx
           { "useNoise", m_data.useNoise },
           { "modAmplitude", m_data.modAmplitude },
           { "modFrequency", m_data.modFrequency },
-          { "colorDesync", m_data.colorDesync },
+          { "baseColorDesync", m_data.baseColorDesync },
+            { "maxColorDesync", m_data.maxColorDesync },
         { "easing", m_easing.serialize() },
           { "midiTriggers", m_midiNoteControl.serialize() }
       };
@@ -66,7 +67,8 @@ namespace nx
       m_data.useNoise = j.value("useNoise", false);
       m_data.modAmplitude = j.value("modAmplitude", 0.5f);
       m_data.modFrequency = j.value("modFrequency", 10.f);
-      m_data.colorDesync = j.value("colorDesync", 1.0f);
+      m_data.baseColorDesync = j.value("baseColorDesync", 0.25f);
+      m_data.maxColorDesync = j.value("maxColorDesync", 0.25f);
       m_easing.deserialize( j.at( "easing" ) );
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
