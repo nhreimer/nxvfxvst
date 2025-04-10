@@ -81,6 +81,8 @@ namespace nx
       m_clock.restart();
     }
 
+    float getElapsedTime() const { return m_clock.getElapsedTime().asSeconds(); }
+
     [[nodiscard]]
     float getEasing() const
     {
@@ -94,6 +96,7 @@ namespace nx
 
         // TODO: fix bug in RippleShader that causes the shader to stop working entirely!
         // TODO: as soon as intensity > 0.f
+        // TODO: same happens with Glitch
         case E_SparkleFlicker:
           return m_easingFunction( decay ) * m_intensity;
 
