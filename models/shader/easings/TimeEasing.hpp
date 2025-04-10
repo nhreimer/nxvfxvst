@@ -68,7 +68,7 @@ namespace nx
     [[nodiscard]]
     float getEasing() const
     {
-      const float decay = m_data.decayRate == 0.f ? 0.f : m_clock.getElapsedTime().asSeconds() / m_data.decayRate;
+      const float decay = m_data.decayRate <= 0.001f ? 0.f : m_clock.getElapsedTime().asSeconds() / m_data.decayRate;
 
       switch ( m_data.easingType )
       {
@@ -79,8 +79,6 @@ namespace nx
         case E_Impulse:
           return m_easingFunction( decay * m_data.intensity );
 
-        // TODO: fix bug in RippleShader that causes the shader to stop working entirely!
-        // TODO: as soon as intensity > 0.f
         case E_SparkleFlicker:
           return m_easingFunction( decay ) * m_data.intensity;
 
@@ -135,8 +133,6 @@ namespace nx
       if ( ImGui::RadioButton( label.c_str(), easingType == m_data.easingType ) )
       {
         m_data.easingType = easingType;
-        m_easingFunction = easeOutLinear;
-
         return true;
       }
 

@@ -126,7 +126,7 @@ namespace nx
     }
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive && m_data.glitchStrength > 0.f; }
+    bool isShaderActive() const override { return m_data.isActive; }
 
     [[nodiscard]]
     sf::RenderTexture& applyShader( const sf::RenderTexture &inputTexture ) override
