@@ -127,7 +127,7 @@ namespace nx
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
       {
-        m_burstManager.triggerNewBurst();
+        m_burstManager.trigger();
         m_clock.restart();
       }
     }
@@ -146,7 +146,7 @@ namespace nx
         }
       }
 
-      const float cumulative = m_burstManager.getCumulativeEasing();
+      const float cumulative = m_burstManager.getEasing();
       const float boostedStrength = m_data.glitchBaseStrength + cumulative * m_data.glitchPulseBoost;
 
       m_shader.setUniform("glitchStrength", boostedStrength);

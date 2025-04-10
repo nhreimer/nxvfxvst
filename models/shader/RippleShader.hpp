@@ -3,6 +3,8 @@
 #include "shapes/TimedCursorPosition.hpp"
 #include "shapes/MidiNoteControl.hpp"
 
+#include "models/shader/easings/CumulativeEasing.hpp"
+
 namespace nx
 {
   struct RippleData_t

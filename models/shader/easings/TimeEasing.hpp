@@ -7,6 +7,7 @@ namespace nx
 
   enum E_TimeEasingType : int8_t
   {
+    E_None,
     E_Linear,
     E_Quadratic,
     E_Cubic,
@@ -28,7 +29,7 @@ namespace nx
     float decayRate { 0.1f };
     float intensity { 0.f }; // used for certain ones
 
-    E_TimeEasingType easingType { E_Linear };
+    E_TimeEasingType easingType { E_None };
   };
 
   class TimeEasing
@@ -71,6 +72,9 @@ namespace nx
 
       switch ( m_data.easingType )
       {
+        case E_None:
+          return m_clock.getElapsedTime().asSeconds();
+
         // use elapsed over decay by a multiplier
         case E_Impulse:
           return m_easingFunction( decay * m_data.intensity );
@@ -100,7 +104,8 @@ namespace nx
 
       ImGui::Text( "Time Easing Functions:" );
 
-      if ( drawRadio( "Linear", E_Linear ) ) m_easingFunction = easeOutLinear;
+      if ( drawRadio( "None", E_None ) ) m_easingFunction = useNone;
+      else if ( drawRadio( "Linear", E_Linear ) ) m_easingFunction = easeOutLinear;
       else if ( drawRadio( "Quadratic", E_Quadratic, true ) ) m_easingFunction = easeOutQuad;
       else if ( drawRadio( "Cubic", E_Cubic, true ) ) m_easingFunction = easeOutCubic;
       else if ( drawRadio( "Quartic", E_Quartic, true ) ) m_easingFunction = easeOutQuart;
@@ -142,6 +147,7 @@ namespace nx
     {
       switch ( easingType )
       {
+        case E_None: m_easingFunction = useNone; break;
         case E_Quadratic: m_easingFunction = easeOutQuad; break;
         case E_Cubic: m_easingFunction = easeOutCubic; break;
         case E_Quartic: m_easingFunction = easeOutQuart; break;
@@ -157,6 +163,11 @@ namespace nx
         default:
           m_easingFunction = easeOutLinear; break;
       }
+    }
+
+    static float useNone( const float t )
+    {
+      return t;
     }
 
     static float easeOutLinear( const float t )
@@ -266,10 +277,11 @@ namespace nx
     float m_timeTriggeredInSeconds { 0.f };
     TimeEasingData_t m_data;
     sf::Clock m_clock;
-    std::function< float( float t ) > m_easingFunction { easeOutLinear };
+    std::function< float( float t ) > m_easingFunction { useNone };
 
     NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
     {
+      { E_None, "None" },
       { E_Linear, "Linear" },
       { E_Quadratic, "Quadratic" },
       { E_Cubic, "Cubic" },

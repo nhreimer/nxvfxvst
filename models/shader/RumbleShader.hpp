@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shapes/MidiNoteControl.hpp"
+#include "models/shader/easings/CumulativeEasing.hpp"
 
 namespace nx
 {
@@ -132,7 +133,7 @@ namespace nx
       }
 
       const float time = m_clock.getElapsedTime().asSeconds();
-      const float pulse = m_easing.getEasing(); // <-- new hotness
+      const float pulse = m_easing.getEasing();
 
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));

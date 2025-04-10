@@ -24,7 +24,7 @@ namespace nx
       m_masterEasing.drawMenu();
     }
 
-    void triggerNewBurst()
+    void trigger()
     {
       auto& burst = m_bursts.emplace_back();
       burst.setData( m_masterEasing.getData() );
@@ -41,7 +41,7 @@ namespace nx
       });
     }
 
-    float getCumulativeEasing() const
+    float getEasing() const
     {
       float total = 0.f;
       for ( const auto& b : m_bursts )
