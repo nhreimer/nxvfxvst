@@ -3,6 +3,7 @@
 #include "models/particle/EmptyParticleLayout.hpp"
 #include "models/particle/SpiralParticleLayout.hpp"
 #include "models/particle/RandomParticleLayout.hpp"
+#include "models/particle/OrbitRingLayout.hpp"
 
 #include "models/modifier/PassthroughParticleModifier.hpp"
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
@@ -64,7 +65,6 @@ namespace nx
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Sequential", m_modifier->getType() == E_SequentialModifier ) )
             changeModifier< ParticleSequentialLineModifier >();
-
 
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Mesh", m_modifier->getType() == E_FullMeshModifier ) )

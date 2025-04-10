@@ -1,8 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics/Shader.hpp>
-
-#include "shapes/TimedCursorPosition.hpp"
+#include "helpers/CommonHeaders.hpp"
 
 namespace nx
 {
@@ -88,8 +86,8 @@ namespace nx
         if ( ImGui::SliderFloat( "Center x##1", &m_data.centerX, 0.0f, 1.0f ) ||
              ImGui::SliderFloat( "Center y##1", &m_data.centerY, 0.0f, 1.0f ) )
         {
-          const sf::Vector2f calibrated { m_data.centerX * m_globalInfo.windowSize.x,
-                                          m_data.centerY * m_globalInfo.windowSize.y };
+          const sf::Vector2f calibrated { m_data.centerX * static_cast< float >(m_globalInfo.windowSize.x),
+                                          m_data.centerY * static_cast< float >(m_globalInfo.windowSize.y) };
           m_timedCursor.setPosition( calibrated );
         }
 

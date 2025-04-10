@@ -1,11 +1,49 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
+#include "models/InterfaceTypes.hpp"
+
 namespace nx
 {
 
   class SerialHelper
   {
   public:
+
+    template <typename Enum>
+    static constexpr auto serializeEnum( Enum e )
+    {
+      if constexpr ( std::is_same_v< Enum, E_ShaderType > )
+      {
+        if ( e == E_EmptyLayout ) return "EmptyLayout";
+        if ( e == E_RandomLayout ) return "RandomLayout";
+        if ( e == E_SpiralLayout ) return "SpiralLayout";
+      }
+      else if constexpr ( std::is_same_v< Enum, E_ModifierType > )
+      {
+        if ( e == E_NoModifier ) return "NoModifier";
+        if ( e == E_SequentialModifier ) return "SequentialModifier";
+        if ( e == E_FullMeshModifier ) return "FullMeshModifier";
+      }
+
+      else if constexpr ( std::is_same_v< Enum, E_ShaderType > )
+      {
+        switch ( e )
+        {
+          case E_GlitchShader: return "GlitchShader";
+          case E_BlurShader: return "BlurShader";
+          case E_PulseShader: return "PulseShader";
+          case E_RippleShader: return "RippleShader";
+          case E_StrobeShader: return "StrobeShader";
+          case E_RumbleShader: return "RumbleShader";
+          case E_KaleidoscopeShader: return "KaleidoscopeShader";
+          default: break;
+        }
+      }
+
+      return "UNKNOWN";
+    }
 
     static std::string convertShaderTypeToString( const E_ShaderType shaderType )
     {

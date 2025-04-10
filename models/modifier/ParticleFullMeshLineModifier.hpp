@@ -1,10 +1,9 @@
 #pragma once
 
 #include "helpers/MenuHelper.hpp"
-
 #include "models/data/ParticleLineData_t.hpp"
-
 #include "shapes/GradientLine.hpp"
+#include "helpers/CommonHeaders.hpp"
 
 namespace nx
 {

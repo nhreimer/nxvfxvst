@@ -3,6 +3,8 @@
 #include "shapes/GradientLine.hpp"
 #include "models/data/ParticleLineData_t.hpp"
 
+#include "helpers/CommonHeaders.hpp"
+
 namespace nx
 {
 

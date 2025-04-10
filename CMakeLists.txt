@@ -212,6 +212,11 @@ else()
 
 endif()
 
+target_precompile_headers( ${PROJECT_NAME}
+  PRIVATE
+  helpers/CommonHeaders.hpp
+)
+
 if ( NX_LOG_FILE_DISABLED )
   add_compile_definitions( NX_LOG_FILE_DISABLED=1 )
 else()

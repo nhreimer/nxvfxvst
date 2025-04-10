@@ -1,10 +1,10 @@
 #pragma once
-#include "shapes/MidiNoteControl.hpp"
+
+#include "helpers/CommonHeaders.hpp"
 
 namespace nx
 {
 
-  // TODO: SERIALIZE ALL PARTS OF THIS!
   struct StrobeData_t
   {
     bool isActive { true };
@@ -37,6 +37,7 @@ namespace nx
           { "type", SerialHelper::convertShaderTypeToString( getType() ) },
           { "isActive", m_data.isActive },
           { "midiTriggers", m_midiNoteControl.serialize() },
+            { "pulseSpeed", m_data.pulseSpeed },
             { "easing", m_easing.serialize() }
       };
     }
@@ -44,6 +45,7 @@ namespace nx
     void deserialize(const nlohmann::json& j) override
     {
       m_data.isActive = j.value("isActive", false);
+      m_data.pulseSpeed = j.value( "pulseSpeed", 0.f );
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
       m_easing.deserialize( j.at( "easing" ) );
     }

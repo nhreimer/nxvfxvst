@@ -1,9 +1,6 @@
 #pragma once
 
-#include "shapes/TimedCursorPosition.hpp"
-#include "shapes/MidiNoteControl.hpp"
-
-#include "models/shader/easings/CumulativeEasing.hpp"
+#include "helpers/CommonHeaders.hpp"
 
 namespace nx
 {

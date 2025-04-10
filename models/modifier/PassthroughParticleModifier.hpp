@@ -1,5 +1,7 @@
 #pragma once
 
+#include "helpers/CommonHeaders.hpp"
+
 namespace nx
 {
   class PassthroughParticleModifier final : public IParticleModifier

@@ -1,10 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics/Shader.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <shapes/MidiNoteControl.hpp>
-
-#include "models/shader/easings/TimeEasing.hpp"
+#include "helpers/CommonHeaders.hpp"
 
 namespace nx
 {

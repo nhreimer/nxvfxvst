@@ -1,5 +1,7 @@
 #pragma once
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
   struct ParticleLayoutData_t
@@ -23,5 +25,43 @@ namespace nx
     float velocitySizeMultiplier { 0.f }; // 0 = don't increase size based on velocity
 
     sf::BlendMode blendMode { sf::BlendNone };
+
+    nlohmann::json serialize( std::string_view typeName ) const
+    {
+      return
+      {
+          { "type", typeName },
+          { "startColor", SerialHelper::convertColorToJson( startColor ) },
+          { "endColor", SerialHelper::convertColorToJson( endColor ) },
+          { "outlineColor", SerialHelper::convertColorToJson( outlineColor ) },
+          { "outlineThickness", outlineThickness },
+          { "radius", radius },
+          { "shapeSides", shapeSides },
+          { "timeoutInMS", timeoutInMS },
+          { "spreadMultiplier", spreadMultiplier },
+          { "jitterMultiplier", jitterMultiplier },
+          { "positionOffset", SerialHelper::convertVectorToJson( positionOffset ) },
+          { "boostVelocity", boostVelocity },
+          { "velocitySizeMultiplier", velocitySizeMultiplier },
+          { "blendMode", SerialHelper::convertBlendModeToString( blendMode ) }
+      };
+    }
+
+    void deserialize( const nlohmann::json & j )
+    {
+      startColor = SerialHelper::convertColorFromJson(j.at("startColor"), sf::Color::White);
+      endColor = SerialHelper::convertColorFromJson(j.at("endColor"), sf::Color::Black);
+      outlineColor = SerialHelper::convertColorFromJson(j.at("outlineColor"), sf::Color::White);
+      outlineThickness = j.value("outlineThickness", 0.f);
+      radius = j.value("radius", 30.f);
+      shapeSides = j.value("shapeSides", 30);
+      timeoutInMS = j.value("timeoutInMS", 1500);
+      spreadMultiplier = j.value("spreadMultiplier", 1.f);
+      jitterMultiplier = j.value("jitterMultiplier", 0.f);
+      positionOffset = SerialHelper::convertVectorFromJson< float >(j.at("positionOffset"));
+      boostVelocity = j.value("boostVelocity", 0.f);
+      velocitySizeMultiplier = j.value("velocitySizeMultiplier", 0.f);
+      blendMode = SerialHelper::convertBlendModeFromString(j.value("blendMode", "None"));
+    }
   };
 }

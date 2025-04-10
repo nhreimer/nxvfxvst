@@ -1,6 +1,7 @@
 #pragma once
 
-#include "shapes/MidiNoteControl.hpp"
+#include "helpers/CommonHeaders.hpp"
+
 
 #include "models/shader/easings/CumulativeEasing.hpp"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shapes/MidiNoteControl.hpp"
+#include "helpers/CommonHeaders.hpp"
 
 namespace nx
 {

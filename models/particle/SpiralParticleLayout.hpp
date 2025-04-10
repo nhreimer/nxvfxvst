@@ -22,9 +22,10 @@ namespace nx
 
     ~SpiralParticleLayout() override = default;
 
+    [[nodiscard]]
     E_LayoutType getType() const override { return E_SpiralLayout; }
 
-    void drawMenu() override
+    void drawMenu()
     {
       ImGui::Text( "Particles: %d", m_particles.size() );
       ImGui::Separator();

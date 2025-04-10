@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shapes/MidiNoteControl.hpp"
+#include "helpers/CommonHeaders.hpp"
 
 namespace nx
 {
@@ -39,7 +39,7 @@ namespace nx
     {
       return
    {
-      { "type", SerialHelper::convertShaderTypeToString( getType() ) },
+      { "type", SerialHelper::serializeEnum( getType() ) },
       { "isActive", m_data.isActive },
       { "threshold", m_data.threshold },
       { "basePulseThreshold", m_data.basePulseThreshold },
