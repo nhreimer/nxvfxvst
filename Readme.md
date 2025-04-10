@@ -36,6 +36,7 @@ that react to midi events.
     * None (no lines)
   * Easings (for time decays)
     * many! (for better or worse)
+    * Independent layered easings for smooth visuals
 
 ### Dependencies
 

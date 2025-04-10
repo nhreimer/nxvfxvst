@@ -25,7 +25,7 @@ namespace nx
 
   struct TimeEasingData_t
   {
-    float decayRate { 1.f };
+    float decayRate { 0.1f };
     float intensity { 0.f }; // used for certain ones
 
     E_TimeEasingType easingType { E_Linear };
@@ -92,7 +92,7 @@ namespace nx
     {
       ImGui::PushID( this );
 
-      ImGui::SliderFloat( "##DecayRate", &m_data.decayRate, 0.0f, 1.5f, "Decay Rate %0.2f seconds" );
+      ImGui::SliderFloat( "##DecayRate", &m_data.decayRate, 0.01f, 1.5f, "Decay Rate %0.2f seconds" );
       if ( m_data.easingType == E_SparkleFlicker )
         ImGui::SliderFloat( "##Sparkle Intensity", &m_data.intensity, 0.f, 3.f, "Intensity %0.2f" );
       else if ( m_data.easingType == E_Impulse )

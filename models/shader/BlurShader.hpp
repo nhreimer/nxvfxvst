@@ -4,7 +4,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <shapes/MidiNoteControl.hpp>
 
-#include "shapes/TimeEasing.hpp"
+#include "models/shader/easings/TimeEasing.hpp"
 
 namespace nx
 {

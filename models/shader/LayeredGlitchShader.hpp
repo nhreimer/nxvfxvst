@@ -2,55 +2,10 @@
 
 #include "shapes/MidiNoteControl.hpp"
 
+#include "models/shader/easings/CumulativeEasing.hpp"
+
 namespace nx
 {
-
-  class GlitchBurstManager
-  {
-  public:
-
-    void triggerNewBurst()
-    {
-      auto& burst = m_bursts.emplace_back();
-      burst.setData( m_data );
-      burst.trigger();
-      m_lastTriggerInSeconds = m_clock.restart().asSeconds();
-    }
-
-    void setEasings( const TimeEasingData_t& data )
-    {
-      m_data = data;
-      // affects all easings afterwards
-    }
-
-    void update( float /*dt*/ )
-    {
-      std::erase_if( m_bursts,
-      []( const TimeEasing& burst )
-      {
-        return burst.getEasing() <= 0.001f;
-      });
-    }
-
-    float getCumulativeEasing() const
-    {
-      float total = 0.f;
-      for ( const auto& b : m_bursts )
-        total += b.getEasing();
-
-      // prevent nuclear meltdown
-      return std::clamp( total, 0.f, 1.5f );
-    }
-
-    float getLastTriggeredInSeconds() const { return m_lastTriggerInSeconds; }
-
-  private:
-
-    float m_lastTriggerInSeconds { 0.f };
-    sf::Clock m_clock;
-    TimeEasingData_t m_data;
-    std::vector< TimeEasing > m_bursts;
-  };
 
   struct LayeredGlitchData_t
   {
@@ -103,7 +58,7 @@ namespace nx
         { "glitchPulseDecay", m_data.glitchPulseDecay },
         { "glitchPulseBoost", m_data.glitchPulseBoost },
         { "bandCount", m_data.bandCount },
-           { "easing", m_easing.serialize() },
+           { "easing", m_burstManager.serialize() },
         { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
@@ -119,7 +74,7 @@ namespace nx
       m_data.glitchPulseDecay = j.value("glitchPulseDecay", -0.5f);
       m_data.glitchPulseBoost = j.value("glitchPulseBoost", 2.0f);
       m_data.bandCount = j.value("bandCount", 20.0f);
-      m_easing.deserialize( j.at( "easing" ) );
+      m_burstManager.deserialize( j.at( "easing" ) );
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
@@ -149,9 +104,7 @@ namespace nx
         ImGui::Text( "Glitch Strength %0.2f", m_data.glitchStrength );
 
         ImGui::Separator();
-        m_easing.drawMenu();
-
-        m_burstManager.setEasings( m_easing.getData() );
+        m_burstManager.drawMenu();
 
         ImGui::Separator();
         m_midiNoteControl.drawMenu();
@@ -229,9 +182,8 @@ namespace nx
     sf::RenderTexture m_outputTexture;
 
     MidiNoteControl m_midiNoteControl;
-    TimeEasing m_easing;
 
-    GlitchBurstManager m_burstManager;
+    CumulativeEasing m_burstManager;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;
