@@ -8,11 +8,13 @@ namespace nx
   class GlitchBurstManager
   {
   public:
+
     void triggerNewBurst()
     {
       auto& burst = m_bursts.emplace_back();
       burst.setData( m_data );
       burst.trigger();
+      m_lastTriggerInSeconds = m_clock.restart().asSeconds();
     }
 
     void setEasings( const TimeEasingData_t& data )
@@ -40,8 +42,12 @@ namespace nx
       return std::clamp( total, 0.f, 1.5f );
     }
 
+    float getLastTriggeredInSeconds() const { return m_lastTriggerInSeconds; }
+
   private:
 
+    float m_lastTriggerInSeconds { 0.f };
+    sf::Clock m_clock;
     TimeEasingData_t m_data;
     std::vector< TimeEasing > m_bursts;
   };
@@ -192,7 +198,8 @@ namespace nx
 
       m_shader.setUniform("glitchStrength", boostedStrength);
       m_shader.setUniform("easingValue", cumulative); // optional, for shader-side sync
-      m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
+      //m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
+      m_shader.setUniform("easedTime", m_burstManager.getLastTriggeredInSeconds() );
 
       m_shader.setUniform("glitchStrength", boostedStrength);
 
@@ -291,10 +298,6 @@ void main() {
     vec4 b = texture2D(texture, uv - rgbShift);
 
     vec4 color = vec4(r.r, g.g, b.b, 1.0);
-
-    // Scanlines (synced to trigger)
-    //float scanline = sin(uv.y * resolution.y * 10.0 + easedTime * 40.0) * scanlineIntensity * (0.5 + 0.5 * pulse);
-    //color.rgb += scanline;
 
     gl_FragColor = color;
 })";

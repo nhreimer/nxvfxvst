@@ -52,7 +52,7 @@ namespace nx
 
     void trigger()
     {
-      m_clock.restart();
+      m_timeTriggeredInSeconds = m_clock.restart().asSeconds();
     }
 
     float getElapsedTime() const { return m_clock.getElapsedTime().asSeconds(); }
@@ -263,10 +263,9 @@ namespace nx
 
   private:
 
+    float m_timeTriggeredInSeconds { 0.f };
     TimeEasingData_t m_data;
-
     sf::Clock m_clock;
-
     std::function< float( float t ) > m_easingFunction { easeOutLinear };
 
     NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
