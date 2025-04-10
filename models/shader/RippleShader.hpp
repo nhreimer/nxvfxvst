@@ -73,14 +73,15 @@ namespace nx
         if ( ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, 0.f, 1.f ) ||
              ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, 0.f, 1.f ) )
         {
-          const sf::Vector2f calibrated { m_data.rippleCenterX * m_globalInfo.windowSize.x,
-                                          m_data.rippleCenterY * m_globalInfo.windowSize.y };
+          const sf::Vector2f calibrated { m_data.rippleCenterX * ( float )m_globalInfo.windowSize.x,
+                                          m_data.rippleCenterY * ( float )m_globalInfo.windowSize.y };
           m_timedCursor.setPosition( calibrated );
         }
 
         ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 10.f, 50.f );
         ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
 
+        // TODO: these are inverted, i think because lower = slower for m_data.speed
         // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 8.f );
         // ImGui::SameLine();
         // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 4.f );

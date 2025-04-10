@@ -18,6 +18,10 @@ namespace nx
     float modAmplitude { 0.5f };   //  0.0–1.0 wobble amount
     float modFrequency { 10.f };   //  0.0–50.0 wobble speed
     float colorDesync { 1.0f };    //  RGB shift multiplier
+
+    // adjust how much the colors come detach from the center of the particle
+    float baseColorDesync { 0.25f };
+    float maxColorDesync { 0.25f };
   };
 
   class RumbleShader final : public IShader
@@ -48,6 +52,7 @@ namespace nx
           { "modAmplitude", m_data.modAmplitude },
           { "modFrequency", m_data.modFrequency },
           { "colorDesync", m_data.colorDesync },
+        { "easing", m_easing.serialize() },
           { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
@@ -62,6 +67,7 @@ namespace nx
       m_data.modAmplitude = j.value("modAmplitude", 0.5f);
       m_data.modFrequency = j.value("modFrequency", 10.f);
       m_data.colorDesync = j.value("colorDesync", 1.0f);
+      m_easing.deserialize( j.at( "easing" ) );
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
@@ -87,6 +93,12 @@ namespace nx
         ImGui::SliderFloat("Modulation Frequency", &m_data.modFrequency, 0.f, 50.f);
         ImGui::SliderFloat("Color Desync", &m_data.colorDesync, 0.f, 5.0f);
 
+        ImGui::SliderFloat("Base Color Desync", &m_data.baseColorDesync, 0.f, 2.0f);
+        ImGui::SliderFloat("Max Color Desync", &m_data.maxColorDesync, 0.f, 1.5f );
+
+        ImGui::Separator();
+        m_easing.drawMenu();
+
         ImGui::Separator();
         m_midiNoteControl.drawMenu();
 
@@ -100,7 +112,7 @@ namespace nx
     void trigger( const Midi_t &midi ) override
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-        m_lastTriggerTime = m_clock.getElapsedTime().asSeconds();
+        m_easing.trigger();
     }
 
     [[nodiscard]]
@@ -118,8 +130,7 @@ namespace nx
       }
 
       const float time = m_clock.getElapsedTime().asSeconds();
-      float pulse = std::exp(m_data.pulseDecay * (time - m_lastTriggerTime));
-      pulse = std::clamp(pulse, 0.f, 1.f);
+      const float pulse = m_easing.getEasing(); // <-- new hotness
 
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
@@ -127,16 +138,17 @@ namespace nx
 
       m_shader.setUniform("rumbleStrength", m_data.rumbleStrength);
       m_shader.setUniform("frequency", m_data.frequency);
-      m_shader.setUniform("pulseValue", pulse);
-      m_shader.setUniform("direction", sf::Glsl::Vec2( m_data.direction ) );
+      m_shader.setUniform("pulseValue", pulse); // now driven by easing
+      m_shader.setUniform("direction", sf::Glsl::Vec2(m_data.direction));
       m_shader.setUniform("useNoise", m_data.useNoise);
 
       m_shader.setUniform("modAmplitude", m_data.modAmplitude);
       m_shader.setUniform("modFrequency", m_data.modFrequency);
-      m_shader.setUniform("colorDesync", m_data.colorDesync);
+      m_shader.setUniform("colorDesync", pulse * m_data.maxColorDesync + m_data.baseColorDesync);
+      //m_shader.setUniform("colorDesync", m_data.colorDesync);
 
       m_outputTexture.clear();
-      m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), &m_shader);
+      m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
       m_outputTexture.display();
 
       return m_outputTexture;
@@ -147,12 +159,11 @@ namespace nx
     const GlobalInfo_t& m_globalInfo;
     RumbleData_t m_data;
 
-    float m_lastTriggerTime { INT32_MIN };
-
     sf::Clock m_clock;
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
     MidiNoteControl m_midiNoteControl;
+    TimeEasing m_easing;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;
