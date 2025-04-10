@@ -5,6 +5,8 @@
 namespace nx
 {
 
+  // this is good for fast-paced midi events, such as glitch. don't use it on
+  // fx like strobe. it is a drop-in replaced for the TimeEasing.
   class CumulativeEasing
   {
   public:
@@ -57,6 +59,10 @@ namespace nx
 
     float m_lastTriggerInSeconds { 0.f };
     sf::Clock m_clock;
+
+    // the master easing gives a frontend controller for users
+    // that sets all easings to the same setting.
+    // it would be great to have a way to blend different ones eventually
     TimeEasing m_masterEasing;
     std::vector< TimeEasing > m_bursts;
   };

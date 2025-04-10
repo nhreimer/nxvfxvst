@@ -33,7 +33,7 @@ namespace nx
 
     void processEvent( const sf::Event &event ) const
     {
-      // TODO: add processEvent for shaders to add mouse effects
+      // TODO: add processEvent for shaders to add mouse/keyboard effects
       // TODO: have way to hide mouse icon
       //for ( auto& shader : m_shaders ) shader->processEvent( event );
     }
@@ -128,7 +128,6 @@ namespace nx
       switch ( shaderType )
       {
         case E_ShaderType::E_GlitchShader:
-          //shader = addShader< GlitchShader >( j );
             shader = addShader< LayeredGlitchShader >( j );
           break;
 
