@@ -19,6 +19,7 @@ namespace nx
         if ( e == E_EmptyLayout ) return "EmptyLayout";
         if ( e == E_RandomLayout ) return "RandomLayout";
         if ( e == E_SpiralLayout ) return "SpiralLayout";
+        if ( e == E_OrbitRingLayout ) return "OrbitRingLayout";
       }
       else if constexpr ( std::is_same_v< Enum, E_ModifierType > )
       {

@@ -13,6 +13,6 @@ namespace nx
     [[nodiscard]]
     virtual sf::RenderTexture& modifyParticles(
       const ParticleLayoutData_t& particleLayoutData,
-      std::deque< TimedParticle_t >& particles ) = 0;
+      std::deque< TimedParticle_t* >& particles ) = 0;
   };
 }

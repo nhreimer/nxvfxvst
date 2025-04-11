@@ -37,7 +37,8 @@ namespace nx
 
     void update( const sf::Time &deltaTime ) override {}
 
-    sf::RenderTexture & modifyParticles( const ParticleLayoutData_t& particleLayoutData, std::deque< TimedParticle_t >& particles ) override
+    sf::RenderTexture & modifyParticles( const ParticleLayoutData_t& particleLayoutData,
+                                         std::deque< TimedParticle_t * >& particles ) override
     {
       if ( m_outputTexture.getSize() != m_winfo.windowSize )
       {
@@ -49,7 +50,7 @@ namespace nx
       m_outputTexture.clear();
 
       for ( const auto& particle : particles )
-        m_outputTexture.draw( particle.shape, particleLayoutData.blendMode );
+        m_outputTexture.draw( particle->shape, particleLayoutData.blendMode );
 
       m_outputTexture.display();
       return m_outputTexture;

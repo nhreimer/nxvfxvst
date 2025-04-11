@@ -2,6 +2,8 @@
 
 #include "helpers/SerialHelper.hpp"
 
+#include <helpers/MenuHelper.hpp>
+
 namespace nx
 {
   struct ParticleLayoutData_t
@@ -26,42 +28,108 @@ namespace nx
 
     sf::BlendMode blendMode { sf::BlendNone };
 
-    nlohmann::json serialize( std::string_view typeName ) const
+  };
+
+  class ParticleHelper
+  {
+  public:
+
+    static nlohmann::json serialize( const ParticleLayoutData_t& data, std::string_view typeName )
     {
       return
-      {
-          { "type", typeName },
-          { "startColor", SerialHelper::convertColorToJson( startColor ) },
-          { "endColor", SerialHelper::convertColorToJson( endColor ) },
-          { "outlineColor", SerialHelper::convertColorToJson( outlineColor ) },
-          { "outlineThickness", outlineThickness },
-          { "radius", radius },
-          { "shapeSides", shapeSides },
-          { "timeoutInMS", timeoutInMS },
-          { "spreadMultiplier", spreadMultiplier },
-          { "jitterMultiplier", jitterMultiplier },
-          { "positionOffset", SerialHelper::convertVectorToJson( positionOffset ) },
-          { "boostVelocity", boostVelocity },
-          { "velocitySizeMultiplier", velocitySizeMultiplier },
-          { "blendMode", SerialHelper::convertBlendModeToString( blendMode ) }
+   {
+      { "type", typeName },
+      { "startColor", SerialHelper::convertColorToJson( data.startColor ) },
+      { "endColor", SerialHelper::convertColorToJson( data.endColor ) },
+      { "outlineColor", SerialHelper::convertColorToJson( data.outlineColor ) },
+      { "outlineThickness", data.outlineThickness },
+      { "radius", data.radius },
+      { "shapeSides", data.shapeSides },
+      { "timeoutInMS", data.timeoutInMS },
+      { "spreadMultiplier", data.spreadMultiplier },
+      { "jitterMultiplier", data.jitterMultiplier },
+      { "positionOffset", SerialHelper::convertVectorToJson( data.positionOffset ) },
+      { "boostVelocity", data.boostVelocity },
+      { "velocitySizeMultiplier", data.velocitySizeMultiplier },
+      { "blendMode", SerialHelper::convertBlendModeToString( data.blendMode ) }
       };
     }
 
-    void deserialize( const nlohmann::json & j )
+    static void deserialize( ParticleLayoutData_t& data, const nlohmann::json & j )
     {
-      startColor = SerialHelper::convertColorFromJson(j.at("startColor"), sf::Color::White);
-      endColor = SerialHelper::convertColorFromJson(j.at("endColor"), sf::Color::Black);
-      outlineColor = SerialHelper::convertColorFromJson(j.at("outlineColor"), sf::Color::White);
-      outlineThickness = j.value("outlineThickness", 0.f);
-      radius = j.value("radius", 30.f);
-      shapeSides = j.value("shapeSides", 30);
-      timeoutInMS = j.value("timeoutInMS", 1500);
-      spreadMultiplier = j.value("spreadMultiplier", 1.f);
-      jitterMultiplier = j.value("jitterMultiplier", 0.f);
-      positionOffset = SerialHelper::convertVectorFromJson< float >(j.at("positionOffset"));
-      boostVelocity = j.value("boostVelocity", 0.f);
-      velocitySizeMultiplier = j.value("velocitySizeMultiplier", 0.f);
-      blendMode = SerialHelper::convertBlendModeFromString(j.value("blendMode", "None"));
+      data.startColor = SerialHelper::convertColorFromJson(j.at("startColor"), sf::Color::White);
+      data.endColor = SerialHelper::convertColorFromJson(j.at("endColor"), sf::Color::Black);
+      data.outlineColor = SerialHelper::convertColorFromJson(j.at("outlineColor"), sf::Color::White);
+      data.outlineThickness = j.value("outlineThickness", 0.f);
+      data.radius = j.value("radius", 30.f);
+      data.shapeSides = j.value("shapeSides", 30);
+      data.timeoutInMS = j.value("timeoutInMS", 1500);
+      data.spreadMultiplier = j.value("spreadMultiplier", 1.f);
+      data.jitterMultiplier = j.value("jitterMultiplier", 0.f);
+      data.positionOffset = SerialHelper::convertVectorFromJson< float >(j.at("positionOffset"));
+      data.boostVelocity = j.value("boostVelocity", 0.f);
+      data.velocitySizeMultiplier = j.value("velocitySizeMultiplier", 0.f);
+      data.blendMode = SerialHelper::convertBlendModeFromString(j.value("blendMode", "None"));
+    }
+
+    static void drawMenu( ParticleLayoutData_t & data )
+    {
+      drawAppearanceMenu( data );
+      drawAdjustmentMenu( data );
+    }
+
+  private:
+
+    static void drawAppearanceMenu( ParticleLayoutData_t & data )
+    {
+      if ( ImGui::TreeNode( "Particle Appearance" ) )
+      {
+        ImVec4 color = data.startColor;
+
+        if ( ImGui::ColorPicker4( "Particle Fill##1",
+                                  reinterpret_cast< float * >( &color ),
+                                  ImGuiColorEditFlags_AlphaBar,
+                                  nullptr ) )
+        {
+          data.startColor = color;
+        }
+
+        ImGui::Separator();
+        ImGui::SliderFloat( "Thickness##2", &data.outlineThickness, 0.f, 25.f );
+
+        ImVec4 outlineColor = data.outlineColor;
+
+        if ( ImGui::ColorPicker4( "Particle Outline##1",
+                                  reinterpret_cast< float * >( &outlineColor ),
+                                  ImGuiColorEditFlags_AlphaBar,
+                                  nullptr ) )
+        {
+          data.outlineColor = outlineColor;
+        }
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+    }
+
+    static void drawAdjustmentMenu( ParticleLayoutData_t & data )
+    {
+      if ( ImGui::TreeNode( "Particle Adjust" ) )
+      {
+        int32_t sides = data.shapeSides;
+        if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) data.shapeSides = sides;
+        ImGui::SliderFloat( "Radius##1", &data.radius, 1.0f, 100.0f );
+        ImGui::SliderInt( "Timeout##1", &data.timeoutInMS, 15, 10000 );
+        ImGui::SliderFloat( "Spread##1", &data.spreadMultiplier, 0.f, 5.f );
+        ImGui::SliderFloat( "Jitter##1", &data.jitterMultiplier, 0.f, 10.f );
+        ImGui::SliderFloat( "Boost##1", &data.boostVelocity, 0.f, 1.f );
+        ImGui::SliderFloat( "Velocity Size Mult##1", &data.velocitySizeMultiplier, 0.f, 50.f );
+
+        MenuHelper::drawBlendOptions( data.blendMode );
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
     }
   };
 }

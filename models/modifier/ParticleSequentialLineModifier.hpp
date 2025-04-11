@@ -57,7 +57,7 @@ namespace nx
 
     [[nodiscard]]
     sf::RenderTexture& modifyParticles( const ParticleLayoutData_t& particleLayoutData,
-                                        std::deque< TimedParticle_t >& particles ) override
+                                        std::deque< TimedParticle_t * >& particles ) override
     {
       if ( m_outputTexture.getSize() != m_winfo.windowSize )
       {
@@ -74,24 +74,24 @@ namespace nx
         if ( m_data.isActive && i > 0 )
         {
           GradientLine line;
-          line.setStart( particles[ i - 1 ].shape.getPosition() );
-          line.setEnd( particles[ i ].shape.getPosition() );
+          line.setStart( particles[ i - 1 ]->shape.getPosition() );
+          line.setEnd( particles[ i ]->shape.getPosition() );
           line.setWidth( m_data.lineThickness );
 
-          if ( particles[ i ].timeLeft > particles[ i - 1 ].timeLeft )
+          if ( particles[ i ]->timeLeft > particles[ i - 1 ]->timeLeft )
           {
-            line.setGradient( particles[ i ].shape.getFillColor(),
-                             particles[ i - 1 ].shape.getFillColor() );
+            line.setGradient( particles[ i ]->shape.getFillColor(),
+                             particles[ i - 1 ]->shape.getFillColor() );
           }
           else
           {
-            line.setGradient( particles[ i - 1 ].shape.getFillColor(),
-                              particles[ i ].shape.getFillColor() );
+            line.setGradient( particles[ i - 1 ]->shape.getFillColor(),
+                              particles[ i ]->shape.getFillColor() );
           }
           m_outputTexture.draw( line, m_data.blendMode );
         }
 
-        m_outputTexture.draw( particles[ i ].shape, particleLayoutData.blendMode );
+        m_outputTexture.draw( particles[ i ]->shape, particleLayoutData.blendMode );
       }
 
       m_outputTexture.display();

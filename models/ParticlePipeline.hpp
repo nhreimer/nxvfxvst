@@ -19,7 +19,7 @@ namespace nx
     explicit ParticlePipeline( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo ),
         m_layout( std::make_unique< SpiralParticleLayout >( globalInfo ) ),
-        m_modifier( std::make_unique< ParticleFullMeshLineModifier >( globalInfo ) )
+        m_modifier( std::make_unique< ParticleSequentialLineModifier >( globalInfo ) )
     {}
 
     ~ParticlePipeline() = default;
@@ -49,6 +49,10 @@ namespace nx
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Spiral", m_layout->getType() == E_SpiralLayout ) )
             changeLayout< SpiralParticleLayout >();
+
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Orbit Ring", m_layout->getType() == E_OrbitRingLayout ) )
+            changeLayout< OrbitRingLayout >();
 
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Random", m_layout->getType() == E_RandomLayout ) )

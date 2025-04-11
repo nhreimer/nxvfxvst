@@ -1,7 +1,14 @@
 #pragma once
 
+#include "models/IParticleModifier.hpp"
+
 namespace nx
 {
+
+  class ParticleSequentialLineModifier;
+  class ParticleFullMeshLineModifier;
+  class PassthroughParticleModifier;
+
   struct IParticleLayout : ISerializable< E_LayoutType >
   {
     ~IParticleLayout() override = default;
@@ -15,7 +22,7 @@ namespace nx
     virtual const ParticleLayoutData_t& getParticleOptions() const = 0;
 
     [[nodiscard]]
-    virtual std::deque< TimedParticle_t >& getParticles() = 0;
+    virtual std::deque< TimedParticle_t* >& getParticles() = 0;
   };
 
 }

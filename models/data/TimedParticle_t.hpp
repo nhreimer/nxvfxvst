@@ -11,6 +11,9 @@ namespace nx
 
     int32_t timeLeft { 0 };
 
+    // time in seconds when particle was created
+    float spawnTime { 0.f };
+
     // this is the initial color. it shouldn't change once set.
     sf::Color initialColor { sf::Color::White };
   };

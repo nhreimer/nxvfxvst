@@ -19,22 +19,28 @@ namespace nx
   {
     public:
 
-    explicit ParticleConsumer( const GlobalInfo_t& winfo )
-      : m_globalInfo( winfo )
-    {}
+    explicit ParticleConsumer(const GlobalInfo_t &winfo)
+        : m_globalInfo( winfo )
+      {}
 
-    ///////////////////////////////////////////////////////
-    /// ISERIALIZABLE
-    ///////////////////////////////////////////////////////
+    ~ParticleConsumer() override
+    {
+      for ( const auto * particle : m_particles )
+        delete particle;
+    }
+
+      ///////////////////////////////////////////////////////
+      /// ISERIALIZABLE
+      ///////////////////////////////////////////////////////
 
     nlohmann::json serialize() const override
     {
-      return m_data.serialize( SerialHelper::serializeEnum( getType() ) );
+      return ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
     }
 
     void deserialize(const nlohmann::json& j) override
     {
-      m_data.deserialize( j );
+      ParticleHelper::deserialize( m_data, j );
     }
 
     void addMidiEvent( const Midi_t &midiEvent ) override
@@ -44,46 +50,50 @@ namespace nx
       position += { static_cast< float >( m_globalInfo.windowSize.x ) / 2.f,
                     static_cast< float >( m_globalInfo.windowSize.y ) / 2.f };
 
-      auto& timeParticle = m_particles.emplace_back();
-      auto& particle = timeParticle.shape;
+      auto * timeParticle = m_particles.emplace_back( new TimedParticle_t() );
+      auto& particle = timeParticle->shape;
 
       particle.setRadius( m_data.radius +
                           m_data.velocitySizeMultiplier * midiEvent.velocity );
 
-      timeParticle.initialColor = ColorHelper::getColorPercentage(
+      timeParticle->initialColor = ColorHelper::getColorPercentage(
         m_data.startColor,
         std::min( midiEvent.velocity + m_data.boostVelocity, 1.f ) );
 
       particle.setPosition( position );
       particle.setPointCount( m_data.shapeSides );
-      particle.setFillColor( timeParticle.initialColor );
+      particle.setFillColor( timeParticle->initialColor );
       particle.setOutlineThickness( m_data.outlineThickness );
       particle.setOutlineColor( m_data.outlineColor );
 
       particle.setOrigin( particle.getGlobalBounds().size / 2.f );
+
+      // timestamp it
+      timeParticle->spawnTime = m_clock.getElapsedTime().asSeconds();
     }
 
     void update( const sf::Time &deltaTime ) override
     {
       for ( auto i = 0; i < m_particles.size(); ++i )
       {
-        auto& timeParticle = m_particles[ i ];
-        timeParticle.timeLeft += deltaTime.asMilliseconds();
-        const auto percentage = static_cast< float >( timeParticle.timeLeft ) /
+        const auto& timeParticle = m_particles[ i ];
+        timeParticle->timeLeft += deltaTime.asMilliseconds();
+        const auto percentage = static_cast< float >( timeParticle->timeLeft ) /
                            static_cast< float >( m_data.timeoutInMS );
 
         if ( percentage < 1.f )
         {
           const auto nextColor =
             ColorHelper::getNextColor(
-              timeParticle.initialColor,
+              timeParticle->initialColor,
               m_data.endColor,
               percentage );
 
-          timeParticle.shape.setFillColor( nextColor );
+          timeParticle->shape.setFillColor( nextColor );
         }
         else
         {
+          delete m_particles[ i ];
           m_particles.erase( m_particles.begin() + i );
         }
       }
@@ -93,7 +103,7 @@ namespace nx
     const ParticleLayoutData_t& getParticleOptions() const override { return m_data; }
 
     [[nodiscard]]
-    std::deque< TimedParticle_t > &getParticles() override { return m_particles; }
+    std::deque< TimedParticle_t * > &getParticles() override { return m_particles; }
 
     protected:
 
@@ -101,11 +111,13 @@ namespace nx
 
     protected:
 
-      const GlobalInfo_t& m_globalInfo;
-      std::deque< TimedParticle_t > m_particles;
+      const GlobalInfo_t &m_globalInfo;
+      std::deque< TimedParticle_t * > m_particles;
 
       std::mt19937 m_rand;
       ParticleLayoutData_t m_data;
+
+      sf::Clock m_clock;
 
   };
 
