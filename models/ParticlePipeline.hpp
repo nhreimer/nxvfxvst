@@ -8,7 +8,7 @@
 #include "models/modifier/PassthroughParticleModifier.hpp"
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
-#include "models/modifier/TrailEchoModifier.hpp"
+#include "models/modifier/FreeFallModifier.hpp"
 
 namespace nx
 {
@@ -76,8 +76,8 @@ namespace nx
             changeModifier< ParticleFullMeshLineModifier >();
 
           ImGui::SameLine();
-          if ( ImGui::RadioButton( "Trail Echo", m_modifier->getType() == E_TrailEchoModifier ) )
-            changeModifier< TrailEchoModifier >();
+          if ( ImGui::RadioButton( "Free Fall", m_modifier->getType() == E_FreeFallModifier ) )
+            changeModifier< FreeFallModifier >();
 
         }
         ImGui::TreePop();

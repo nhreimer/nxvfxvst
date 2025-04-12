@@ -25,7 +25,9 @@ namespace nx
 
     EventFacadeApp()
       : m_pipelines( m_globalInfo )
-    {}
+    {
+      for ( int i = 1; i < m_midiGen.size(); ++i ) m_midiGen[ i ].toggleMute();
+    }
 
     void processVstEvent( const Steinberg::Vst::Event & event )
     {

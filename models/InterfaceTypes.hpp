@@ -28,6 +28,6 @@ namespace nx
     E_NoModifier,
     E_SequentialModifier,
     E_FullMeshModifier,
-    E_TrailEchoModifier
+    E_FreeFallModifier
   };
 }

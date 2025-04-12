@@ -22,6 +22,8 @@ namespace nx
 
     float feedbackFade = 0.05f; // 0 = no fade, 1 = instant clear
     sf::BlendMode feedbackBlendMode { sf::BlendAdd };
+
+    float feedbackRotation = 0.f;  // degrees
   };
 
   class SmearShader final : public IShader
@@ -86,7 +88,9 @@ namespace nx
     void trigger(const Midi_t &midi) override
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
+      {
         m_easing.trigger();
+      }
     }
 
     void drawMenu() override
@@ -181,14 +185,14 @@ namespace nx
       m_shader.setUniform("smearTint", tintVec);
 
       // 1. Use the previous feedback frame as input
-      const sf::Sprite feedbackSprite(m_feedbackTexture.getTexture());
+      sf::Sprite feedbackSprite( m_feedbackTexture.getTexture() );
 
       // 2. Apply the smear shader TO the feedback (draw into m_outputTexture)
       m_outputTexture.clear();
       m_outputTexture.draw(feedbackSprite, &m_shader);
       m_outputTexture.display();
 
-      // 3. Fade feedback with a semi-transparent black quad
+      // 3. Fade feedback with a semi-transparent black quad to prevent infinite trails
       m_feedbackFadeShape.setFillColor(
         sf::Color(0, 0, 0,
                     static_cast<uint8_t>( 255 * m_data.feedbackFade ) ) );
