@@ -76,9 +76,46 @@ namespace nx
 
       m_outputTexture.clear(sf::Color::Transparent);
 
-      for ( const auto * p : particles )
+      for (size_t i = 0; i < particles.size(); ++i)
       {
-        const sf::Vector2f pos = p->shape.getPosition();
+        for (size_t j = i + 1; j < particles.size(); ++j)
+        {
+          const sf::Vector2f posA = particles[i]->shape.getPosition();
+          const sf::Vector2f posB = particles[j]->shape.getPosition();
+
+          const float xA = posA.x * m_data.noiseScale;
+          const float yA = posA.y * m_data.noiseScale;
+          const float xB = posB.x * m_data.noiseScale;
+          const float yB = posB.y * m_data.noiseScale;
+
+          const sf::Vector2f offsetA =
+          {
+            (getNoise(xA + m_time, yA) - 0.5f) * 2.f * m_data.deformStrength,
+            (getNoise(xA, yA + m_time) - 0.5f) * 2.f * m_data.deformStrength
+          };
+
+          const sf::Vector2f offsetB =
+          {
+            (getNoise(xB + m_time, yB) - 0.5f) * 2.f * m_data.deformStrength,
+            (getNoise(xB, yB + m_time) - 0.5f) * 2.f * m_data.deformStrength
+          };
+
+          sf::Vector2f warpedA = posA + offsetA;
+          sf::Vector2f warpedB = posB + offsetB;
+
+          // GradientLine line;
+          // line.setStart(warpedA);
+          // line.setEnd(warpedB);
+          // line.setGradient( sf::Color::White, sf::Color::White );
+          sf::VertexArray line(sf::PrimitiveType::Lines, 2);
+          line[0] = sf::Vertex(warpedA, particles[i]->shape.getFillColor());
+          line[1] = sf::Vertex(warpedB, particles[j]->shape.getFillColor());
+          m_outputTexture.draw(line);
+        }
+
+        m_outputTexture.draw( particles[ i ]->shape );
+
+        const sf::Vector2f pos = particles[ i ]->shape.getPosition();
         const float x = pos.x * m_data.noiseScale;
         const float y = pos.y * m_data.noiseScale;
 
@@ -87,20 +124,39 @@ namespace nx
 
         sf::Vector2f warpedPos = pos + sf::Vector2f(offsetX, offsetY);
 
-        m_outputTexture.draw(p->shape);
+        m_outputTexture.draw(particles[ i ]->shape);
         // Optionally draw a ghost circle at the deformed position
-        sf::CircleShape shape = p->shape;
+        sf::CircleShape shape = particles[ i ]->shape;
         shape.setPosition(warpedPos);
         m_outputTexture.draw(shape);
-
-        // Optionally draw a line from original to warped
-        GradientLine line;
-        line.setStart( pos );
-        line.setEnd( warpedPos );
-        line.setColorStart( sf::Color::White );
-        line.setColorEnd( sf::Color::White );
-        m_outputTexture.draw( line );
       }
+
+      //
+      // for ( const auto * p : particles )
+      // {
+      //   const sf::Vector2f pos = p->shape.getPosition();
+      //   const float x = pos.x * m_data.noiseScale;
+      //   const float y = pos.y * m_data.noiseScale;
+      //
+      //   const float offsetX = (getNoise(x + m_time, y) - 0.5f) * 2.f * m_data.deformStrength;
+      //   const float offsetY = (getNoise(x, y + m_time) - 0.5f) * 2.f * m_data.deformStrength;
+      //
+      //   sf::Vector2f warpedPos = pos + sf::Vector2f(offsetX, offsetY);
+      //
+      //   m_outputTexture.draw(p->shape);
+      //   // Optionally draw a ghost circle at the deformed position
+      //   sf::CircleShape shape = p->shape;
+      //   shape.setPosition(warpedPos);
+      //   m_outputTexture.draw(shape);
+      //
+      //   // Optionally draw a line from original to warped
+      //   GradientLine line;
+      //   line.setStart( pos );
+      //   line.setEnd( warpedPos );
+      //   line.setColorStart( sf::Color::White );
+      //   line.setColorEnd( sf::Color::White );
+      //   m_outputTexture.draw( line );
+      // }
 
       m_outputTexture.display();
 
