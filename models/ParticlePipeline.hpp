@@ -9,6 +9,7 @@
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 #include "models/modifier/FreeFallModifier.hpp"
+#include "models/modifier/PerlinDeformerModifier.hpp"
 
 namespace nx
 {
@@ -79,6 +80,8 @@ namespace nx
           if ( ImGui::RadioButton( "Free Fall", m_modifier->getType() == E_FreeFallModifier ) )
             changeModifier< FreeFallModifier >();
 
+          if ( ImGui::RadioButton( "Perlin Deformer", m_modifier->getType() == E_PerlinDeformerModifier ) )
+            changeModifier< PerlinDeformerModifier >();
         }
         ImGui::TreePop();
         ImGui::Spacing();
