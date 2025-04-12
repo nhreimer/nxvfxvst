@@ -128,8 +128,6 @@ namespace nx
     {
       // draw ImGui last so it sits on top of the screen
       ImGui::Begin( "nxvfx", nullptr, ImGuiWindowFlags_AlwaysAutoResize );
-      ImGui::Text( "FPS %0.2f", ImGui::GetIO().Framerate );
-      // TODO: draw ONLY the active one
 
       if ( m_midiGenIsRunning )
       {
@@ -146,10 +144,23 @@ namespace nx
         if ( ImGui::Button( "Start MIDI" ) )
         {
           for ( auto& midiGen : m_midiGen )
-            midiGen.run( m_onEvent );
+            midiGen.run();
 
           m_midiGenIsRunning = true;
         }
+      }
+
+      for ( auto& midiGen : m_midiGen )
+      {
+        ImGui::PushID( &midiGen );
+        bool isMuted = midiGen.isMuted();
+        if ( ImGui::Checkbox( "mute channel", &isMuted ) ) midiGen.toggleMute();
+        ImGui::SameLine();
+        if ( ImGui::Button( "send midi" ) )
+        {
+          midiGen.next();
+        }
+        ImGui::PopID();
       }
 
       ImGui::End();
@@ -169,11 +180,19 @@ namespace nx
 
     bool m_midiGenIsRunning { false };
 
+    const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent
+    {
+      [ & ]( const Steinberg::Vst::Event & event )
+      {
+        processVstEvent( event );
+      }
+    };
+
     std::array< test::MidiGenerator, 4 > m_midiGen {
-      test::MidiGenerator { 0, 1000 },
-      test::MidiGenerator { 1, 1100 },
-      test::MidiGenerator { 2, 1200 },
-      test::MidiGenerator { 3, 1300 } };
+      test::MidiGenerator { 0, 1000, m_onEvent },
+      test::MidiGenerator { 1, 1100, m_onEvent },
+      test::MidiGenerator { 2, 1200, m_onEvent },
+      test::MidiGenerator { 3, 1300, m_onEvent } };
 
     GlobalInfo_t m_globalInfo;
 
@@ -185,14 +204,6 @@ namespace nx
     // receives midi events on the processor thread
     // and processes them on the controller thread
     Concurrency::concurrent_queue< Midi_t > m_queue;
-
-    const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent
-    {
-      [ & ]( const Steinberg::Vst::Event & event )
-      {
-        processVstEvent( event );
-      }
-    };
 
   };
 

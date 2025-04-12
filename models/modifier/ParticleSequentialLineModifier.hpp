@@ -12,8 +12,8 @@ namespace nx
   {
   public:
 
-    explicit ParticleSequentialLineModifier( const GlobalInfo_t& winfo )
-      : m_winfo( winfo )
+    explicit ParticleSequentialLineModifier( const GlobalInfo_t& globablInfo )
+      : m_globalInfo( globablInfo )
     {}
 
     void drawMenu() override
@@ -59,9 +59,9 @@ namespace nx
     sf::RenderTexture& modifyParticles( const ParticleLayoutData_t& particleLayoutData,
                                         std::deque< TimedParticle_t * >& particles ) override
     {
-      if ( m_outputTexture.getSize() != m_winfo.windowSize )
+      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
       {
-        if ( !m_outputTexture.resize( m_winfo.windowSize ) )
+        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
         {
           LOG_ERROR( "failed to resize sequential line texture" );
         }
@@ -100,7 +100,7 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t& m_winfo;
+    const GlobalInfo_t& m_globalInfo;
     sf::RenderTexture m_outputTexture;
 
     ParticleLineData_t m_data;

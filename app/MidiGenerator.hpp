@@ -9,15 +9,32 @@ namespace nx::test
 
   public:
 
-    MidiGenerator( int16_t channel, int32_t maxDelay )
+    MidiGenerator( int16_t channel, int32_t maxDelay, const std::function< void( const Steinberg::Vst::Event& ) >& onEvent )
       : m_rand( ++m_seed ),
         m_channel( channel ),
-        m_maxDelay( maxDelay )
+        m_maxDelay( maxDelay ),
+        m_onEvent( onEvent )
     {}
 
     bool isRunning() const { return m_isRunning; }
 
-    void run( const std::function< void( const Steinberg::Vst::Event& ) >& onEvent )
+    bool isMuted() const { return m_isMuted; }
+    void toggleMute() { m_isMuted = !m_isMuted; }
+
+    void next()
+    {
+      if ( !m_isRunning )
+      {
+        Steinberg::Vst::Event vstEvent;
+        vstEvent.type = Steinberg::Vst::Event::kNoteOnEvent;
+        vstEvent.noteOn.channel = m_channel;
+        vstEvent.noteOn.pitch = m_rand() % 88 + 21;
+        vstEvent.noteOn.velocity = std::max( ( m_rand() % 100 ) / 100.f, .5f );
+        m_onEvent( vstEvent );
+      }
+    }
+
+    void run()
     {
       if ( m_thread )
       {
@@ -32,13 +49,19 @@ namespace nx::test
         {
           while ( m_isRunning )
           {
+            if ( m_isMuted )
+            {
+              std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+              continue;
+            }
+
             Steinberg::Vst::Event vstEvent;
             vstEvent.type = Steinberg::Vst::Event::kNoteOnEvent;
             vstEvent.noteOn.channel = m_channel;
             vstEvent.noteOn.pitch = m_rand() % 88 + 21;
             vstEvent.noteOn.velocity = std::max( ( m_rand() % 100 ) / 100.f, .5f );
 
-            onEvent( vstEvent );
+            m_onEvent( vstEvent );
 
             std::this_thread::sleep_for(
               std::chrono::milliseconds( m_rand() % m_maxDelay ) );
@@ -63,6 +86,8 @@ namespace nx::test
     }
 
   private:
+    const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent;
+    bool m_isMuted { false };
     bool m_isRunning { false };
     std::mt19937 m_rand;
     int16_t m_channel { 0 };

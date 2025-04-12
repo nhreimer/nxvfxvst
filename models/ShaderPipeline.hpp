@@ -8,6 +8,7 @@
 #include "models/shader/PulseShader.hpp"
 #include "models/shader/RumbleShader.hpp"
 #include "models/shader/LayeredGlitchShader.hpp"
+#include "models/shader/SmearShader.hpp"
 
 namespace nx
 {
@@ -155,6 +156,10 @@ namespace nx
           shader = addShader< RumbleShader >( j );
           break;
 
+        case E_ShaderType::E_SmearShader:
+          shader = addShader< SmearShader >( j );
+          break;
+
         default:
           LOG_ERROR( "Unsupported shader type" );
           break;
@@ -213,6 +218,10 @@ namespace nx
         ImGui::SameLine();
         if ( ImGui::Button( "Strobe##1" ) )
           createShader< StrobeShader >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Smear##1" ) )
+          createShader< SmearShader >();
 
         ImGui::TreePop();
         ImGui::Spacing();

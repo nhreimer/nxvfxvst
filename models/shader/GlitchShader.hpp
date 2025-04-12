@@ -57,7 +57,7 @@ namespace nx
         { "glitchPulseDecay", m_data.glitchPulseDecay },
         { "glitchPulseBoost", m_data.glitchPulseBoost },
         { "bandCount", m_data.bandCount },
-           { "easing", m_easing.serialize() },
+        { "easing", m_easing.serialize() },
         { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }

@@ -8,6 +8,7 @@
 #include "models/modifier/PassthroughParticleModifier.hpp"
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
+#include "models/modifier/TrailEchoModifier.hpp"
 
 namespace nx
 {
@@ -73,6 +74,11 @@ namespace nx
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Mesh", m_modifier->getType() == E_FullMeshModifier ) )
             changeModifier< ParticleFullMeshLineModifier >();
+
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Trail Echo", m_modifier->getType() == E_TrailEchoModifier ) )
+            changeModifier< TrailEchoModifier >();
+
         }
         ImGui::TreePop();
         ImGui::Spacing();

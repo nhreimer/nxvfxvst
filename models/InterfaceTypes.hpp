@@ -11,7 +11,8 @@ namespace nx
     E_RippleShader,
     E_StrobeShader,
     E_KaleidoscopeShader,
-    E_RumbleShader
+    E_RumbleShader,
+    E_SmearShader
   };
 
   enum E_LayoutType : int8_t
@@ -26,6 +27,7 @@ namespace nx
   {
     E_NoModifier,
     E_SequentialModifier,
-    E_FullMeshModifier
+    E_FullMeshModifier,
+    E_TrailEchoModifier
   };
 }
