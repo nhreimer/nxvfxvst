@@ -19,6 +19,9 @@ namespace nx
 
     float wiggleAmplitude { 0.4f };    // in radians
     float wiggleFrequency { 5.0f };    // Hz
+
+    float feedbackFade = 0.05f; // 0 = no fade, 1 = instant clear
+    sf::BlendMode feedbackBlendMode { sf::BlendAdd };
   };
 
   class SmearShader final : public IShader
@@ -53,11 +56,27 @@ namespace nx
           { "falloffPower", m_data.falloffPower },
           { "wiggleAmplitude", m_data.wiggleAmplitude },
           { "wiggleFrequency", m_data.wiggleFrequency },
+          { "feedbackFade", m_data.feedbackFade },
+          { "feedbackBlend", SerialHelper::convertBlendModeToString( m_data.feedbackBlendMode ) },
           { "easing", m_easing.serialize() },
           { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
-    void deserialize(const nlohmann::json &j) override {}
+    void deserialize(const nlohmann::json &j) override
+    {
+      m_data.isActive = j.at( "isActive" ).get<bool>();
+      m_data.intensity = j.at( "intensity" ).get<float>();
+      m_data.length = j.at( "length" ).get<float>();
+      m_data.tint = SerialHelper::convertColorFromJson( j.at( "tint" ), sf::Color::White );
+      m_data.sampleCount = j.at( "sampleCount" ).get<int>();
+      m_data.jitterAmount = j.at( "jitterAmount" ).get<float>();
+      m_data.brightnessBoost = j.at( "brightnessBoost" ).get<float>();
+      m_data.brightnessPulse = j.at( "brightnessPulse" ).get<float>();
+      m_data.wiggleAmplitude = j.at( "wiggleAmplitude" ).get<float>();
+      m_data.wiggleFrequency = j.at( "wiggleFrequency" ).get<float>();
+      m_data.directionAngleInRadians = j.at( "directionAngleInRadians" ).get<float>();
+      m_data.falloffPower = j.at( "falloffPower" ).get<float>();
+    }
 
     [[nodiscard]]
     E_ShaderType getType() const override { return E_ShaderType::E_SmearShader; }
@@ -87,6 +106,8 @@ namespace nx
         ImGui::SliderFloat("Jitter Amount", &m_data.jitterAmount, 0.f, 0.3f);
         ImGui::SliderFloat("Falloff Power", &m_data.falloffPower, 0.5f, 4.f);
 
+        ImGui::SliderFloat("Feedback Fade", &m_data.feedbackFade, 0.0f, 1.0f);
+
         ImVec4 color = m_data.tint;
         if ( ImGui::ColorPicker4( "Particle Fill##1",
                                   reinterpret_cast< float * >( &color ),
@@ -95,6 +116,9 @@ namespace nx
         {
           m_data.tint = color;
         }
+
+        ImGui::Separator();
+        MenuHelper::drawBlendOptions( m_data.feedbackBlendMode );
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -115,13 +139,19 @@ namespace nx
     {
       if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) ||
+             !m_feedbackTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "failed to resize smear texture" );
         }
+        else
+        {
+          m_feedbackTexture.clear( sf::Color::Black );
+          m_feedbackTexture.display();
+          m_feedbackFadeShape.setSize( { static_cast< float >(inputTexture.getSize().x),
+                                            static_cast< float >(inputTexture.getSize().y) } );
+        }
       }
-
-      m_outputTexture.clear( sf::Color::Transparent );
 
       const float easing = m_easing.getEasing();
 
@@ -150,10 +180,30 @@ namespace nx
 
       m_shader.setUniform("smearTint", tintVec);
 
-      m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
+      // 1. Use the previous feedback frame as input
+      const sf::Sprite feedbackSprite(m_feedbackTexture.getTexture());
+
+      // 2. Apply the smear shader TO the feedback (draw into m_outputTexture)
+      m_outputTexture.clear();
+      m_outputTexture.draw(feedbackSprite, &m_shader);
       m_outputTexture.display();
 
-      return m_outputTexture;
+      // 3. Fade feedback with a semi-transparent black quad
+      m_feedbackFadeShape.setFillColor(
+        sf::Color(0, 0, 0,
+                    static_cast<uint8_t>( 255 * m_data.feedbackFade ) ) );
+
+      m_feedbackTexture.draw(m_feedbackFadeShape, sf::BlendAlpha);
+
+      // 4. Add current smeared frame into feedback buffer
+      const sf::Sprite smearedFrame(m_outputTexture.getTexture());
+      m_feedbackTexture.draw(smearedFrame, m_data.feedbackBlendMode);
+
+      // 5. Display feedback buffer
+      m_feedbackTexture.display();
+
+      // 6. Output the feedback as final result
+      return m_feedbackTexture;
     }
 
   private:
@@ -163,9 +213,14 @@ namespace nx
 
     sf::Clock m_clock;
     sf::Shader m_shader;
+
     sf::RenderTexture m_outputTexture;
+    sf::RenderTexture m_feedbackTexture;
+
     TimeEasing m_easing;
     MidiNoteControl m_midiNoteControl;
+
+    sf::RectangleShape m_feedbackFadeShape;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform vec2 resolution;
