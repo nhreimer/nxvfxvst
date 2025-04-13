@@ -177,15 +177,15 @@ namespace nx
       m_shader.setUniform("wiggleFrequency", m_data.wiggleFrequency);
 
        const auto tintVec = sf::Glsl::Vec3(
-           m_data.tint.r / 255.f,
-           m_data.tint.g / 255.f,
-           m_data.tint.b / 255.f
+           static_cast< float >(m_data.tint.r) / 255.f,
+           static_cast< float >(m_data.tint.g) / 255.f,
+           static_cast< float >(m_data.tint.b) / 255.f
        );
 
       m_shader.setUniform("smearTint", tintVec);
 
       // 1. Use the previous feedback frame as input
-      sf::Sprite feedbackSprite( m_feedbackTexture.getTexture() );
+      const sf::Sprite feedbackSprite( m_feedbackTexture.getTexture() );
 
       // 2. Apply the smear shader TO the feedback (draw into m_outputTexture)
       m_outputTexture.clear();

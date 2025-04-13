@@ -157,3 +157,25 @@ Contributions, ideas, and suggestions are welcome!
 
 ### Reaper v7.28. nxvfxvst v1.0.1.0a. 1 channel, 2 effects
 ![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWd1ZXEwMHl0NDJlczVmYnQ3YzAzY2w3bGU3dDE1M3QwZjloY3JiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJvrv2p5RFCdWlpItl/giphy.gif)
+
+## Design
+
+```text
+Outline of flow:
+
+[ChannelPipeline]
+├── [ParticlePipeline]
+│     ├── ParticleLayout (owns particles)
+│     └── ModifierPipeline (draws into an internal RenderTexture)
+│            └── owns its own RenderTexture
+├── [ShaderPipeline]
+│     └── uses that ModifierPipeline’s RenderTexture as input
+└── owns the draw() chain: window ← ShaderPipeline ← ParticlePipeline
+
+```
+
+RenderTextures are rendering artifacts — they're not "global" in a semantic sense. Channel-specific ParticlePipeline or ModifierPipeline should own and update them. That way:
+
+* Each channel can buffer its own visuals
+* You can blend them in different modes
+* You can support stacking multiple ChannelPipelines

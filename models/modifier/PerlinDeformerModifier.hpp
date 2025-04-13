@@ -11,6 +11,7 @@ namespace nx
     float timeScale = 1.0f;       // temporal speed
     float deformStrength = 10.f;  // how much to offset
     E_NoiseType noiseType = E_NoiseType::E_FBM;
+    float lineThickness = 2.0f;
   };
 
   class PerlinDeformerModifier final : public IParticleModifier
@@ -38,6 +39,7 @@ namespace nx
         ImGui::SliderFloat("Deform Strength", &m_data.deformStrength, 0.f, 100.f);
         ImGui::SliderFloat("Noise Scale", &m_data.noiseScale, 0.001f, 0.1f, "%.4f");
         ImGui::SliderFloat("Time Speed", &m_data.timeScale, 0.f, 5.f);
+        ImGui::SliderFloat("Line Thickness##2", &m_data.lineThickness, 0.f, 30.f);
 
         if ( ImGui::RadioButton( "Hash##1", m_data.noiseType == E_NoiseType::E_Hash ) )
         {
@@ -58,9 +60,7 @@ namespace nx
     }
 
     void update(const sf::Time &deltaTime) override
-    {
-      m_time += deltaTime.asSeconds() * m_data.timeScale;
-    }
+    {}
 
     [[nodiscard]]
     sf::RenderTexture &modifyParticles(const ParticleLayoutData_t &particleLayoutData,
@@ -103,13 +103,14 @@ namespace nx
           sf::Vector2f warpedA = posA + offsetA;
           sf::Vector2f warpedB = posB + offsetB;
 
-          // GradientLine line;
-          // line.setStart(warpedA);
-          // line.setEnd(warpedB);
-          // line.setGradient( sf::Color::White, sf::Color::White );
-          sf::VertexArray line(sf::PrimitiveType::Lines, 2);
-          line[0] = sf::Vertex(warpedA, particles[i]->shape.getFillColor());
-          line[1] = sf::Vertex(warpedB, particles[j]->shape.getFillColor());
+          GradientLine line;
+          line.setStart(warpedA);
+          line.setEnd(warpedB);
+          line.setWidth( m_data.lineThickness );
+          line.setGradient( particles[i]->shape.getFillColor(), particles[j]->shape.getFillColor() );
+          // sf::VertexArray line(sf::PrimitiveType::Lines, 2);
+          // line[0] = sf::Vertex(warpedA, particles[i]->shape.getFillColor());
+          // line[1] = sf::Vertex(warpedB, particles[j]->shape.getFillColor());
           m_outputTexture.draw(line);
         }
 
@@ -130,33 +131,6 @@ namespace nx
         shape.setPosition(warpedPos);
         m_outputTexture.draw(shape);
       }
-
-      //
-      // for ( const auto * p : particles )
-      // {
-      //   const sf::Vector2f pos = p->shape.getPosition();
-      //   const float x = pos.x * m_data.noiseScale;
-      //   const float y = pos.y * m_data.noiseScale;
-      //
-      //   const float offsetX = (getNoise(x + m_time, y) - 0.5f) * 2.f * m_data.deformStrength;
-      //   const float offsetY = (getNoise(x, y + m_time) - 0.5f) * 2.f * m_data.deformStrength;
-      //
-      //   sf::Vector2f warpedPos = pos + sf::Vector2f(offsetX, offsetY);
-      //
-      //   m_outputTexture.draw(p->shape);
-      //   // Optionally draw a ghost circle at the deformed position
-      //   sf::CircleShape shape = p->shape;
-      //   shape.setPosition(warpedPos);
-      //   m_outputTexture.draw(shape);
-      //
-      //   // Optionally draw a line from original to warped
-      //   GradientLine line;
-      //   line.setStart( pos );
-      //   line.setEnd( warpedPos );
-      //   line.setColorStart( sf::Color::White );
-      //   line.setColorEnd( sf::Color::White );
-      //   m_outputTexture.draw( line );
-      // }
 
       m_outputTexture.display();
 

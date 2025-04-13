@@ -12,11 +12,13 @@ namespace nx
       m_messageClock.restart();
     }
 
+    [[nodiscard]]
     bool hasExpired() const
     {
-      return m_messageClock.getElapsedTime().asSeconds() >= m_timeoutInSeconds;
+      return m_messageClock.getElapsedTime().asSeconds() >= static_cast< float >( m_timeoutInSeconds );
     }
 
+    [[nodiscard]]
     std::string_view getMessage() const { return m_message; }
 
   private:

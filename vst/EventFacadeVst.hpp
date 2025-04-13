@@ -113,6 +113,11 @@ namespace nx
       // update
       {
         const auto delta = m_clock.restart();
+
+        // synchronize the delta amounts even though it's not the absolute runtime, it's close enough
+        m_globalInfo.elapsedTimeSeconds += delta.asSeconds();
+        ++m_globalInfo.frameCount;
+
         ImGui::SFML::Update( window, delta );
         consumeMidiEvents();
         m_pipelines.update( delta );
@@ -137,9 +142,10 @@ namespace nx
     void onResize( sf::RenderWindow & window, uint32_t width, uint32_t height )
     {
       m_globalInfo.windowSize = { width, height };
+      m_globalInfo.windowHalfSize = { static_cast< float >(width) / 2.f, static_cast< float >(height) / 2.f };
       window.setSize( m_globalInfo.windowSize );
       m_globalInfo.windowView.setSize( { static_cast< float >(width), static_cast< float >(height) } );
-      m_globalInfo.windowView.setCenter( { static_cast< float >(width) / 2.f, static_cast< float >(height) / 2.f } );
+      m_globalInfo.windowView.setCenter( m_globalInfo.windowHalfSize );
     }
 
   private:

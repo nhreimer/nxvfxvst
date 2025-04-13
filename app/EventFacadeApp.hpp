@@ -93,6 +93,8 @@ namespace nx
       // update
       {
         const auto delta = m_timer.restart();
+        m_globalInfo.elapsedTimeSeconds += delta.asSeconds();
+        ++m_globalInfo.frameCount;
         ImGui::SFML::Update( window, delta );
         consumeMidiEvents();
         m_pipelines.update( delta );
@@ -122,6 +124,7 @@ namespace nx
       m_globalInfo.windowSize = { width, height };
       m_globalInfo.windowView.setSize( { static_cast< float >(width),
                                               static_cast< float >(height) } );
+      m_globalInfo.windowHalfSize = { static_cast< float >(width) / 2, static_cast< float >(height) / 2 };
     }
 
   private:

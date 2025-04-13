@@ -93,6 +93,7 @@ namespace nx
       m_modifier->drawMenu();
     }
 
+    [[nodiscard]]
     sf::RenderTexture& draw() const
     {
       return m_modifier->modifyParticles(
@@ -100,6 +101,7 @@ namespace nx
         m_layout->getParticles() );
     }
 
+    [[nodiscard]]
     nlohmann::json saveParticlePipeline() const
     {
       nlohmann::json j =
