@@ -73,6 +73,15 @@ namespace nx
       return E_InvalidShader;
     }
 
+    static E_ModifierType convertStringToModifierType( const std::string& modifierType )
+    {
+      if ( modifierType == "SequentialModifier" ) return E_SequentialModifier;
+      if ( modifierType == "FullMeshModifier" ) return E_FullMeshModifier;
+      if ( modifierType == "FreeFallModifier" ) return E_FreeFallModifier;
+      if ( modifierType == "PerlinDeformerModifier" ) return E_PerlinDeformerModifier;
+      return E_InvalidModifier;
+    }
+
     static std::string convertBlendModeToString( const sf::BlendMode& mode )
     {
       if ( mode == sf::BlendAdd ) return "BlendAdd";

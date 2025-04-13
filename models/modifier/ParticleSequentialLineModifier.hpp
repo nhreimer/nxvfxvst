@@ -30,7 +30,9 @@ namespace nx
     }
 
     bool isActive() const override { return m_isActive; }
-    void processMidiEvent(const Midi_t &midiEvent) override {}
+
+    void processMidiEvent(const Midi_t &midiEvent) override
+    {}
 
     nlohmann::json serialize() const override
     {

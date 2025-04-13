@@ -44,12 +44,35 @@ public:
 
   void loadModifierPipeline( const nlohmann::json& j )
   {
-    // m_modifiers.clear();
-    // for ( const auto& modifierData : j )
-    // {
-    //   // auto type = shaderData.value("type", "" );
-    //   // createShader( SerialHelper::convertStringToShaderType( type ), shaderData );
-    // }
+    m_modifiers.clear();
+    for ( const auto& modifierData : j )
+    {
+      const auto type =
+        SerialHelper::convertStringToModifierType( modifierData.value("type", "" ) );
+      switch ( type )
+      {
+        case E_ModifierType::E_SequentialModifier:
+          deserializeModifier< ParticleSequentialLineModifier >( modifierData );
+          break;
+
+        case E_ModifierType::E_FullMeshModifier:
+          deserializeModifier< ParticleFullMeshLineModifier >( modifierData );
+          break;
+
+        case E_ModifierType::E_PerlinDeformerModifier:
+          deserializeModifier< PerlinDeformerModifier >( modifierData );
+          break;
+
+        case E_ModifierType::E_FreeFallModifier:
+          deserializeModifier< FreeFallModifier >( modifierData );
+          break;
+
+        default:
+          LOG_ERROR( "unable to deserialize modifier type" );
+          break;
+      }
+
+    }
   }
 
   void drawMenu()
@@ -198,6 +221,15 @@ private:
   {
     auto& modifier = m_modifiers.emplace_back< std::unique_ptr< T > >(
       std::make_unique< T >( m_globalInfo ) );
+    return modifier.get();
+  }
+
+  template < typename T >
+  IParticleModifier * deserializeModifier( const nlohmann::json& j )
+  {
+    auto& modifier = m_modifiers.emplace_back< std::unique_ptr< T > >(
+      std::make_unique< T >( m_globalInfo ) );
+    modifier->deserialize( j );
     return modifier.get();
   }
 

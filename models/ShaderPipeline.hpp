@@ -129,35 +129,35 @@ namespace nx
       switch ( shaderType )
       {
         case E_ShaderType::E_GlitchShader:
-            shader = addShader< LayeredGlitchShader >( j );
+            shader = deserializeShader< LayeredGlitchShader >( j );
           break;
 
         case E_ShaderType::E_PulseShader:
-          shader = addShader< PulseShader >( j );
+          shader = deserializeShader< PulseShader >( j );
           break;
 
         case E_ShaderType::E_KaleidoscopeShader:
-          shader = addShader< KaleidoscopeShader >( j );
+          shader = deserializeShader< KaleidoscopeShader >( j );
           break;
 
         case E_ShaderType::E_BlurShader:
-          shader = addShader< BlurShader >( j );
+          shader = deserializeShader< BlurShader >( j );
           break;
 
         case E_ShaderType::E_StrobeShader:
-          shader = addShader< StrobeShader >( j );
+          shader = deserializeShader< StrobeShader >( j );
           break;
 
         case E_ShaderType::E_RippleShader:
-          shader = addShader< RippleShader >( j );
+          shader = deserializeShader< RippleShader >( j );
           break;
 
         case E_ShaderType::E_RumbleShader:
-          shader = addShader< RumbleShader >( j );
+          shader = deserializeShader< RumbleShader >( j );
           break;
 
         case E_ShaderType::E_SmearShader:
-          shader = addShader< SmearShader >( j );
+          shader = deserializeShader< SmearShader >( j );
           break;
 
         default:
@@ -179,7 +179,7 @@ namespace nx
     }
 
     template < typename T >
-    IShader * addShader( const nlohmann::json& j )
+    IShader * deserializeShader( const nlohmann::json& j )
     {
       auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
         std::make_unique< T >( m_globalInfo ) );
