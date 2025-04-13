@@ -12,31 +12,18 @@ that react to midi events.
 * Ability to run in Standalone and VST3 Plugin
   * In Standalone (testing only, no audio)
     * Midi Generator that pushes events on different threads in order to
-      simulate DAW Processor threads.
+      simulate DAW Processor threads and stress testing
 * Multichannel support
   * Route midi output to independent VFX chains
-  * Infinite shader chaining per channel
+  * Infinite shader and modifier chaining per channel
 * Each effect can be assigned user-specified midi notes for triggers
 * JSON serialization for importing/exporting (via clipboard at the moment)
 * Real-time VFX Engine that synchronize to midi events
   * Effects
-    * Blur (Gaussian -- directional, strength, brighten, adjustable blur granularity)
-    * Glitch (chroma flicker, noise, scanlines, pixel jumps, band counts, strobe)
-    * Kaleidoscope (segments, rotation, centering)
-    * Ripple (position, decay, speed, frequency, amplitude)
-    * Rumble (noise, color desync, decay, direction, frequency, strength)
-    * Strobe (decay, strength)
   * Particle generator
-    * Random (entirely random)
-    * Spiral (spiral positions around the screen based on midi note)
-    * None (good for strobing without particles)
-  * Particle connectors
-    * Sequential (connects one particle to the next particle)
-    * Mesh (connects one particle to all other particles)
-    * None (no lines)
+  * Particle modifiers
   * Easings (for time decays)
-    * many! (for better or worse)
-    * Independent layered easings for smooth visuals
+  * Triggers at multiple stages of a pipeline (for time synchronization)
 
 ### Dependencies
 
@@ -54,8 +41,11 @@ The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 * Save and load to/from files instead of copy/paste
 * Add parameters for VST3 for automation
 * Add OS support for Linux and Mac
-* More VFX, more particles, more particle modifiers!
-* Better UI
+* Better UI design
+  * Better layout
+  * More information/intuitive control naming
+  * Controls work directly with BPM
+* Export video output directly
 
 # Getting Started
 
@@ -161,21 +151,145 @@ Contributions, ideas, and suggestions are welcome!
 ## Design
 
 ```text
-Outline of flow:
-
-[ChannelPipeline]
-├── [ParticlePipeline]
-│     ├── ParticleLayout (owns particles)
-│     └── ModifierPipeline (draws into an internal RenderTexture)
-│            └── owns its own RenderTexture
-├── [ShaderPipeline]
-│     └── uses that ModifierPipeline’s RenderTexture as input
-└── owns the draw() chain: window ← ShaderPipeline ← ParticlePipeline
-
++---------------------+
+|  EventFacadeVST  🔁 |
++---------------------+
+        │
+        ▼
++---------------------+
+|  ChannelPipeline 🔁 |
++---------------------+
+        │
+        ▼
++-------------------+
+|  ParticlePipeline |
++-------------------+
+        │
+        ▼
++---------------------+
+| ModifierPipeline 🔁 |
++---------------------+
+        │
+        ▼
++--------------------+
+|  ShaderPipeline 🔁 |
++--------------------+
+        │
+        ▼
++------------------+
+|   RenderWindow   |
++------------------+
 ```
 
-RenderTextures are rendering artifacts — they're not "global" in a semantic sense. Channel-specific ParticlePipeline or ModifierPipeline should own and update them. That way:
+🔁 = manages multiple instances of a type, e.g., ShaderPipeline manages multiple shaders
 
-* Each channel can buffer its own visuals
-* You can blend them in different modes
-* You can support stacking multiple ChannelPipelines
+## EventFacadeVST
+
+Created by the Win32View, which is an implementation of the VST View interface
+    
+    Handles the event frame, i.e., everything required in a UI loop
+    Forwards events from the VST Controller
+    Manages ImGui and SFML high-level coordination 
+
+## Channel Pipeline
+
+The ChannelPipeline is the top-level coordinator for a single MIDI channel. It handles:
+
+    Receiving MIDI events
+    Updating particle logic
+    Running the full modifier and shader pipelines
+    Rendering the final composited result to the screen
+
+## Particle Pipeline
+
+Manages the particle layout (initial placement & creation) and passes particles to the ModifierPipeline.
+
+    Owns IParticleLayout (e.g., SpiralLayout, RandomBurst)
+    Maintains a container of TimedParticle_t objects
+    Delegates visual transformation to modifiers
+    Sends particle data to the modifier pipeline via std::deque<TimedParticle_t*>
+
+## Modifier Pipeline
+
+Processes a stack of IParticleModifier objects sequentially.
+
+    Operates on std::deque<TimedParticle_t*> from the IParticleLayout implementation
+    Applies transformations (e.g., line connections, gravity, Perlin deformation)
+    Those transformations can directly alter the Particles in a deque or add std::deque<sf::Drawable*>
+    Renders output to an internal sf::RenderTexture that gets handed off to the shader pipeline 
+
+## ShaderPipeline
+
+Applies post-processing shaders to the result of the modifier stack.
+
+    Accepts the RenderTexture from the ModifierPipeline
+    Applies one or more chained fragment shaders (e.g., glow, blur, ripple, glitch)
+    Applies many different types of easings
+    Produces the final visual output for the sf::RenderWindow
+
+## GlobalInfo
+
+A shared read-only context passed throughout all components that help:
+
+```c++
+struct GlobalInfo_t {
+  sf::Vector2u windowSize;
+  sf::View windowView;
+  sf::Vector2f windowHalfSize;
+  bool hideMenu = false;
+  double bpm = 0.0;
+  float elapsedTimeSeconds = 0.0f;
+  std::uint64_t frameCount = 0;
+};
+```
+
+Used for:
+
+    Time-based animation
+    Rhythm-driven effects (via BPM)
+    Window information
+
+## Serialization
+
+Each ChannelPipeline supports full JSON serialization:
+
+    Layout configuration
+    Modifier stack
+    Shader chain
+    UI state
+
+This enables saving and restoring complex visual setups per channel.
+
+## Easing Functions
+
+Easing functions shape how visual effects change over time — they control intensity, scale, opacity, distortion, or any other effect parameter in a way that feels natural, expressive, or rhythmic. Instead of effects snapping on or fading linearly, easings let us inject emotion, timing, and energy into each animation.
+
+Each easing function takes a normalized time value t in the range [0.0, 1.0] and returns a value that modulates the strength or visibility of an effect at that point in time.
+
+### Use Cases:
+
+    Controlling glow or blur intensity over time
+    Adding bounce or flicker to ripple pulses
+    Modulating brightness synced to beat pulses
+    Fading particles in or out with style
+
+Available Easing Types
+```text 
+Name	          Description
+-----------------------------------------------------------------------------------------------
+Linear	          Constant rate of change. No curve — useful for mechanical or unstyled fades.
+Quadratic	  Accelerates or decelerates quickly. Good for soft ease-ins/outs.
+Cubic	          More dramatic curve than quadratic. Smoother transitions with more tension.
+Quartic	          Very sharp ease-in or ease-out. Great for dramatic builds or drops.
+Sine	          Uses a sine wave for smooth natural motion — feels organic.
+Expo	          Starts slow, then rapidly ramps up. Perfect for builds and bursts.
+Bounce	          Simulates physical bouncing — springy and fun for reactive animations.
+Back	          Overshoots slightly then settles — mimics recoil or elastic movement.
+Impulse	          Sudden burst with a rapid decay. Ideal for one-shot flashes.
+Pulse Sine	  Oscillating sine wave. Creates rhythmic pulsing synced to time or BPM.
+Pulse Ping	  Soft ping-pong effect — ramps up and back down smoothly.
+Sparkle Flicker	  High-frequency noise-like flicker — adds chaotic shimmer or sparkle.
+Smooth Pulse	  Curved rise and fall — good for glow or aura-like pulsing.
+```
+
+Additionally, there is a Cumulative Easing, that can combine multiple easings, but it's currently only applied to the LayeredGlitch Effect.
