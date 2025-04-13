@@ -29,7 +29,6 @@ namespace nx
     void update( const sf::Time& deltaTime ) const
     {
       m_layout->update( deltaTime );
-      m_modifier->update( deltaTime );
     }
 
     void processEvent( const sf::Event &event ) const {}

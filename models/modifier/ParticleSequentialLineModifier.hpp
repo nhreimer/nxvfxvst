@@ -11,7 +11,6 @@ namespace nx
   class ParticleSequentialLineModifier final : public IParticleModifier
   {
   public:
-
     explicit ParticleSequentialLineModifier( const GlobalInfo_t& globablInfo )
       : m_globalInfo( globablInfo )
     {}
@@ -29,6 +28,9 @@ namespace nx
         ImGui::Spacing();
       }
     }
+
+    bool isActive() const override { return m_isActive; }
+    void processMidiEvent(const Midi_t &midiEvent) override {}
 
     nlohmann::json serialize() const override
     {
@@ -55,53 +57,39 @@ namespace nx
     void update( const sf::Time &deltaTime ) override
     {}
 
-    [[nodiscard]]
-    sf::RenderTexture& modifyParticles( const ParticleLayoutData_t& particleLayoutData,
-                                        std::deque< TimedParticle_t * >& particles ) override
+    void modify(
+       const ParticleLayoutData_t& particleLayoutData,
+       std::deque< TimedParticle_t* >& particles,
+       std::deque< sf::Drawable* >& outArtifacts ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
-      {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
-        {
-          LOG_ERROR( "failed to resize sequential line texture" );
-        }
-      }
-
-      m_outputTexture.clear();
-
       for ( int i = 0; i < particles.size(); ++i )
       {
         if ( m_data.isActive && i > 0 )
         {
-          GradientLine line;
-          line.setStart( particles[ i - 1 ]->shape.getPosition() );
-          line.setEnd( particles[ i ]->shape.getPosition() );
-          line.setWidth( m_data.lineThickness );
+          auto * line = dynamic_cast< GradientLine* >( outArtifacts.emplace_back( new GradientLine() ) );
+          line->setStart( particles[ i - 1 ]->shape.getPosition() );
+          line->setEnd( particles[ i ]->shape.getPosition() );
+          line->setWidth( m_data.lineThickness );
 
           if ( particles[ i ]->timeLeft > particles[ i - 1 ]->timeLeft )
           {
-            line.setGradient( particles[ i ]->shape.getFillColor(),
+            line->setGradient( particles[ i ]->shape.getFillColor(),
                              particles[ i - 1 ]->shape.getFillColor() );
           }
           else
           {
-            line.setGradient( particles[ i - 1 ]->shape.getFillColor(),
+            line->setGradient( particles[ i - 1 ]->shape.getFillColor(),
                               particles[ i ]->shape.getFillColor() );
           }
-          m_outputTexture.draw( line, m_data.blendMode );
         }
-
-        m_outputTexture.draw( particles[ i ]->shape, particleLayoutData.blendMode );
       }
-
-      m_outputTexture.display();
-      return m_outputTexture;
     }
 
   private:
 
     const GlobalInfo_t& m_globalInfo;
-    sf::RenderTexture m_outputTexture;
+
+    bool m_isActive { true };
 
     ParticleLineData_t m_data;
 

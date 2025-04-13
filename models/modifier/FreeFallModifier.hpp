@@ -1,5 +1,7 @@
 #pragma once
 
+#include "models/IParticleModifier.hpp"
+
 namespace nx
 {
 
@@ -29,6 +31,7 @@ namespace nx
           { "blendMode", SerialHelper::convertBlendModeToString( m_data.blendMode ) }
       };
     }
+
     void deserialize(const nlohmann::json &j) override
     {
       m_data.isActive = j.at( "isActive" ).get<bool>();
@@ -36,11 +39,14 @@ namespace nx
       m_data.blendMode = SerialHelper::convertBlendModeFromString( j.at( "blendMode" ).get<std::string>() );
     }
 
+    bool isActive() const override { return m_isActive; }
+    void processMidiEvent(const Midi_t &midiEvent) override {}
+
     [[nodiscard]]
     E_ModifierType getType() const override { return E_FreeFallModifier; }
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Trail Echoes" ) )
+      if ( ImGui::TreeNode( "Free Fall" ) )
       {
         ImGui::SliderFloat( "##Time Divisor", &m_data.timeDivisor, 0.5f, 50.f, "Time Divisor %0.2f" );
         MenuHelper::drawBlendOptions( m_data.blendMode );
@@ -50,34 +56,26 @@ namespace nx
       }
     }
 
-    void update( const sf::Time &deltaTime ) override {}
-
-    [[nodiscard]]
-    sf::RenderTexture & modifyParticles( const ParticleLayoutData_t &particleLayoutData,
-                                         std::deque< TimedParticle_t * > &particles ) override
+    void update( const sf::Time &deltaTime ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
-      {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
-        {
-          LOG_ERROR( "failed to resize sequential line texture" );
-        }
-      }
+      m_accumulator += deltaTime;
+    }
 
-      m_outputTexture.clear( sf::Color::Transparent );
-
+    void modify(
+       const ParticleLayoutData_t& particleLayoutData,
+       std::deque< TimedParticle_t* >& particles,
+       std::deque< sf::Drawable* >& outArtifacts ) override
+    {
+      // this adjusts particles, it doesn't add any new artifacts
+      // which may mess with upstream modifiers, so be careful of the ordering
+      // whenever using free fall
       for ( int i = 0; i < particles.size(); ++i )
       {
         auto& shape = particles[ i ]->shape;
 
         const auto trail = particles[ i ]->spawnTime / m_data.timeDivisor;
         shape.setPosition( { shape.getPosition().x, shape.getPosition().y + trail } );
-
-        m_outputTexture.draw( shape, m_data.blendMode );
       }
-
-      m_outputTexture.display();
-      return m_outputTexture;
     }
 
   private:
@@ -87,8 +85,7 @@ namespace nx
     FreeFallData_t m_data;
 
     sf::Time m_accumulator;
-
-    sf::RenderTexture m_outputTexture;
+    bool m_isActive { true };
 
   };
 

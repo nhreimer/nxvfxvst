@@ -10,9 +10,17 @@ namespace nx
 
     virtual void update( const sf::Time& deltaTime ) = 0;
 
-    [[nodiscard]]
-    virtual sf::RenderTexture& modifyParticles(
-      const ParticleLayoutData_t& particleLayoutData,
-      std::deque< TimedParticle_t* >& particles ) = 0;
+    virtual bool isActive() const = 0;
+
+    virtual void processMidiEvent( const Midi_t& midiEvent ) = 0;
+
+    ///
+    /// @param particleLayoutData
+    /// @param particles
+    /// @param outArtifacts Ownership is handed off. do NOT manage memory. artifacts are ephemeral.
+    virtual void modify(
+       const ParticleLayoutData_t& particleLayoutData,
+       std::deque< TimedParticle_t* >& particles,
+       std::deque< sf::Drawable* >& outArtifacts ) = 0;
   };
 }

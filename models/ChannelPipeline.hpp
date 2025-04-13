@@ -5,8 +5,14 @@
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/data/Midi_t.hpp"
 
-#include "models/ParticlePipeline.hpp"
+//#include "models/ParticlePipeline.hpp"
+#include "models/ModifierPipeline.hpp"
 #include "models/ShaderPipeline.hpp"
+
+#include "models/particle/EmptyParticleLayout.hpp"
+#include "models/particle/SpiralParticleLayout.hpp"
+#include "models/particle/RandomParticleLayout.hpp"
+#include "models/particle/OrbitRingLayout.hpp"
 
 #include "shapes/TimedMessage.hpp"
 
@@ -19,9 +25,10 @@ namespace nx
   public:
 
     explicit ChannelPipeline( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo ),
-        m_particlePipeline( globalInfo ),
-        m_shaderPipeline( globalInfo )
+      : m_globalInfo(globalInfo),
+        m_particleLayout(std::make_unique< SpiralParticleLayout >(globalInfo)),
+        m_modifierPipeline(globalInfo),
+        m_shaderPipeline(globalInfo)
     {}
 
     ~ChannelPipeline() = default;
@@ -37,7 +44,8 @@ namespace nx
       { "shaders", {} }
       };
 
-      j[ "particles" ] = m_particlePipeline.saveParticlePipeline();
+      j[ "particles" ] = m_particleLayout->serialize();
+      j[ "modifiers" ] = m_modifierPipeline.saveModifierPipeline();
       j[ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
       return j;
     }
@@ -45,7 +53,10 @@ namespace nx
     void loadChannelPipeline( const nlohmann::json& j )
     {
       if ( j.contains( "particles" ) )
-        m_particlePipeline.loadParticlePipeline( j.at( "particles" ) );
+        m_particleLayout->deserialize( j.at( "particles" ) );
+
+      if ( j.contains( "modifiers" ) )
+        m_modifierPipeline.loadModifierPipeline( j.at( "modifiers" ) );
 
       if ( j.contains( "shaders" ) )
         m_shaderPipeline.loadShaderPipeline( j.at( "shaders" ) );
@@ -53,7 +64,9 @@ namespace nx
 
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
-      m_particlePipeline.processMidiEvent( midiEvent );
+      m_particleLayout->addMidiEvent( midiEvent );
+
+      m_modifierPipeline.processMidiEvent( midiEvent );
 
       // notify all shaders of an incoming event
       // which can be used for synchronizing effects on midi hits
@@ -62,26 +75,30 @@ namespace nx
 
     void processEvent( const sf::Event &event ) const
     {
-      m_particlePipeline.processEvent( event );
-      m_shaderPipeline.processEvent( event );
+      // TODO: add? maybe?
     }
 
     void update( const sf::Time& deltaTime ) const
     {
-      m_particlePipeline.update( deltaTime );
+      m_particleLayout->update( deltaTime );
+      m_modifierPipeline.update( deltaTime );
       m_shaderPipeline.update( deltaTime );
     }
 
     void draw( sf::RenderWindow& window )
     {
-      const auto& particleTexture = m_particlePipeline.draw();
-      const auto& shaderTexture = m_shaderPipeline.draw( particleTexture );
+      const auto& modifierTexture = m_modifierPipeline.applyModifiers(
+        m_particleLayout->getParticleOptions(),
+        m_particleLayout->getParticles() );
+
+      const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
       window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
     }
 
     void drawMenu()
     {
-      m_particlePipeline.drawMenu();
+      m_particleLayout->drawMenu();
+      m_modifierPipeline.drawMenu();
       m_shaderPipeline.drawMenu();
 
       ImGui::Separator();
@@ -146,7 +163,9 @@ namespace nx
     // the blend mode is important in case there are multiple channel pipelines
     sf::BlendMode m_blendMode { sf::BlendAdd };
 
-    ParticlePipeline m_particlePipeline;
+    //ParticlePipeline m_particlePipeline;
+    std::unique_ptr< IParticleLayout > m_particleLayout;
+    ModifierPipeline m_modifierPipeline;
     ShaderPipeline m_shaderPipeline;
 
     TimedMessage m_messageClock;

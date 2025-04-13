@@ -23,9 +23,10 @@ namespace nx
       }
       else if constexpr ( std::is_same_v< Enum, E_ModifierType > )
       {
-        if ( e == E_NoModifier ) return "NoModifier";
         if ( e == E_SequentialModifier ) return "SequentialModifier";
         if ( e == E_FullMeshModifier ) return "FullMeshModifier";
+        if ( e == E_FreeFallModifier ) return "FreeFallModifier";
+        if ( e == E_PerlinDeformerModifier ) return "PerlinDeformerModifier";
       }
 
       else if constexpr ( std::is_same_v< Enum, E_ShaderType > )
@@ -39,6 +40,7 @@ namespace nx
           case E_StrobeShader: return "StrobeShader";
           case E_RumbleShader: return "RumbleShader";
           case E_KaleidoscopeShader: return "KaleidoscopeShader";
+          case E_SmearShader: return "SmearShader";
           default: break;
         }
       }

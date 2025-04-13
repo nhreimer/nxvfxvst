@@ -25,7 +25,6 @@ namespace nx
 
   enum E_ModifierType : int8_t
   {
-    E_NoModifier,
     E_SequentialModifier,
     E_FullMeshModifier,
     E_FreeFallModifier,

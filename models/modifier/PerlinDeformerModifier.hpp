@@ -11,7 +11,7 @@ namespace nx
     float timeScale = 1.0f;       // temporal speed
     float deformStrength = 10.f;  // how much to offset
     E_NoiseType noiseType = E_NoiseType::E_FBM;
-    float lineThickness = 2.0f;
+    int32_t octaves { 4 }; // FBM only
   };
 
   class PerlinDeformerModifier final : public IParticleModifier
@@ -32,6 +32,9 @@ namespace nx
     [[nodiscard]]
     E_ModifierType getType() const override { return E_PerlinDeformerModifier; }
 
+    bool isActive() const override { return m_isActive; }
+    void processMidiEvent(const Midi_t &midiEvent) override {}
+
     void drawMenu() override
     {
       if ( ImGui::TreeNode( "Perlin Deformer" ) )
@@ -39,7 +42,9 @@ namespace nx
         ImGui::SliderFloat("Deform Strength", &m_data.deformStrength, 0.f, 100.f);
         ImGui::SliderFloat("Noise Scale", &m_data.noiseScale, 0.001f, 0.1f, "%.4f");
         ImGui::SliderFloat("Time Speed", &m_data.timeScale, 0.f, 5.f);
-        ImGui::SliderFloat("Line Thickness##2", &m_data.lineThickness, 0.f, 30.f);
+
+        if ( m_data.noiseType == E_NoiseType::E_FBM )
+          ImGui::SliderInt( "FBM Octave", &m_data.octaves, 1, 8 );
 
         if ( ImGui::RadioButton( "Hash##1", m_data.noiseType == E_NoiseType::E_Hash ) )
         {
@@ -60,62 +65,17 @@ namespace nx
     }
 
     void update(const sf::Time &deltaTime) override
-    {}
-
-    [[nodiscard]]
-    sf::RenderTexture &modifyParticles(const ParticleLayoutData_t &particleLayoutData,
-                                       std::deque< TimedParticle_t * > &particles) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
-      {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
-        {
-          LOG_ERROR( "Failed to resize Perlin Deformer texture" );
-        }
-      }
+      m_time += ( deltaTime.asSeconds() * m_data.timeScale );
+    }
 
-      m_outputTexture.clear(sf::Color::Transparent);
-
+    void modify(
+       const ParticleLayoutData_t& particleLayoutData,
+       std::deque< TimedParticle_t* >& particles,
+       std::deque< sf::Drawable* >& outArtifacts ) override
+    {
       for (size_t i = 0; i < particles.size(); ++i)
       {
-        for (size_t j = i + 1; j < particles.size(); ++j)
-        {
-          const sf::Vector2f posA = particles[i]->shape.getPosition();
-          const sf::Vector2f posB = particles[j]->shape.getPosition();
-
-          const float xA = posA.x * m_data.noiseScale;
-          const float yA = posA.y * m_data.noiseScale;
-          const float xB = posB.x * m_data.noiseScale;
-          const float yB = posB.y * m_data.noiseScale;
-
-          const sf::Vector2f offsetA =
-          {
-            (getNoise(xA + m_time, yA) - 0.5f) * 2.f * m_data.deformStrength,
-            (getNoise(xA, yA + m_time) - 0.5f) * 2.f * m_data.deformStrength
-          };
-
-          const sf::Vector2f offsetB =
-          {
-            (getNoise(xB + m_time, yB) - 0.5f) * 2.f * m_data.deformStrength,
-            (getNoise(xB, yB + m_time) - 0.5f) * 2.f * m_data.deformStrength
-          };
-
-          sf::Vector2f warpedA = posA + offsetA;
-          sf::Vector2f warpedB = posB + offsetB;
-
-          GradientLine line;
-          line.setStart(warpedA);
-          line.setEnd(warpedB);
-          line.setWidth( m_data.lineThickness );
-          line.setGradient( particles[i]->shape.getFillColor(), particles[j]->shape.getFillColor() );
-          // sf::VertexArray line(sf::PrimitiveType::Lines, 2);
-          // line[0] = sf::Vertex(warpedA, particles[i]->shape.getFillColor());
-          // line[1] = sf::Vertex(warpedB, particles[j]->shape.getFillColor());
-          m_outputTexture.draw(line);
-        }
-
-        m_outputTexture.draw( particles[ i ]->shape );
-
         const sf::Vector2f pos = particles[ i ]->shape.getPosition();
         const float x = pos.x * m_data.noiseScale;
         const float y = pos.y * m_data.noiseScale;
@@ -123,18 +83,16 @@ namespace nx
         const float offsetX = (getNoise(x + m_time, y) - 0.5f) * 2.f * m_data.deformStrength;
         const float offsetY = (getNoise(x, y + m_time) - 0.5f) * 2.f * m_data.deformStrength;
 
-        sf::Vector2f warpedPos = pos + sf::Vector2f(offsetX, offsetY);
+        const sf::Vector2f warpedPos = pos + sf::Vector2f(offsetX, offsetY);
 
-        m_outputTexture.draw(particles[ i ]->shape);
-        // Optionally draw a ghost circle at the deformed position
-        sf::CircleShape shape = particles[ i ]->shape;
-        shape.setPosition(warpedPos);
-        m_outputTexture.draw(shape);
+        // don't get stuck in an infinite loop
+        //auto *copiedParticle = particles.emplace_back(new TimedParticle_t(*particles[ i ]));
+        //copiedParticle->shape.setPosition(warpedPos);
+        auto * copiedShape = dynamic_cast< sf::CircleShape * >(
+          outArtifacts.emplace_back( new sf::CircleShape( particles[ i ]->shape ) ) );
+
+        copiedShape->setPosition( warpedPos );
       }
-
-      m_outputTexture.display();
-
-      return m_outputTexture;
     }
 
   private:
@@ -145,7 +103,7 @@ namespace nx
       {
         case E_NoiseType::E_Hash:  return getHashNoise(x, y);
         case E_NoiseType::E_Value: return getValueNoise(x, y);
-        case E_NoiseType::E_FBM:   return getFBM(x, y);
+        case E_NoiseType::E_FBM:   return getFBM(x, y, m_data.octaves);
         default: return 0.f;
       }
     }
@@ -182,7 +140,7 @@ namespace nx
 
     // Fractal Brownian Motion
     // Layered noise — adds complexity and control
-    static float getFBM(float x, float y, int octaves = 4)
+    static float getFBM( const float x, const float y, const int octaves)
     {
       float value = 0.0f;
       float amplitude = 0.5f;
@@ -205,7 +163,6 @@ namespace nx
     PerlinDeformerData_t m_data;
 
     float m_time { 0.f };
-
-    sf::RenderTexture m_outputTexture;
+    bool m_isActive { true };
   };
 }
