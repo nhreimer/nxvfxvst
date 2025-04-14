@@ -53,6 +53,7 @@ namespace nx
           case E_BehaviorType::E_JitterBehavior: return "JitterBehavior";
           case E_BehaviorType::E_FreeFallBehavior: return "FreeFallBehavior";
           case E_BehaviorType::E_RadialSpreaderBehavior: return "RadialSpreaderBehavior";
+          case E_BehaviorType::E_ColorMorphBehavior: return "ColorMorphBehavior";
           default: break;
         }
       }
@@ -86,6 +87,7 @@ namespace nx
       if ( behaviorType == "JitterBehavior" ) return E_JitterBehavior;
       if ( behaviorType == "FreeFallBehavior" ) return E_FreeFallBehavior;
       if ( behaviorType == "RadialSpreaderBehavior" ) return E_RadialSpreaderBehavior;
+      if ( behaviorType == "ColorMorphBehavior" ) return E_ColorMorphBehavior;
       return E_InvalidBehavior;
     }
 

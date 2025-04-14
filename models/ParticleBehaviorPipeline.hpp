@@ -3,6 +3,7 @@
 #include "models/particle/behavior/RadialSpreaderBehavior.hpp"
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 #include "models/particle/behavior/JitterBehavior.hpp"
+#include "models/particle/behavior/ColorMorphBehavior.hpp"
 
 namespace nx
 {
@@ -43,6 +44,10 @@ namespace nx
 
           case E_BehaviorType::E_RadialSpreaderBehavior:
             deserializeBehavior< RadialSpreaderBehavior >( data );
+            break;
+
+          case E_BehaviorType::E_ColorMorphBehavior:
+            deserializeBehavior< ColorMorphBehavior >( data );
             break;
 
           default:
@@ -138,6 +143,10 @@ namespace nx
         ImGui::SameLine();
         if ( ImGui::Button( "Jitter##1" ) )
           createBehavior< JitterBehavior >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Color Morph##1" ) )
+          createBehavior< ColorMorphBehavior >();
 
         ImGui::TreePop();
         ImGui::Spacing();
