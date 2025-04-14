@@ -18,6 +18,7 @@
 //#include "models/particle/OrbitRingLayout.hpp"
 
 #include "models/particle/LissajousCurveLayout.hpp"
+#include "models/particle/FractalRingLayout.hpp"
 
 #include "shapes/TimedMessage.hpp"
 
@@ -177,13 +178,17 @@ namespace nx
           if ( ImGui::RadioButton( "Empty", m_particleLayout->getType() == E_EmptyLayout ) )
             changeLayout< EmptyParticleLayout >();
 
-          ImGui::SameLine();
+          //ImGui::SameLine();
           if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_SpiralLayout ) )
             changeLayout< SpiralParticleLayout >();
 
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LissajousCurveLayout ) )
             changeLayout< LissajousCurveLayout >();
+
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Fractal Ring", m_particleLayout->getType() == E_FractalRingLayout ) )
+            changeLayout< FractalRingLayout >();
 
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_RandomLayout ) )

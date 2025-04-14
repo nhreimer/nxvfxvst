@@ -3,10 +3,10 @@
 namespace nx
 {
 
-constexpr float POLY_PI   = 3.1415926535897f;
-constexpr float POLY_R2D  = 57.29577951308f;
-constexpr float POLY_TAU  = 6.283185307f;
-constexpr float POLY_D2R  = 0.017453293f;
+constexpr float NX_PI   = 3.1415926535897f;
+constexpr float NX_R2D  = 57.29577951308f;
+constexpr float NX_TAU  = 6.283185307f;
+constexpr float NX_D2R  = 0.017453293f;
 
   struct LineEquation_t
   {
@@ -53,7 +53,7 @@ constexpr float POLY_D2R  = 0.017453293f;
 
     static float getAngleOfLineInDegrees( const LineEquation_t& lineEquation )
     {
-      return static_cast< float >( getAngleOfLineInRadians( lineEquation ) * 180.f / POLY_PI );
+      return static_cast< float >( getAngleOfLineInRadians( lineEquation ) * 180.f / NX_PI );
     }
 
     static float getPerpendicularSlope( const sf::Vector2f& pointA,
@@ -75,9 +75,9 @@ constexpr float POLY_D2R  = 0.017453293f;
                                           float xDistance = 1.f,
                                           float yDistance = 1.f )
     {
-      const float anglePartitions = POLY_TAU / static_cast< float >( partitions );
+      const float anglePartitions = NX_TAU / static_cast< float >( partitions );
       const float angle = static_cast< float >( anglePartitions ) * static_cast< float >( partitionIndex );
-      return sf::Vector2f { std::cos( angle ) * POLY_R2D * xDistance, std::sin( angle ) * POLY_R2D * yDistance };
+      return sf::Vector2f { std::cos( angle ) * NX_R2D * xDistance, std::sin( angle ) * NX_R2D * yDistance };
     }
 
     static sf::Vector2f getPositionFromNote( int32_t noteNumber,

@@ -23,6 +23,7 @@ namespace nx
     // the orbit ring sucks. removed for now
     //E_OrbitRingLayout,
     E_LissajousCurveLayout,
+    E_FractalRingLayout
   };
 
   enum E_ModifierType : int8_t

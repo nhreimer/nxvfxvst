@@ -60,7 +60,7 @@ namespace nx
 
       // add jitter to the position
       // 1. get the circular offset by calculating a random angle [0 - 360)
-      const auto jitterAngle = static_cast< float >( m_rand() % 360 ) * POLY_D2R;
+      const auto jitterAngle = static_cast< float >( m_rand() % 360 ) * NX_D2R;
 
       // 2. get the deviation amount
       // we have to add 1.f here to prevent the radius from ever being 0 and having a div/0 error.

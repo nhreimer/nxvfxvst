@@ -193,7 +193,7 @@ namespace nx
     // smooth and natural like a wave
     static float easeOutSine( const float t )
     {
-      return sinf( t * ( POLY_PI / 2.0f ) );
+      return sinf( t * ( NX_PI / 2.0f ) );
     }
 
     // very fast dropoff, fun for spark/burst effect
@@ -236,7 +236,7 @@ namespace nx
     // use TOTAL time not elapsed for constant pulsating
     static float pulseSine( const float t )
     {
-      return 0.5f * ( 1.0f + sinf( t * 2.0f * POLY_PI ) ); // cycles every 1 second
+      return 0.5f * ( 1.0f + sinf( t * 2.0f * NX_PI ) ); // cycles every 1 second
     }
 
     // Starts strong, then rings down in pulses like an echo.

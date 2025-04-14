@@ -37,10 +37,16 @@ namespace nx
     nlohmann::json serialize() const override
     {
       auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+
       j[ "phaseAStep" ] = m_data.phaseAStep;
       j[ "phaseBStep" ] = m_data.phaseBStep;
       j[ "phaseDelta" ] = m_data.phaseDelta;
       j[ "phaseSpread" ] = m_data.phaseSpread;
+      j[ "tracerCount" ] = m_data.tracerCount;
+      j[ "tracerDelayStep" ] = m_data.tracerDelayStep;
+      j[ "fadeExponent" ] = m_data.fadeExponent;
+      j[ "sizeFalloff" ] = m_data.sizeFalloff;
+
       return j;
     }
 
@@ -51,6 +57,10 @@ namespace nx
       m_data.phaseBStep = j.value( "phaseBStep", 3.0f );
       m_data.phaseDelta = j.value( "phaseDelta", 0.5f );
       m_data.phaseSpread = j.value( "phaseSpread", 0.5f );
+      m_data.tracerCount = j.value( "tracerCount", 8 );
+      m_data.tracerDelayStep = j.value( "tracerDelayStep", 0.5f );
+      m_data.fadeExponent = j.value( "fadeExponent", 1.0f );
+      m_data.sizeFalloff = j.value( "sizeFalloff", 0.5f );
     }
 
     [[nodiscard]]
@@ -65,12 +75,12 @@ namespace nx
         //ImGui::SliderFloat("Phase", &m_data.phase, 0.f, 1.0f);
         ImGui::SliderFloat("a Phase Step", &m_data.phaseAStep, 0.f, 5.0f);
         ImGui::SliderFloat("b Phase Step", &m_data.phaseBStep, 0.f, 5.0f);
-        ImGui::SliderFloat("Phase Delta", &m_data.phaseDelta, 0.f, 1.0f);
+        ImGui::SliderFloat("Phase Delta", &m_data.phaseDelta, 0.f, 2.0f);
         ImGui::SliderFloat("Phase Spread", &m_data.phaseSpread, 0.f, 1.0f);
 
         ImGui::Separator();
 
-        ImGui::SliderInt( "Tracer Count", &m_data.tracerCount, 0, 32 );
+        ImGui::SliderInt( "Tracer Count", &m_data.tracerCount, 0, 128 );
         ImGui::SliderFloat( "Tracer Delay Step", &m_data.tracerDelayStep, 0.0f, 3.0f );
         ImGui::SliderFloat( "Fade Exponent", &m_data.fadeExponent, 0.0f, 1.0f );
         ImGui::SliderFloat( "Size Falloff", &m_data.sizeFalloff, 0.0f, 1.0f );
@@ -122,8 +132,8 @@ namespace nx
       // this is also the phase
       const float t = m_globalInfo.elapsedTimeSeconds;
 
-      const float x = ( m_globalInfo.windowHalfSize.x * m_data.phaseSpread ) * sin(a * t + m_data.phaseDelta);
-      const float y = ( m_globalInfo.windowHalfSize.y * m_data.phaseSpread ) * sin(b * t);
+      const float x = ( m_globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * t + m_data.phaseDelta);
+      const float y = ( m_globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * t);
 
       return { x, y };
     }
