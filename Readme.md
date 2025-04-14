@@ -152,28 +152,28 @@ Contributions, ideas, and suggestions are welcome!
 
 ```text
 +---------------------+
-|  EventFacadeVST  🔁 |
+|  EventFacadeVST     |
++---------------------+
+       │ │ │ │          <---  multichannel provider 
+       ▼ ▼ ▼ ▼
++---------------------+
+|  ChannelPipeline    |
 +---------------------+
         │
         ▼
-+---------------------+
-|  ChannelPipeline 🔁 |
-+---------------------+
-        │
-        ▼
-+-------------------+
-|  ParticlePipeline |
-+-------------------+
++---------------------+      +--------------------+
+|  ParticlePipeline   | ---> |  Behavior Pipeline |  
++---------------------+      +--------------------+
         │
         ▼
 +---------------------+
-| ModifierPipeline 🔁 |
+|  ModifierPipeline   |
 +---------------------+
         │
         ▼
-+--------------------+
-|  ShaderPipeline 🔁 |
-+--------------------+
++--------------------+      +--------------------+
+|  ShaderPipeline    | ---> |      Easings       +
++--------------------+      +--------------------+
         │
         ▼
 +------------------+
@@ -209,12 +209,20 @@ Manages the particle layout (initial placement & creation) and passes particles 
     Delegates visual transformation to modifiers
     Sends particle data to the modifier pipeline via std::deque<TimedParticle_t*>
 
+## Particle Behavior Pipeline
+
+Manages behaviors that change particles directly (useful for making adjustments on a single particle basis),
+e.g., Jitter, Gravity, Spread. Cannot be used for adding or removing particles.
+
+    Alters particles on a per-particle basis
+    Does not own any memory
+
 ## Modifier Pipeline
 
-Processes a stack of IParticleModifier objects sequentially.
+Processes a stack of IParticleModifier objects sequentially. It modifies the particles or adds objects to draw.
 
     Operates on std::deque<TimedParticle_t*> from the IParticleLayout implementation
-    Applies transformations (e.g., line connections, gravity, Perlin deformation)
+    Applies transformations (e.g., line connections, Perlin deformation) 
     Those transformations can directly alter the Particles in a deque or add std::deque<sf::Drawable*>
     Renders output to an internal sf::RenderTexture that gets handed off to the shader pipeline 
 
