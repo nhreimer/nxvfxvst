@@ -42,12 +42,16 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+      auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+      j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
+      return j;
     }
 
     void deserialize(const nlohmann::json& j) override
     {
       ParticleHelper::deserialize( m_data, j );
+      if ( j.contains( "behaviors" ) )
+        m_behaviorPipeline.loadModifierPipeline( j.at( "behaviors" ) );
     }
 
     void addMidiEvent( const Midi_t &midiEvent ) override
