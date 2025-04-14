@@ -10,7 +10,7 @@ namespace nx
     float length { 0.2f };                             // 0.0–1.0
     float intensity { 0.5f };                          // blend amount
     sf::Color tint { 255, 255, 255 };   // optional colorization
-    int sampleCount { 12 };                            // more = smoother, but slower
+    int sampleCount { 32 };                            // more = smoother, but slower
 
     float jitterAmount { 0.0f };
     float brightnessBoost{ 1.0f };
@@ -107,7 +107,7 @@ namespace nx
         ImGui::SliderFloat("Wiggle Frequency", &m_data.wiggleFrequency, 0.f, 20.0f); // Hz
 
         ImGui::SliderFloat("Brightness Boost", &m_data.brightnessBoost, 1.f, 10.f);
-        ImGui::SliderFloat("Jitter Amount", &m_data.jitterAmount, 0.f, 0.3f);
+        ImGui::SliderFloat("Jitter Amount", &m_data.jitterAmount, 0.f, 3.5f);
         ImGui::SliderFloat("Falloff Power", &m_data.falloffPower, 0.5f, 4.f);
 
         ImGui::SliderFloat("Feedback Fade", &m_data.feedbackFade, 0.0f, 1.0f);
