@@ -54,6 +54,7 @@ namespace nx
           case E_BehaviorType::E_FreeFallBehavior: return "FreeFallBehavior";
           case E_BehaviorType::E_RadialSpreaderBehavior: return "RadialSpreaderBehavior";
           case E_BehaviorType::E_ColorMorphBehavior: return "ColorMorphBehavior";
+          case E_BehaviorType::E_MagneticBehavior: return "MagneticBehavior";
           default: break;
         }
       }
@@ -88,6 +89,7 @@ namespace nx
       if ( behaviorType == "FreeFallBehavior" ) return E_FreeFallBehavior;
       if ( behaviorType == "RadialSpreaderBehavior" ) return E_RadialSpreaderBehavior;
       if ( behaviorType == "ColorMorphBehavior" ) return E_ColorMorphBehavior;
+      if ( behaviorType == "MagneticBehavior" ) return E_MagneticBehavior;
       return E_InvalidBehavior;
     }
 

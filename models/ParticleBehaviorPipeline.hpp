@@ -4,6 +4,7 @@
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 #include "models/particle/behavior/JitterBehavior.hpp"
 #include "models/particle/behavior/ColorMorphBehavior.hpp"
+#include "models/particle/behavior/MagneticBehavior.hpp"
 
 namespace nx
 {
@@ -48,6 +49,10 @@ namespace nx
 
           case E_BehaviorType::E_ColorMorphBehavior:
             deserializeBehavior< ColorMorphBehavior >( data );
+            break;
+
+          case E_BehaviorType::E_MagneticBehavior:
+            deserializeBehavior< MagneticAttractorBehavior >( data );
             break;
 
           default:
@@ -147,6 +152,9 @@ namespace nx
         ImGui::SameLine();
         if ( ImGui::Button( "Color Morph##1" ) )
           createBehavior< ColorMorphBehavior >();
+
+        if ( ImGui::Button( "Magnetic##1" ) )
+          createBehavior< MagneticAttractorBehavior >();
 
         ImGui::TreePop();
         ImGui::Spacing();

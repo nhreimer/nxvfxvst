@@ -38,6 +38,7 @@ namespace nx
     E_RadialSpreaderBehavior,
     E_FreeFallBehavior,
     E_JitterBehavior,
-    E_ColorMorphBehavior
+    E_ColorMorphBehavior,
+    E_MagneticBehavior
   };
 }
