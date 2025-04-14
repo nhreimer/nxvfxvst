@@ -199,9 +199,9 @@ namespace nx
     template < typename T >
     void changeLayout()
     {
-      //const auto& savedSettings = m_particleLayout->serialize();
+      const auto& savedSettings = m_particleLayout->serialize();
       m_particleLayout.reset( new T( m_globalInfo ) );
-      //m_particleLayout->deserialize( savedSettings );
+      m_particleLayout->deserialize( savedSettings );
     }
 
   private:

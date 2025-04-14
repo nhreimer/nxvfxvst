@@ -29,9 +29,24 @@ namespace nx
     {}
 
     [[nodiscard]]
-    nlohmann::json serialize() const override { return {}; }
+    nlohmann::json serialize() const override
+    {
+      auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+      j[ "phaseAStep" ] = m_data.phaseAStep;
+      j[ "phaseBStep" ] = m_data.phaseBStep;
+      j[ "phaseDelta" ] = m_data.phaseDelta;
+      j[ "phaseSpread" ] = m_data.phaseSpread;
+      return j;
+    }
 
-    void deserialize(const nlohmann::json &j) override {}
+    void deserialize(const nlohmann::json &j) override
+    {
+      ParticleHelper::deserialize( m_data, j );
+      m_data.phaseAStep = j.value( "phaseAStep", 2.0f );
+      m_data.phaseBStep = j.value( "phaseBStep", 3.0f );
+      m_data.phaseDelta = j.value( "phaseDelta", 0.5f );
+      m_data.phaseSpread = j.value( "phaseSpread", 0.5f );
+    }
 
     [[nodiscard]]
     E_LayoutType getType() const override { return E_LissajousCurveLayout; }
