@@ -11,10 +11,6 @@ namespace nx
     float phaseDelta { 0.5f };
     float phaseSpread { 0.5f };
 
-    // uint8_t tracerCount = 8;
-    // float tracerDelayStep = 0.04f; // how far apart each ghost is in phase
-    // float fadeExponent = 1.5f;     // higher = faster fade
-    // float sizeFalloff = 0.75f;     // scaling down radius
   };
 
   /// This layout places each particle along a mathematically beautiful Lissajous curve using parametric sine functions
@@ -62,7 +58,9 @@ namespace nx
     {
       const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
       const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
-      const float t = m_globalInfo.elapsedTimeSeconds; //m_data.phase;
+
+      // this is also the phase
+      const float t = m_globalInfo.elapsedTimeSeconds;
 
       const float x = ( m_globalInfo.windowHalfSize.x * m_data.phaseSpread ) * sin(a * t + m_data.phaseDelta);
       const float y = ( m_globalInfo.windowHalfSize.y * m_data.phaseSpread ) * sin(b * t);
