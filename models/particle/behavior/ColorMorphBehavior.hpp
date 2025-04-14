@@ -12,9 +12,12 @@ namespace nx
       float speed = 1.0f;         // cycles per second
       float saturation = 1.0f;    // color intensity
       float brightness = 1.0f;    // brightness
-      float quantizeStep = 0.f; // set > 0 to enable hue steps
+      float quantizeStep = 0.f;   // set > 0 to enable hue steps
       float hueOffset = 0.f;
+      float morphDuration = 2.f;
       bool useHueOffset = true;
+      bool useSkittles = false;   // just a color free-for-all
+      sf::Color morphToColor { sf::Color::Black };
     };
 
   public:
@@ -32,7 +35,10 @@ namespace nx
         { "saturation", m_data.saturation },
         { "brightness", m_data.brightness },
         { "quantizeStep", m_data.quantizeStep },
-        { "useHueOffset", m_data.useHueOffset }
+        { "useHueOffset", m_data.useHueOffset },
+        { "useSkittles", m_data.useSkittles },
+        { "morphDuration", m_data.morphDuration },
+        { "morphToColor", SerialHelper::convertColorToJson( m_data.morphToColor ) }
       };
     }
 
@@ -43,6 +49,9 @@ namespace nx
       m_data.brightness = j.at( "brightness" ).get<float>();
       m_data.quantizeStep = j.at( "quantizeStep" ).get<float>();
       m_data.useHueOffset = j.at( "useHueOffset" ).get<bool>();
+      m_data.useSkittles = j.at( "useSkittles" ).get<bool>();
+      m_data.morphToColor = SerialHelper::convertColorFromJson( j.at( "morphToColor" ) );
+      m_data.morphDuration = j.at( "morphDuration" ).get<float>();
     }
 
     E_BehaviorType getType() const override { return E_ColorMorphBehavior; }
@@ -56,6 +65,39 @@ namespace nx
     }
 
     void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override
+    {
+      if ( m_data.useSkittles ) applySkittlesMorphing( p, deltaTime );
+      else applyBicolorMorphing( p, deltaTime );
+    }
+
+    void drawMenu() override
+    {
+      ImGui::Checkbox( "Use Hue Offset", &m_data.useHueOffset );
+      ImGui::Checkbox( "Use Skittles Morph", &m_data.useSkittles );
+      ImGui::SliderFloat("Hue Quantize Step", &m_data.quantizeStep, 0.f, 90.f );
+      ImGui::SliderFloat("Saturation", &m_data.saturation, 0.f, 1.f);
+      ImGui::SliderFloat("Brightness", &m_data.brightness, 0.f, 1.f);
+      ImGui::SliderFloat("Color Morph Speed", &m_data.speed, 0.f, 5.f);
+
+      ImGui::SliderFloat("Morph Duration (sec)", &m_data.morphDuration, 0.1f, 10.f);
+      ImVec4 color = m_data.morphToColor;
+
+      if ( ImGui::ColorEdit4("Target Color", ( float* )&color) )
+        m_data.morphToColor = color;
+    }
+
+  private:
+
+    void applyBicolorMorphing( TimedParticle_t * p, const sf::Time& deltaTime ) const
+    {
+      const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+      const float t = elapsed / m_data.morphDuration;
+
+      const auto morphed = ColorHelper::lerpColor(p->initialColor, m_data.morphToColor, t);
+      p->shape.setFillColor(morphed);
+    }
+
+    void applySkittlesMorphing( TimedParticle_t * p, const sf::Time& deltaTime ) const
     {
       // How long the particle has existed
       const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
@@ -76,18 +118,6 @@ namespace nx
       // Apply the new color
       p->shape.setFillColor(morphed);
     }
-
-    void drawMenu() override
-    {
-      ImGui::Checkbox( "Use Hue Offset", &m_data.useHueOffset );
-      ImGui::SliderFloat("Hue Quantize Step", &m_data.quantizeStep, 0.f, 90.f );
-      // ImGui::SliderFloat("Hue Offset", &m_data.hueOffset, 0.f, 360.f);
-      ImGui::SliderFloat("Saturation", &m_data.saturation, 0.f, 1.f);
-      ImGui::SliderFloat("Brightness", &m_data.brightness, 0.f, 1.f);
-      ImGui::SliderFloat("Color Morph Speed", &m_data.speed, 0.f, 5.f);
-    }
-
-  private:
 
     static sf::Color hsvToRgb(float h, float s, float v, uint8_t alpha = 255) {
       float c = v * s;
