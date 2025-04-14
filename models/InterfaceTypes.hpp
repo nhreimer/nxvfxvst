@@ -29,13 +29,13 @@ namespace nx
     E_InvalidModifier,
     E_SequentialModifier,
     E_FullMeshModifier,
-    E_FreeFallModifier,
     E_PerlinDeformerModifier
   };
 
   enum E_BehaviorType : int8_t
   {
     E_InvalidBehavior,
-    E_RadialSpreaderBehavior
+    E_RadialSpreaderBehavior,
+    E_FreeFallBehavior
   };
 }

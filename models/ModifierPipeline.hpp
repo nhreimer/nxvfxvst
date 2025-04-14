@@ -2,7 +2,6 @@
 
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
-#include "models/modifier/FreeFallModifier.hpp"
 #include "models/modifier/PerlinDeformerModifier.hpp"
 
 namespace nx
@@ -61,10 +60,6 @@ public:
 
         case E_ModifierType::E_PerlinDeformerModifier:
           deserializeModifier< PerlinDeformerModifier >( modifierData );
-          break;
-
-        case E_ModifierType::E_FreeFallModifier:
-          deserializeModifier< FreeFallModifier >( modifierData );
           break;
 
         default:
@@ -202,10 +197,6 @@ private:
       ImGui::SameLine();
       if ( ImGui::Button( "Mesh Line##1" ) )
         createModifier< ParticleFullMeshLineModifier >();
-
-      ImGui::SameLine();
-      if ( ImGui::Button( "Free Fall##1" ) )
-        createModifier< FreeFallModifier >();
 
       ImGui::SameLine();
       if ( ImGui::Button( "Perlin Deformer##3" ) )

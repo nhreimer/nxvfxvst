@@ -9,7 +9,7 @@
 
 #include "models/data/ParticleLayoutData_t.hpp"
 
-#include <models/IParticleBehavior.hpp>
+#include "models/ParticleBehaviorPipeline.hpp"
 
 namespace nx
 {

@@ -26,7 +26,6 @@ namespace nx
       {
         if ( e == E_SequentialModifier ) return "SequentialModifier";
         if ( e == E_FullMeshModifier ) return "FullMeshModifier";
-        if ( e == E_FreeFallModifier ) return "FreeFallModifier";
         if ( e == E_PerlinDeformerModifier ) return "PerlinDeformerModifier";
       }
 
@@ -66,7 +65,6 @@ namespace nx
     {
       if ( modifierType == "SequentialModifier" ) return E_SequentialModifier;
       if ( modifierType == "FullMeshModifier" ) return E_FullMeshModifier;
-      if ( modifierType == "FreeFallModifier" ) return E_FreeFallModifier;
       if ( modifierType == "PerlinDeformerModifier" ) return E_PerlinDeformerModifier;
       return E_InvalidModifier;
     }

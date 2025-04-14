@@ -1,0 +1,57 @@
+#pragma once
+
+#include "models/IParticleBehavior.hpp"
+
+namespace nx
+{
+  class RadialSpreaderBehavior final : public IParticleBehavior
+  {
+
+    struct RadialSpreaderData_t
+    {
+      float spreadMultiplier = 1.5f;
+      float speed = 0.5f;
+    };
+
+  public:
+    explicit RadialSpreaderBehavior(const GlobalInfo_t& info)
+      : m_globalInfo(info)
+    {}
+
+    E_BehaviorType getType() const override { return E_RadialSpreaderBehavior; }
+
+    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override
+    {
+      sf::Vector2f pos = p->shape.getPosition();
+      const sf::Vector2f dir =
+        ( pos - m_globalInfo.windowHalfSize ) * ( m_globalInfo.elapsedTimeSeconds - p->spawnTime );
+
+      // Avoid NaNs if particle spawns directly at center
+      if (dir.x == 0.f && dir.y == 0.f) return;
+
+      pos = m_globalInfo.windowHalfSize + dir * m_data.spreadMultiplier;
+      p->shape.setPosition(pos);
+    }
+
+    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override
+    {
+      sf::Vector2f baseDir = p->originalPosition - m_globalInfo.windowHalfSize;
+
+      float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+      float pulse = std::sin(elapsed * m_data.speed) * 0.5f + 0.5f; // oscillates between [0, 1]
+
+      sf::Vector2f animatedPos = m_globalInfo.windowHalfSize + baseDir * (1.f + m_data.spreadMultiplier * pulse);
+      p->shape.setPosition(animatedPos);
+    }
+
+    void drawMenu() override
+    {
+      ImGui::SliderFloat( "Spread Multiplier", &m_data.spreadMultiplier, 0.0f, 5.0f );
+      ImGui::SliderFloat( "Spread Speed", &m_data.speed, 0.0f, 5.0f );
+    }
+
+  private:
+    const GlobalInfo_t& m_globalInfo;
+    RadialSpreaderData_t m_data;
+  };
+}

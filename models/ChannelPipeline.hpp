@@ -18,6 +18,7 @@
 #include "shapes/TimedMessage.hpp"
 
 #include "models/IParticleBehavior.hpp"
+#include "models/ParticleBehaviorPipeline.hpp"
 
 #include <future>
 
