@@ -10,6 +10,7 @@ namespace nx
     float noiseScale = 0.01f;     // spatial frequency
     float timeScale = 1.0f;       // temporal speed
     float deformStrength = 10.f;  // how much to offset
+    float colorFade = 1.f;        // how to fade the color
     E_NoiseType noiseType = E_NoiseType::E_FBM;
     int32_t octaves { 4 }; // FBM only
   };
@@ -42,6 +43,7 @@ namespace nx
         ImGui::SliderFloat("Deform Strength", &m_data.deformStrength, 0.f, 100.f);
         ImGui::SliderFloat("Noise Scale", &m_data.noiseScale, 0.001f, 0.1f, "%.4f");
         ImGui::SliderFloat("Time Speed", &m_data.timeScale, 0.f, 5.f);
+        ImGui::SliderFloat("Color fade", &m_data.colorFade, 0.f, 1.f);
 
         if ( m_data.noiseType == E_NoiseType::E_FBM )
           ImGui::SliderInt( "FBM Octave", &m_data.octaves, 1, 8 );
@@ -92,6 +94,8 @@ namespace nx
           outArtifacts.emplace_back( new sf::CircleShape( particles[ i ]->shape ) ) );
 
         copiedShape->setPosition( warpedPos );
+        const auto color = copiedShape->getFillColor();
+        copiedShape->setFillColor( { color.r, color.g, color.b, static_cast< uint8_t >(color.a * m_data.colorFade) } );
       }
     }
 

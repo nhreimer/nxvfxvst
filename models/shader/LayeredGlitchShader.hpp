@@ -151,7 +151,7 @@ namespace nx
       const float boostedStrength = m_data.glitchBaseStrength + cumulative * m_data.glitchPulseBoost;
 
       m_shader.setUniform("glitchStrength", boostedStrength);
-      m_shader.setUniform("easingValue", cumulative); // optional, for shader-side sync
+      //m_shader.setUniform("easingValue", cumulative); // optional, for shader-side sync
       //m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
       m_shader.setUniform("easedTime", m_burstManager.getLastTriggeredInSeconds() );
 
@@ -190,7 +190,7 @@ namespace nx
 uniform vec2 resolution;
 
 uniform float easedTime;          // seconds since last trigger
-uniform float easingValue;        // easing curve [0..1]
+//uniform float easingValue;           // easing curve [0..1] -- cumulative easing
 
 uniform float glitchStrength;
 uniform float glitchAmount;
