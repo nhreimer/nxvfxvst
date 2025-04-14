@@ -42,7 +42,7 @@ namespace nx
     {
       return
    {
-        { "type", SerialHelper::convertShaderTypeToString( getType() ) },
+        { "type", SerialHelper::serializeEnum( getType() ) },
         { "isActive", m_data.isActive },
         { "rumbleStrength", m_data.rumbleStrength },
         { "frequency", m_data.frequency },

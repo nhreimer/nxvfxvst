@@ -34,7 +34,7 @@ namespace nx
     {
       return
       {
-          { "type", SerialHelper::convertShaderTypeToString( getType() ) },
+          { "type", SerialHelper::serializeEnum( getType() ) },
           { "isActive", m_data.isActive },
           { "midiTriggers", m_midiNoteControl.serialize() },
             { "pulseSpeed", m_data.pulseSpeed },

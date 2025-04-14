@@ -19,7 +19,9 @@ namespace nx
         if ( e == E_EmptyLayout ) return "EmptyLayout";
         if ( e == E_RandomLayout ) return "RandomLayout";
         if ( e == E_SpiralLayout ) return "SpiralLayout";
-        if ( e == E_OrbitRingLayout ) return "OrbitRingLayout";
+        if ( e == E_LissajousCurveLayout ) return "LissajousCurveLayout";
+        // if ( e == E_RadialBurstLayout ) return "RadialBurstLayout";
+        // if ( e == E_OrbitRingLayout ) return "OrbitRingLayout";
       }
       else if constexpr ( std::is_same_v< Enum, E_ModifierType > )
       {
@@ -48,20 +50,6 @@ namespace nx
       return "UNKNOWN";
     }
 
-    static std::string convertShaderTypeToString( const E_ShaderType shaderType )
-    {
-      switch ( shaderType )
-      {
-        case E_ShaderType::E_GlitchShader: return "GlitchShader";
-        case E_ShaderType::E_PulseShader: return "PulseShader";
-        case E_ShaderType::E_KaleidoscopeShader: return "KaleidoscopeShader";
-        case E_ShaderType::E_BlurShader: return "BlurShader";
-        case E_ShaderType::E_StrobeShader: return "StrobeShader";
-        case E_ShaderType::E_RippleShader: return "RippleShader";
-        default: return "";
-      }
-    }
-
     static E_ShaderType convertStringToShaderType( const std::string& shaderType )
     {
       if ( shaderType == "GlitchShader" ) return E_GlitchShader;
@@ -70,6 +58,8 @@ namespace nx
       if ( shaderType == "StrobeShader" ) return E_StrobeShader;
       if ( shaderType == "RippleShader" ) return E_RippleShader;
       if ( shaderType == "KaleidoscopeShader" ) return E_KaleidoscopeShader;
+      if ( shaderType == "RumbleShader" ) return E_RumbleShader;
+      if ( shaderType == "SmearShader" ) return E_SmearShader;
       return E_InvalidShader;
     }
 

@@ -46,7 +46,7 @@ namespace nx
     {
       return
     {
-          { "type", SerialHelper::convertShaderTypeToString( getType() ) },
+          { "type", SerialHelper::serializeEnum( getType() ) },
           { "isActive", m_data.isActive },
           { "directionAngleInRadians", m_data.directionAngleInRadians },
           { "length", m_data.length },

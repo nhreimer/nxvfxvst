@@ -53,7 +53,7 @@ namespace nx
     {
       return
    {
-        { "type", SerialHelper::convertShaderTypeToString( getType() ) },
+        { "type", SerialHelper::serializeEnum( getType() ) },
         { "isActive", m_data.isActive },
            { "applyOnlyOnEvents", m_data.applyOnlyOnEvents },
         { "glitchBaseStrength", m_data.glitchBaseStrength },

@@ -40,7 +40,7 @@ namespace nx
     {
       return
       {
-          { "type", SerialHelper::convertShaderTypeToString( getType() ) },
+          { "type", SerialHelper::serializeEnum( getType() ) },
           { "isActive", m_data.isActive },
           { "sigma", m_data.sigma },
           { "brighten", m_data.brighten },
