@@ -12,6 +12,10 @@ namespace nx
   {
     bool isActive { true };
 
+    // whenever this is true then the screen glitches, i.e., pauses, until the next event
+    // whenever it's disabled then there's always a response regardless of event status
+    bool applyOnlyOnEvents { false };
+
     float glitchBaseStrength { 0.1f };   // this is adjustable
     float glitchStrength { 1.f };       // [CALCULATED] How intense glitches are (0.0 to 1.0+)
     float glitchAmount { 0.1f };        // How frequent glitches are (0.0 to 1.0)
@@ -51,6 +55,7 @@ namespace nx
    {
         { "type", SerialHelper::convertShaderTypeToString( getType() ) },
         { "isActive", m_data.isActive },
+           { "applyOnlyOnEvents", m_data.applyOnlyOnEvents },
         { "glitchBaseStrength", m_data.glitchBaseStrength },
         { "glitchAmount", m_data.glitchAmount },
         // { "scanlineIntensity", m_data.scanlineIntensity },
@@ -67,6 +72,7 @@ namespace nx
     void deserialize( const nlohmann::json& j ) override
     {
       m_data.isActive = j.value("isActive", false);
+      m_data.applyOnlyOnEvents = j.value("applyOnlyOnEvents", false);
       m_data.glitchBaseStrength = j.value("glitchBaseStrength", 1.0f);
       m_data.glitchAmount = j.value("glitchAmount", 0.4f);
       // m_data.scanlineIntensity = j.value("scanlineIntensity", 0.02f);
@@ -90,7 +96,7 @@ namespace nx
       if ( ImGui::TreeNode( "Glitch" ) )
       {
         ImGui::Checkbox( "Glitch Active##1", &m_data.isActive );
-
+        ImGui::Checkbox( "Glitch on Events Only##1", &m_data.applyOnlyOnEvents );
         ImGui::SliderFloat( "Glitch Band Count##1", &m_data.bandCount, 0.f, 50.f );
         ImGui::SliderFloat( "Glitch Base Strength##1", &m_data.glitchBaseStrength, 0.f, 2.0f );
         ImGui::SliderFloat( "Glitch Amount##1", &m_data.glitchAmount, 0.f, 1.0f );
@@ -152,8 +158,13 @@ namespace nx
 
       m_shader.setUniform("glitchStrength", boostedStrength);
       //m_shader.setUniform("easingValue", cumulative); // optional, for shader-side sync
-      //m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
-      m_shader.setUniform("easedTime", m_burstManager.getLastTriggeredInSeconds() );
+
+      // determine whether to apply cumulative triggers only, which provides a staccato feel, especially
+      // on fast beats, but it can be weird on slower events
+      if ( !m_data.applyOnlyOnEvents )
+        m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
+      else
+        m_shader.setUniform("easedTime", m_burstManager.getLastTriggeredInSeconds() );
 
       m_shader.setUniform("glitchStrength", boostedStrength);
 
