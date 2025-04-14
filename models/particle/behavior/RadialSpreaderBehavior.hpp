@@ -35,7 +35,7 @@ namespace nx
 
     void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override
     {
-      sf::Vector2f baseDir = p->originalPosition - m_globalInfo.windowHalfSize;
+      const sf::Vector2f baseDir = p->originalPosition - m_globalInfo.windowHalfSize;
 
       float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
       float pulse = std::sin(elapsed * m_data.speed) * 0.5f + 0.5f; // oscillates between [0, 1]

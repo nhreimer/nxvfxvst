@@ -2,6 +2,7 @@
 
 #include "models/particle/behavior/RadialSpreaderBehavior.hpp"
 #include "models/particle/behavior/FreeFallBehavior.hpp"
+#include "models/particle/behavior/JitterBehavior.hpp"
 
 namespace nx
 {
@@ -95,6 +96,10 @@ namespace nx
         ImGui::SameLine();
         if ( ImGui::Button( "Free Fall##1" ) )
           createBehavior< FreeFallBehavior >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "Jitter##1" ) )
+          createBehavior< JitterBehavior >();
 
         ImGui::TreePop();
         ImGui::Spacing();

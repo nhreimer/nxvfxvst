@@ -3,20 +3,20 @@
 namespace nx
 {
 
-  enum class E_NoiseType : int8_t { E_Hash, E_Value, E_FBM };
-
-  struct PerlinDeformerData_t
-  {
-    float noiseScale = 0.01f;     // spatial frequency
-    float timeScale = 1.0f;       // temporal speed
-    float deformStrength = 10.f;  // how much to offset
-    float colorFade = 1.f;        // how to fade the color
-    E_NoiseType noiseType = E_NoiseType::E_FBM;
-    int32_t octaves { 4 }; // FBM only
-  };
-
   class PerlinDeformerModifier final : public IParticleModifier
   {
+
+    enum class E_NoiseType : int8_t { E_Hash, E_Value, E_FBM };
+
+    struct PerlinDeformerData_t
+    {
+      float noiseScale = 0.01f;     // spatial frequency
+      float timeScale = 1.0f;       // temporal speed
+      float deformStrength = 10.f;  // how much to offset
+      float colorFade = 1.f;        // how to fade the color
+      E_NoiseType noiseType = E_NoiseType::E_FBM;
+      int32_t octaves { 4 }; // FBM only
+    };
 
   public:
 

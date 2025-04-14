@@ -36,6 +36,7 @@ namespace nx
   {
     E_InvalidBehavior,
     E_RadialSpreaderBehavior,
-    E_FreeFallBehavior
+    E_FreeFallBehavior,
+    E_JitterBehavior
   };
 }
