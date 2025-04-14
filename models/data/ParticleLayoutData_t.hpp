@@ -18,9 +18,9 @@ namespace nx
     uint8_t shapeSides { 30 };      // the number of sides, e.g., 3 = triangle
     int32_t timeoutInMS { 1500 };
 
-    float spreadMultiplier { 1.f };
-    float jitterMultiplier { 0.f }; // 0 = no jitter
-    sf::Vector2f positionOffset { 0.f, 0.f };
+    //float spreadMultiplier { 1.f };
+    //float jitterMultiplier { 0.f }; // 0 = no jitter
+    //sf::Vector2f positionOffset { 0.f, 0.f };
 
     float boostVelocity { 0.f };
 
@@ -46,9 +46,6 @@ namespace nx
       { "radius", data.radius },
       { "shapeSides", data.shapeSides },
       { "timeoutInMS", data.timeoutInMS },
-      { "spreadMultiplier", data.spreadMultiplier },
-      { "jitterMultiplier", data.jitterMultiplier },
-      { "positionOffset", SerialHelper::convertVectorToJson( data.positionOffset ) },
       { "boostVelocity", data.boostVelocity },
       { "velocitySizeMultiplier", data.velocitySizeMultiplier },
       { "blendMode", SerialHelper::convertBlendModeToString( data.blendMode ) }
@@ -64,9 +61,6 @@ namespace nx
       data.radius = j.value("radius", 30.f);
       data.shapeSides = j.value("shapeSides", 30);
       data.timeoutInMS = j.value("timeoutInMS", 1500);
-      data.spreadMultiplier = j.value("spreadMultiplier", 1.f);
-      data.jitterMultiplier = j.value("jitterMultiplier", 0.f);
-      data.positionOffset = SerialHelper::convertVectorFromJson< float >(j.at("positionOffset"));
       data.boostVelocity = j.value("boostVelocity", 0.f);
       data.velocitySizeMultiplier = j.value("velocitySizeMultiplier", 0.f);
       data.blendMode = SerialHelper::convertBlendModeFromString(j.value("blendMode", "None"));
@@ -120,8 +114,6 @@ namespace nx
         if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) data.shapeSides = sides;
         ImGui::SliderFloat( "Radius##1", &data.radius, 1.0f, 100.0f );
         ImGui::SliderInt( "Timeout##1", &data.timeoutInMS, 15, 10000 );
-        ImGui::SliderFloat( "Spread##1", &data.spreadMultiplier, 0.f, 5.f );
-        ImGui::SliderFloat( "Jitter##1", &data.jitterMultiplier, 0.f, 10.f );
         ImGui::SliderFloat( "Boost##1", &data.boostVelocity, 0.f, 1.f );
         ImGui::SliderFloat( "Velocity Size Mult##1", &data.velocitySizeMultiplier, 0.f, 50.f );
 

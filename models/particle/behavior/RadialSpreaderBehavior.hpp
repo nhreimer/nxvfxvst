@@ -37,10 +37,10 @@ namespace nx
     {
       const sf::Vector2f baseDir = p->originalPosition - m_globalInfo.windowHalfSize;
 
-      float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
-      float pulse = std::sin(elapsed * m_data.speed) * 0.5f + 0.5f; // oscillates between [0, 1]
+      const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+      const float pulse = std::sin(elapsed * m_data.speed) * 0.5f + 0.5f; // oscillates between [0, 1]
 
-      sf::Vector2f animatedPos = m_globalInfo.windowHalfSize + baseDir * (1.f + m_data.spreadMultiplier * pulse);
+      const sf::Vector2f animatedPos = m_globalInfo.windowHalfSize + baseDir * (1.f + m_data.spreadMultiplier * pulse);
       p->shape.setPosition(animatedPos);
     }
 
