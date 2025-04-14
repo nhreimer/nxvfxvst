@@ -5,7 +5,7 @@
 namespace nx
 {
 
-class RandomParticleLayout final : public ParticleConsumer
+class RandomParticleLayout final : public ParticleConsumer< ParticleLayoutData_t >
 {
 public:
 
@@ -29,7 +29,7 @@ public:
   }
 
 protected:
-  sf::Vector2f getNextPosition( const std::tuple< int32_t, int32_t > &noteInfo ) override
+  sf::Vector2f getNextPosition( const Midi_t & midiNote ) override
   {
     return { static_cast< float >( m_rand() % m_globalInfo.windowSize.x ),
                   static_cast< float >( m_rand() % m_globalInfo.windowSize.y ) };

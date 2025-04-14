@@ -20,7 +20,8 @@ namespace nx
     E_EmptyLayout,
     E_RandomLayout,
     E_SpiralLayout,
-    E_OrbitRingLayout
+    E_OrbitRingLayout,
+    E_LissajousCurveLayout
   };
 
   enum E_ModifierType : int8_t

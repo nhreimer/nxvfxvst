@@ -7,7 +7,7 @@ namespace nx
 
   /// this is useful for adding time-based effects to a screen without
   /// having particles on the screen.
-  class EmptyParticleLayout final : public ParticleConsumer
+  class EmptyParticleLayout final : public ParticleConsumer< ParticleLayoutData_t >
   {
   public:
     explicit EmptyParticleLayout( const GlobalInfo_t& globalInfo )
@@ -34,7 +34,7 @@ namespace nx
 
   protected:
 
-    sf::Vector2f getNextPosition( const std::tuple< int32_t, int32_t > &noteInfo ) override
+    sf::Vector2f getNextPosition( const Midi_t & midiNote ) override
     {
       return { 0.f, 0.f };
     }

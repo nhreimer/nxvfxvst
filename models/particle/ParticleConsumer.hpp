@@ -15,8 +15,12 @@ namespace nx
   /// Provides midi consumption, i.e., adding it to the deque
   /// Provides updates based on timeouts (can be overridden)
   /// must provide setPosition
+  template< typename TParticleData_t >
   class ParticleConsumer : public IParticleLayout
   {
+
+    static_assert( std::is_base_of_v< ParticleLayoutData_t, TParticleData_t >, "Invalid inherited template parameter" );
+
     public:
 
     explicit ParticleConsumer(const GlobalInfo_t &winfo)
@@ -45,10 +49,12 @@ namespace nx
 
     void addMidiEvent( const Midi_t &midiEvent ) override
     {
-      const auto noteInfo = MidiHelper::getMidiNote( midiEvent.pitch );
-      auto position = getNextPosition( noteInfo );
-      position += { static_cast< float >( m_globalInfo.windowSize.x ) / 2.f,
-                    static_cast< float >( m_globalInfo.windowSize.y ) / 2.f };
+      // const auto noteInfo = MidiHelper::getMidiNote( midiEvent.pitch );
+      // auto position = getNextPosition( noteInfo );
+      auto position = getNextPosition( midiEvent );
+      position += m_globalInfo.windowHalfSize;
+      // position += { static_cast< float >( m_globalInfo.windowSize.x ) / 2.f,
+      //               static_cast< float >( m_globalInfo.windowSize.y ) / 2.f };
 
       auto * timeParticle = m_particles.emplace_back( new TimedParticle_t() );
       auto& particle = timeParticle->shape;
@@ -69,7 +75,7 @@ namespace nx
       particle.setOrigin( particle.getGlobalBounds().size / 2.f );
 
       // timestamp it
-      timeParticle->spawnTime = m_clock.getElapsedTime().asSeconds();
+      timeParticle->spawnTime = m_globalInfo.elapsedTimeSeconds;
     }
 
     void update( const sf::Time &deltaTime ) override
@@ -107,7 +113,8 @@ namespace nx
 
     protected:
 
-    virtual sf::Vector2f getNextPosition( const std::tuple< int32_t, int32_t >& noteInfo ) = 0;
+    //virtual sf::Vector2f getNextPosition( const std::tuple< int32_t, int32_t >& noteInfo ) = 0;
+    virtual sf::Vector2f getNextPosition( const Midi_t& midi ) = 0;
 
     protected:
 
@@ -115,10 +122,7 @@ namespace nx
       std::deque< TimedParticle_t * > m_particles;
 
       std::mt19937 m_rand;
-      ParticleLayoutData_t m_data;
-
-      sf::Clock m_clock;
-
+      TParticleData_t m_data;
   };
 
 }

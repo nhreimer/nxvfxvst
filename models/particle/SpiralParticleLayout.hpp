@@ -12,7 +12,7 @@
 namespace nx
 {
 
-  class SpiralParticleLayout final : public ParticleConsumer
+  class SpiralParticleLayout final : public ParticleConsumer< ParticleLayoutData_t >
   {
   public:
 
@@ -45,8 +45,10 @@ namespace nx
   protected:
 
 
-    sf::Vector2f getNextPosition( const std::tuple< int32_t, int32_t >& noteInfo ) override
+    sf::Vector2f getNextPosition( const Midi_t& midiNote ) override
     {
+      const auto noteInfo = MidiHelper::getMidiNote( midiNote.pitch );
+
       const auto noteNumber = std::get< 0 >( noteInfo );
       const auto noteOctave = std::get< 1 >( noteInfo );
 

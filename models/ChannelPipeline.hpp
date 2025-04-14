@@ -12,7 +12,12 @@
 #include "models/particle/EmptyParticleLayout.hpp"
 #include "models/particle/SpiralParticleLayout.hpp"
 #include "models/particle/RandomParticleLayout.hpp"
-#include "models/particle/OrbitRingLayout.hpp"
+
+// the orbit ring is awful. it needs to be rewritten using a gravity pull system
+// or something else that looks better than rings going in a circle
+//#include "models/particle/OrbitRingLayout.hpp"
+
+#include "models/particle/LissajousCurveLayout.hpp"
 
 #include "shapes/TimedMessage.hpp"
 
@@ -177,8 +182,8 @@ namespace nx
             changeLayout< SpiralParticleLayout >();
 
           ImGui::SameLine();
-          if ( ImGui::RadioButton( "Orbit Ring", m_particleLayout->getType() == E_OrbitRingLayout ) )
-            changeLayout< OrbitRingLayout >();
+          if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LissajousCurveLayout ) )
+            changeLayout< LissajousCurveLayout >();
 
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_RandomLayout ) )
@@ -194,9 +199,9 @@ namespace nx
     template < typename T >
     void changeLayout()
     {
-      const auto& savedSettings = m_particleLayout->serialize();
+      //const auto& savedSettings = m_particleLayout->serialize();
       m_particleLayout.reset( new T( m_globalInfo ) );
-      m_particleLayout->deserialize( savedSettings );
+      //m_particleLayout->deserialize( savedSettings );
     }
 
   private:

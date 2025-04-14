@@ -53,7 +53,8 @@ namespace nx
         LOG_ERROR( "initializing imgui failed" );
 
       m_globalInfo.windowSize = window.getSize();
-      m_globalInfo.windowView.setSize( { static_cast< float >(m_globalInfo.windowSize.x), ( float )m_globalInfo.windowSize.y } );
+      m_globalInfo.windowView.setSize( { static_cast< float >(m_globalInfo.windowSize.x), static_cast< float >(m_globalInfo.windowSize.y) } );
+      m_globalInfo.windowHalfSize = m_globalInfo.windowView.getSize() / 2.f;
     }
 
     void shutdown( const sf::RenderWindow & window )
