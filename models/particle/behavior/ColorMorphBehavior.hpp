@@ -17,6 +17,7 @@ namespace nx
       float morphDuration = 2.f;
       bool useHueOffset = true;
       bool useSkittles = false;   // just a color free-for-all
+      bool reverseColors = false;
       sf::Color morphToColor { sf::Color::Black };
     };
 
@@ -37,6 +38,7 @@ namespace nx
         { "quantizeStep", m_data.quantizeStep },
         { "useHueOffset", m_data.useHueOffset },
         { "useSkittles", m_data.useSkittles },
+        { "reverseColors", m_data.reverseColors },
         { "morphDuration", m_data.morphDuration },
         { "morphToColor", SerialHelper::convertColorToJson( m_data.morphToColor ) }
       };
@@ -50,6 +52,7 @@ namespace nx
       m_data.quantizeStep = j.at( "quantizeStep" ).get<float>();
       m_data.useHueOffset = j.at( "useHueOffset" ).get<bool>();
       m_data.useSkittles = j.at( "useSkittles" ).get<bool>();
+      m_data.reverseColors = j.at( "reverseColors" ).get<bool>();
       m_data.morphToColor = SerialHelper::convertColorFromJson( j.at( "morphToColor" ) );
       m_data.morphDuration = j.at( "morphDuration" ).get<float>();
     }
@@ -66,8 +69,12 @@ namespace nx
 
     void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override
     {
-      if ( m_data.useSkittles ) applySkittlesMorphing( p, deltaTime );
-      else applyBicolorMorphing( p, deltaTime );
+      if ( m_data.useSkittles )
+        applySkittlesMorphing( p, deltaTime );
+      else if ( m_data.reverseColors )
+        applyBicolorMorphingReverse( p, deltaTime );
+      else
+        applyBicolorMorphing( p, deltaTime );
     }
 
     void drawMenu() override
@@ -79,10 +86,11 @@ namespace nx
       ImGui::SliderFloat("Brightness", &m_data.brightness, 0.f, 1.f);
       ImGui::SliderFloat("Color Morph Speed", &m_data.speed, 0.f, 5.f);
 
+      ImGui::Checkbox( "Reverse Bounce", &m_data.reverseColors );
       ImGui::SliderFloat("Morph Duration (sec)", &m_data.morphDuration, 0.1f, 10.f);
       ImVec4 color = m_data.morphToColor;
 
-      if ( ImGui::ColorEdit4("Target Color", ( float* )&color) )
+      if ( ImGui::ColorEdit4("Target Color", reinterpret_cast< float * >( &color) ) )
         m_data.morphToColor = color;
     }
 
@@ -94,6 +102,15 @@ namespace nx
       const float t = elapsed / m_data.morphDuration;
 
       const auto morphed = ColorHelper::lerpColor(p->initialColor, m_data.morphToColor, t);
+      p->shape.setFillColor(morphed);
+    }
+
+    void applyBicolorMorphingReverse( TimedParticle_t * p, const sf::Time& deltaTime ) const
+    {
+      const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+
+      const float t = 0.5f * (1.f + std::sin(elapsed * m_data.speed * NX_TAU));
+      const auto morphed = ColorHelper::lerpColor( p->initialColor, m_data.morphToColor, t );
       p->shape.setFillColor(morphed);
     }
 
