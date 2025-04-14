@@ -20,8 +20,6 @@ namespace nx
     E_EmptyLayout,
     E_RandomLayout,
     E_SpiralLayout,
-    // the orbit ring sucks. removed for now
-    //E_OrbitRingLayout,
     E_LissajousCurveLayout,
     E_FractalRingLayout
   };
@@ -33,6 +31,11 @@ namespace nx
     E_FullMeshModifier,
     E_FreeFallModifier,
     E_PerlinDeformerModifier
+  };
 
+  enum E_BehaviorType : int8_t
+  {
+    E_InvalidBehavior,
+    E_RadialSpreaderBehavior
   };
 }

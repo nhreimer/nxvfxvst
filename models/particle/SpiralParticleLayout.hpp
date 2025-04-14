@@ -34,6 +34,9 @@ namespace nx
         ParticleHelper::drawMenu( m_data );
         drawPositionMenu();
 
+        ImGui::Separator();
+        m_behaviorPipeline.drawMenu();
+
         ImGui::TreePop();
         ImGui::Spacing();
       }

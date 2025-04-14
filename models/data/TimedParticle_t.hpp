@@ -13,7 +13,8 @@ namespace nx
       : shape( other.shape ),
         timeLeft( other.timeLeft ),
         spawnTime( other.spawnTime ), // must keep the time the same or uncoordinated events occur
-        initialColor( other.initialColor )
+        initialColor( other.initialColor ),
+        originalPosition( other.originalPosition )
     {}
 
     TimedParticle_t& operator=( const TimedParticle_t& other )
@@ -22,6 +23,7 @@ namespace nx
       timeLeft = other.timeLeft;
       spawnTime = other.spawnTime;
       initialColor = other.initialColor;
+      originalPosition = other.originalPosition;
       return *this;
     }
 
@@ -34,6 +36,9 @@ namespace nx
 
     // this is the initial color. it shouldn't change once set.
     sf::Color initialColor { sf::Color::White };
+
+    // provided by layout
+    sf::Vector2f originalPosition;
   };
 
 }

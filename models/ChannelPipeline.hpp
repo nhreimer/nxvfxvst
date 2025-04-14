@@ -5,7 +5,6 @@
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/data/Midi_t.hpp"
 
-//#include "models/ParticlePipeline.hpp"
 #include "models/ModifierPipeline.hpp"
 #include "models/ShaderPipeline.hpp"
 
@@ -13,14 +12,12 @@
 #include "models/particle/SpiralParticleLayout.hpp"
 #include "models/particle/RandomParticleLayout.hpp"
 
-// the orbit ring is awful. it needs to be rewritten using a gravity pull system
-// or something else that looks better than rings going in a circle
-//#include "models/particle/OrbitRingLayout.hpp"
-
 #include "models/particle/LissajousCurveLayout.hpp"
 #include "models/particle/FractalRingLayout.hpp"
 
 #include "shapes/TimedMessage.hpp"
+
+#include "models/IParticleBehavior.hpp"
 
 #include <future>
 

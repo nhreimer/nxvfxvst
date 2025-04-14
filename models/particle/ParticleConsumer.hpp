@@ -9,6 +9,8 @@
 
 #include "models/data/ParticleLayoutData_t.hpp"
 
+#include <models/IParticleBehavior.hpp>
+
 namespace nx
 {
 
@@ -24,7 +26,8 @@ namespace nx
     public:
 
     explicit ParticleConsumer(const GlobalInfo_t &winfo)
-        : m_globalInfo( winfo )
+        : m_globalInfo( winfo ),
+          m_behaviorPipeline( winfo )
       {}
 
     ~ParticleConsumer() override
@@ -56,7 +59,9 @@ namespace nx
       // position += { static_cast< float >( m_globalInfo.windowSize.x ) / 2.f,
       //               static_cast< float >( m_globalInfo.windowSize.y ) / 2.f };
 
+
       auto * timeParticle = m_particles.emplace_back( new TimedParticle_t() );
+      timeParticle->originalPosition = position;
       auto& particle = timeParticle->shape;
 
       particle.setRadius( m_data.radius +
@@ -76,6 +81,8 @@ namespace nx
 
       // timestamp it
       timeParticle->spawnTime = m_globalInfo.elapsedTimeSeconds;
+
+      m_behaviorPipeline.applyOnSpawn( timeParticle, midiEvent );
     }
 
     void update( const sf::Time &deltaTime ) override
@@ -96,6 +103,7 @@ namespace nx
               percentage );
 
           timeParticle->shape.setFillColor( nextColor );
+          m_behaviorPipeline.applyOnUpdate( timeParticle, deltaTime );
         }
         else
         {
@@ -123,6 +131,8 @@ namespace nx
 
       std::mt19937 m_rand;
       TParticleData_t m_data;
+
+      ParticleBehaviorPipeline m_behaviorPipeline;
   };
 
 }
