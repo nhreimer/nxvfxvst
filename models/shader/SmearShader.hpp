@@ -107,7 +107,9 @@ namespace nx
         ImGui::SliderFloat("Wiggle Frequency", &m_data.wiggleFrequency, 0.f, 20.0f); // Hz
 
         ImGui::SliderFloat("Brightness Boost", &m_data.brightnessBoost, 1.f, 10.f);
-        ImGui::SliderFloat("Jitter Amount", &m_data.jitterAmount, 0.f, 3.5f);
+
+        // after .5 - .7, there's a rolloff that occurs
+        ImGui::SliderFloat("Jitter Amount", &m_data.jitterAmount, 0.f, 0.8f);
         ImGui::SliderFloat("Falloff Power", &m_data.falloffPower, 0.5f, 4.f);
 
         ImGui::SliderFloat("Feedback Fade", &m_data.feedbackFade, 0.0f, 1.0f);
