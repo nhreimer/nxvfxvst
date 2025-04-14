@@ -5,7 +5,6 @@
 #include "models/particle/RandomParticleLayout.hpp"
 #include "models/particle/OrbitRingLayout.hpp"
 
-#include "models/modifier/PassthroughParticleModifier.hpp"
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 #include "models/modifier/FreeFallModifier.hpp"

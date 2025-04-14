@@ -97,8 +97,15 @@ namespace nx
 
     void drawMenu()
     {
+      drawParticleMenu();
+
+      ImGui::Separator();
       m_particleLayout->drawMenu();
+
+      ImGui::Separator();
       m_modifierPipeline.drawMenu();
+
+      ImGui::Separator();
       m_shaderPipeline.drawMenu();
 
       ImGui::Separator();
@@ -154,6 +161,42 @@ namespace nx
         ImGui::Separator();
         ImGui::TextUnformatted( m_messageClock.getMessage().data() );
       }
+    }
+
+    void drawParticleMenu()
+    {
+      if ( ImGui::TreeNode( "Particles" ) )
+      {
+        ImGui::Text( "Layouts" );
+        {
+          if ( ImGui::RadioButton( "Empty", m_particleLayout->getType() == E_EmptyLayout ) )
+            changeLayout< EmptyParticleLayout >();
+
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_SpiralLayout ) )
+            changeLayout< SpiralParticleLayout >();
+
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Orbit Ring", m_particleLayout->getType() == E_OrbitRingLayout ) )
+            changeLayout< OrbitRingLayout >();
+
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_RandomLayout ) )
+            changeLayout< RandomParticleLayout >();
+        }
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+    }
+
+    // save settings between changes to make editing less frustrating
+    template < typename T >
+    void changeLayout()
+    {
+      const auto& savedSettings = m_particleLayout->serialize();
+      m_particleLayout.reset( new T( m_globalInfo ) );
+      m_particleLayout->deserialize( savedSettings );
     }
 
   private:
