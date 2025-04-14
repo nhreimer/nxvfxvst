@@ -22,6 +22,7 @@ namespace nx
         if ( e == E_LissajousCurveLayout ) return "LissajousCurveLayout";
         if ( e == E_FractalRingLayout ) return "FractalRingLayout";
       }
+
       else if constexpr ( std::is_same_v< Enum, E_ModifierType > )
       {
         if ( e == E_SequentialModifier ) return "SequentialModifier";
@@ -41,6 +42,17 @@ namespace nx
           case E_RumbleShader: return "RumbleShader";
           case E_KaleidoscopeShader: return "KaleidoscopeShader";
           case E_SmearShader: return "SmearShader";
+          default: break;
+        }
+      }
+
+      else if constexpr ( std::is_same_v< Enum, E_BehaviorType > )
+      {
+        switch ( e )
+        {
+          case E_BehaviorType::E_JitterBehavior: return "JitterBehavior";
+          case E_BehaviorType::E_FreeFallBehavior: return "FreeFallBehavior";
+          case E_BehaviorType::E_RadialSpreaderBehavior: return "RadialSpreaderBehavior";
           default: break;
         }
       }
@@ -67,6 +79,14 @@ namespace nx
       if ( modifierType == "FullMeshModifier" ) return E_FullMeshModifier;
       if ( modifierType == "PerlinDeformerModifier" ) return E_PerlinDeformerModifier;
       return E_InvalidModifier;
+    }
+
+    static E_BehaviorType convertStringToBehaviorType( const std::string& behaviorType )
+    {
+      if ( behaviorType == "JitterBehavior" ) return E_JitterBehavior;
+      if ( behaviorType == "FreeFallBehavior" ) return E_FreeFallBehavior;
+      if ( behaviorType == "RadialSpreaderBehavior" ) return E_RadialSpreaderBehavior;
+      return E_InvalidBehavior;
     }
 
     static std::string convertBlendModeToString( const sf::BlendMode& mode )

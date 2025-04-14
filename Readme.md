@@ -1,13 +1,10 @@
 # nxvfx VST3
 
-### Description
+## Description
 
-A midi event VFX engine for VST3 that comes with a standalone test playground application. 
+A highly configurable and modular Video Effects Engine for midi events. It VST3 that comes with a standalone test playground application. 
 
-This is a highly configurable and modular graphics plugin for implementing your own algorithms or shaders 
-that react to midi events.
-
-### Features
+## Features
 
 * Ability to run in Standalone and VST3 Plugin
   * In Standalone (testing only, no audio)
@@ -25,7 +22,7 @@ that react to midi events.
   * Easings (for time decays)
   * Triggers at multiple stages of a pipeline (for time synchronization)
 
-### Dependencies
+## Dependencies
 
 * C++20
 * SFML v3 (graphics: small patch required)
@@ -36,7 +33,7 @@ that react to midi events.
 
 The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 
-### Feature Roadmap
+## Feature Roadmap
 
 * Save and load to/from files instead of copy/paste
 * Add parameters for VST3 for automation
@@ -148,7 +145,7 @@ Contributions, ideas, and suggestions are welcome!
 ### Reaper v7.28. nxvfxvst v1.0.1.0a. 1 channel, 2 effects
 ![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWd1ZXEwMHl0NDJlczVmYnQ3YzAzY2w3bGU3dDE1M3QwZjloY3JiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJvrv2p5RFCdWlpItl/giphy.gif)
 
-## Design
+# Design
 
 ```text
 +---------------------+

@@ -66,7 +66,6 @@ public:
           LOG_ERROR( "unable to deserialize modifier type" );
           break;
       }
-
     }
   }
 

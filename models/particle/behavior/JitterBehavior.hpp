@@ -7,8 +7,6 @@ namespace nx
 
   class JitterBehavior : public IParticleBehavior
   {
-    enum class E_NoiseType : int8_t { E_Hash, E_Value, E_FBM };
-
     struct JitterData_t
     {
       float jitterMultiplier { 0.5 };
@@ -18,6 +16,21 @@ namespace nx
     explicit JitterBehavior( const GlobalInfo_t& info )
       : m_globalInfo( info )
     {}
+
+    [[nodiscard]]
+    nlohmann::json serialize() const override
+    {
+      return
+   {
+        { "type", SerialHelper::serializeEnum( getType() ) },
+        { "jitterMultiplier", m_data.jitterMultiplier }
+      };
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      m_data.jitterMultiplier = j.at( "jitterMultiplier" ).get<float>();
+    }
 
     E_BehaviorType getType() const override { return E_JitterBehavior; }
 

@@ -27,8 +27,28 @@ namespace nx
     ~PerlinDeformerModifier() override = default;
 
     [[nodiscard]]
-    nlohmann::json serialize() const override { return {}; }
-    void deserialize(const nlohmann::json &j) override {}
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+           { "type", SerialHelper::serializeEnum( getType() ) },
+        { "noiseScale", m_data.noiseScale },
+        { "timeScale", m_data.timeScale },
+        { "deformStrength", m_data.deformStrength },
+        { "colorFade", m_data.colorFade },
+          { "noiseType", "E_FBM" }, // TODO: serialize this!
+        { "octaves", m_data.octaves }
+      };
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      m_data.noiseScale = j.at( "noiseScale" ).get<float>();
+      m_data.timeScale = j.at( "timeScale" ).get<float>();
+      m_data.deformStrength = j.at( "deformStrength" ).get<float>();
+      m_data.colorFade = j.at( "colorFade" ).get<float>();
+      m_data.octaves = j.at( "octaves" ).get<int32_t>();
+    }
 
     [[nodiscard]]
     E_ModifierType getType() const override { return E_PerlinDeformerModifier; }

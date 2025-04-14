@@ -18,6 +18,23 @@ namespace nx
       : m_globalInfo(info)
     {}
 
+    [[nodiscard]]
+    nlohmann::json serialize() const override
+    {
+      return
+   {
+      { "type", SerialHelper::serializeEnum( getType() ) },
+      { "spreadMultiplier", m_data.spreadMultiplier },
+      { "speed", m_data.speed }
+      };
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      m_data.spreadMultiplier = j.at( "jitterMultiplier" ).get<float>();
+      m_data.speed = j.at( "speed" ).get<float>();
+    }
+
     E_BehaviorType getType() const override { return E_RadialSpreaderBehavior; }
 
     void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override

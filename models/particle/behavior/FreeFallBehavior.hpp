@@ -18,6 +18,21 @@ namespace nx
       : m_globalInfo(info)
     {}
 
+    [[nodiscard]]
+    nlohmann::json serialize() const override
+    {
+      return
+   {
+          { "type", SerialHelper::serializeEnum( getType() ) },
+          { "timeDivisor", m_data.timeDivisor }
+   };
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      m_data.timeDivisor = j.at( "timeDivisor" ).get<float>();
+    }
+
     E_BehaviorType getType() const override { return E_FreeFallBehavior; }
 
     void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override

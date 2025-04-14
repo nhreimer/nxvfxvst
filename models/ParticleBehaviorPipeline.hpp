@@ -14,6 +14,44 @@ namespace nx
       : m_globalInfo( info )
     {}
 
+    nlohmann::json saveModifierPipeline() const
+    {
+      nlohmann::json j = nlohmann::json::array();
+
+      for ( const auto& behavior : m_particleBehaviors )
+        j.push_back( behavior->serialize() );
+
+      return j;
+    }
+
+    void loadModifierPipeline( const nlohmann::json& j )
+    {
+      m_particleBehaviors.clear();
+      for ( const auto& data : j )
+      {
+        const auto type =
+          SerialHelper::convertStringToBehaviorType( data.value("type", "" ) );
+        switch ( type )
+        {
+          case E_BehaviorType::E_JitterBehavior:
+            deserializeBehavior< JitterBehavior >( data );
+            break;
+
+          case E_BehaviorType::E_FreeFallBehavior:
+            deserializeBehavior< FreeFallBehavior >( data );
+            break;
+
+          case E_BehaviorType::E_RadialSpreaderBehavior:
+            deserializeBehavior< RadialSpreaderBehavior >( data );
+            break;
+
+          default:
+            LOG_ERROR( "unable to deserialize modifier type" );
+            break;
+        }
+      }
+    }
+
     void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) const
     {
       for ( const auto& behavior : m_particleBehaviors )
@@ -111,6 +149,16 @@ namespace nx
     {
       auto& behavior = m_particleBehaviors.emplace_back< std::unique_ptr< T > >(
         std::make_unique< T >( m_globalInfo ) );
+      return behavior.get();
+    }
+
+
+    template < typename T >
+    IParticleBehavior * deserializeBehavior( const nlohmann::json& j )
+    {
+      auto& behavior = m_particleBehaviors.emplace_back< std::unique_ptr< T > >(
+        std::make_unique< T >( m_globalInfo ) );
+      behavior->deserialize( j );
       return behavior.get();
     }
 
