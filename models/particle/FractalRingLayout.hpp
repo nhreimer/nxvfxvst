@@ -39,12 +39,15 @@ public:
   void deserialize(const nlohmann::json &j) override
   {
     ParticleHelper::deserialize( m_data, j );
-    m_data.depthLimit = j["depthLimit"];
-    m_data.radialSpread = j["radialSpread"];
-    m_data.baseRingCount = j["baseRingCount"];
-    m_data.radiusAdjustment = j["radiusAdjustment"];
-    m_data.delayFractalFadesMultiplier = j["delayFractalFadesMultiplier"];
-    m_behaviorPipeline.loadModifierPipeline( j[ "behaviors" ] );
+    if ( j.contains( SerialHelper::serializeEnum( getType() ) ) )
+    {
+      m_data.depthLimit = j["depthLimit"];
+      m_data.radialSpread = j["radialSpread"];
+      m_data.baseRingCount = j["baseRingCount"];
+      m_data.radiusAdjustment = j["radiusAdjustment"];
+      m_data.delayFractalFadesMultiplier = j["delayFractalFadesMultiplier"];
+      m_behaviorPipeline.loadModifierPipeline( j[ "behaviors" ] );
+    }
   }
 
   [[nodiscard]]

@@ -29,7 +29,8 @@ namespace nx
     E_InvalidModifier,
     E_SequentialModifier,
     E_FullMeshModifier,
-    E_PerlinDeformerModifier
+    E_PerlinDeformerModifier,
+    E_TestModifier
   };
 
   enum E_BehaviorType : int8_t

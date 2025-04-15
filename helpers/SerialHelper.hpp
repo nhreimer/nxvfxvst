@@ -151,8 +151,6 @@ namespace nx
           j.value("a", defaultColor.a)
       );
     }
-
-
   };
 
 }

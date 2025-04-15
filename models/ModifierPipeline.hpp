@@ -4,6 +4,14 @@
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 #include "models/modifier/PerlinDeformerModifier.hpp"
 
+#ifndef DEBUG
+#define DEBUG
+#endif
+
+#ifdef DEBUG
+#include "models/modifier/TestModifier.hpp"
+#endif
+
 namespace nx
 {
 
@@ -198,6 +206,11 @@ private:
       ImGui::SameLine();
       if ( ImGui::Button( "Perlin Deformer##3" ) )
         createModifier< PerlinDeformerModifier >();
+
+#ifdef DEBUG
+      if ( ImGui::Button( "Test##3" ) )
+        createModifier< TestModifier >();
+#endif
 
       ImGui::TreePop();
       ImGui::Spacing();

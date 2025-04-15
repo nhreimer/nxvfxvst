@@ -11,7 +11,7 @@ namespace nx
       bool isAttracting = true;
       float strength = 100.f;
       bool useFalloff = true;
-      float falloffExponent = 1.5f;
+      float falloffExponent = 1.0f;
       //bool followMouse = false;
       sf::Vector2f magnetLocation { 0.5f, 0.5f };
     };
