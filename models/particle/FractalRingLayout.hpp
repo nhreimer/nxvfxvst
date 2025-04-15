@@ -46,8 +46,10 @@ public:
       m_data.baseRingCount = j["baseRingCount"];
       m_data.radiusAdjustment = j["radiusAdjustment"];
       m_data.delayFractalFadesMultiplier = j["delayFractalFadesMultiplier"];
-      m_behaviorPipeline.loadModifierPipeline( j[ "behaviors" ] );
     }
+
+    if ( j.contains( "behaviors" ) )
+      m_behaviorPipeline.loadModifierPipeline( j["behaviors"] );
   }
 
   [[nodiscard]]

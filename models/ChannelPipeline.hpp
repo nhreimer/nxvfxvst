@@ -14,6 +14,8 @@
 
 #include "models/particle/LissajousCurveLayout.hpp"
 #include "models/particle/FractalRingLayout.hpp"
+#include "models/particle/LSystemCurveLayout.hpp"
+
 #include "models/particle/TestParticleLayout.hpp"
 
 #include "shapes/TimedMessage.hpp"
@@ -174,7 +176,11 @@ namespace nx
           if ( ImGui::RadioButton( "Empty", m_particleLayout->getType() == E_EmptyLayout ) )
             changeLayout< EmptyParticleLayout >();
 
-          //ImGui::SameLine();
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_RandomLayout ) )
+            changeLayout< RandomParticleLayout >();
+
+
           if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_SpiralLayout ) )
             changeLayout< SpiralParticleLayout >();
 
@@ -182,16 +188,16 @@ namespace nx
           if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LissajousCurveLayout ) )
             changeLayout< LissajousCurveLayout >();
 
-          ImGui::SameLine();
+
           if ( ImGui::RadioButton( "Fractal Ring", m_particleLayout->getType() == E_FractalRingLayout ) )
             changeLayout< FractalRingLayout >();
 
           ImGui::SameLine();
-          if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_RandomLayout ) )
-            changeLayout< RandomParticleLayout >();
+          if ( ImGui::RadioButton( "L-System Curve", m_particleLayout->getType() == E_LSystemCurveLayout ) )
+            changeLayout< LSystemCurveLayout >();
 
 #ifdef DEBUG
-          if ( ImGui::RadioButton( "Test", m_particleLayout->getType() == E_RandomLayout ) )
+          if ( ImGui::RadioButton( "Test", m_particleLayout->getType() == E_TestLayout ) )
             changeLayout< TestParticleLayout >();
 #endif
         }

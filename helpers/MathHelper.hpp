@@ -20,6 +20,13 @@ constexpr float NX_D2R  = 0.017453293f;
 
   struct MathHelper
   {
+
+    static sf::Vector2f polarToCartesian( const float angleDeg, const float len )
+    {
+      const float angleRad = angleDeg * NX_D2R;
+      return sf::Vector2f { std::cos( angleRad ), std::sin( angleRad ) } * len;
+    }
+
     template < typename T >
     static T roundTo( T value, int places )
     {

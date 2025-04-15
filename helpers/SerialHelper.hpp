@@ -21,6 +21,7 @@ namespace nx
         if ( e == E_SpiralLayout ) return "SpiralLayout";
         if ( e == E_LissajousCurveLayout ) return "LissajousCurveLayout";
         if ( e == E_FractalRingLayout ) return "FractalRingLayout";
+        if ( e == E_LSystemCurveLayout ) return "LSystemCurveLayout";
       }
 
       else if constexpr ( std::is_same_v< Enum, E_ModifierType > )
@@ -61,6 +62,16 @@ namespace nx
       }
 
       return "UNKNOWN";
+    }
+
+    static E_LayoutType convertStringToLayoutType( const std::string& layoutType )
+    {
+      if ( layoutType == "EmptyLayout" ) return E_EmptyLayout;
+      if ( layoutType == "RandomLayout" ) return E_RandomLayout;
+      if ( layoutType == "SpiralLayout" ) return E_SpiralLayout;
+      if ( layoutType == "FractalRingLayout" ) return E_FractalRingLayout;
+      if ( layoutType == "LSystemCurveLayout" ) return E_LSystemCurveLayout;
+      return E_LayoutType::E_EmptyLayout;
     }
 
     static E_ShaderType convertStringToShaderType( const std::string& shaderType )

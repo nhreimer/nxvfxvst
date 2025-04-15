@@ -56,13 +56,8 @@ namespace nx
 
     void addMidiEvent( const Midi_t &midiEvent ) override
     {
-      // const auto noteInfo = MidiHelper::getMidiNote( midiEvent.pitch );
-      // auto position = getNextPosition( noteInfo );
       auto position = getNextPosition( midiEvent );
       position += m_globalInfo.windowHalfSize;
-      // position += { static_cast< float >( m_globalInfo.windowSize.x ) / 2.f,
-      //               static_cast< float >( m_globalInfo.windowSize.y ) / 2.f };
-
 
       auto * timeParticle = m_particles.emplace_back( new TimedParticle_t() );
       timeParticle->originalPosition = position;
