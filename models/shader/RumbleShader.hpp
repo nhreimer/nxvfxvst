@@ -74,7 +74,7 @@ namespace nx
     }
 
     [[nodiscard]]
-    E_ShaderType getType() const override { return E_RumbleShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_RumbleShader; }
 
     void drawMenu() override
     {

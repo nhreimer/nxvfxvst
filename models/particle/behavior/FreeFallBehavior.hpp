@@ -33,7 +33,7 @@ namespace nx
       m_data.timeDivisor = j.at( "timeDivisor" ).get<float>();
     }
 
-    E_BehaviorType getType() const override { return E_FreeFallBehavior; }
+    E_BehaviorType getType() const override { return E_BehaviorType::E_FreeFallBehavior; }
 
     void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override
     {}

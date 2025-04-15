@@ -35,7 +35,7 @@ namespace nx
       m_data.speed = j.at( "speed" ).get<float>();
     }
 
-    E_BehaviorType getType() const override { return E_RadialSpreaderBehavior; }
+    E_BehaviorType getType() const override { return E_BehaviorType::E_RadialSpreaderBehavior; }
 
     void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override
     {

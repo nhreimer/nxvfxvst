@@ -8,7 +8,7 @@ namespace nx
   public:
     explicit RingZoneMeshModifier(const GlobalInfo_t &info) : m_globalInfo(info) {}
 
-    E_ModifierType getType() const override { return E_TestModifier; }
+    E_ModifierType getType() const override { return E_ModifierType::E_RingZoneMeshModifier; }
 
     nlohmann::json serialize() const override { return {}; }
 
@@ -53,7 +53,7 @@ namespace nx
       if (m_enablePulse)
       {
         float time = m_globalInfo.elapsedTimeSeconds;
-        float t = std::sin(time * m_pulseSpeed * 2.f * 3.14159265f); // [-1, 1]
+        float t = std::sin(time * m_pulseSpeed * NX_TAU); // [-1, 1]
         float normalized = 0.5f * (t + 1.f); // [0, 1]
         alpha = m_minAlpha + (m_maxAlpha - m_minAlpha) * normalized;
       }

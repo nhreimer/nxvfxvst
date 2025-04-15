@@ -54,7 +54,7 @@ namespace nx
       m_data.blendMode = SerialHelper::convertBlendModeFromString( j.value( "blendMode", "BlendAdd" ) );
     }
 
-    E_ModifierType getType() const override { return E_SequentialModifier; }
+    E_ModifierType getType() const override { return E_ModifierType::E_SequentialModifier; }
 
     void update( const sf::Time &deltaTime ) override
     {}

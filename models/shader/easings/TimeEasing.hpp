@@ -5,7 +5,7 @@
 namespace nx
 {
 
-  enum E_TimeEasingType : int8_t
+  enum class E_TimeEasingType : int8_t
   {
     E_None,
     E_Linear,
@@ -29,7 +29,7 @@ namespace nx
     float decayRate { 0.1f };
     float intensity { 0.f }; // used for certain ones
 
-    E_TimeEasingType easingType { E_None };
+    E_TimeEasingType easingType { E_TimeEasingType::E_None };
   };
 
   class TimeEasing
@@ -72,14 +72,14 @@ namespace nx
 
       switch ( m_data.easingType )
       {
-        case E_None:
+        case E_TimeEasingType::E_None:
           return m_clock.getElapsedTime().asSeconds();
 
         // use elapsed over decay by a multiplier
-        case E_Impulse:
+        case E_TimeEasingType::E_Impulse:
           return m_easingFunction( decay * m_data.intensity );
 
-        case E_SparkleFlicker:
+        case E_TimeEasingType::E_SparkleFlicker:
           return m_easingFunction( decay ) * m_data.intensity;
 
         default:
@@ -95,29 +95,29 @@ namespace nx
       ImGui::PushID( this );
 
       ImGui::SliderFloat( "##DecayRate", &m_data.decayRate, 0.01f, 1.5f, "Decay Rate %0.2f seconds" );
-      if ( m_data.easingType == E_SparkleFlicker )
+      if ( m_data.easingType == E_TimeEasingType::E_SparkleFlicker )
         ImGui::SliderFloat( "##Sparkle Intensity", &m_data.intensity, 0.f, 3.f, "Intensity %0.2f" );
-      else if ( m_data.easingType == E_Impulse )
+      else if ( m_data.easingType == E_TimeEasingType::E_Impulse )
         ImGui::SliderFloat( "##Impulse Scale", &m_data.intensity, 0.f, 10.f, "Scale %0.2f" );
 
       ImGui::Text( "Time Easing Functions:" );
 
-      if ( drawRadio( "None", E_None ) ) m_easingFunction = useNone;
-      else if ( drawRadio( "Linear", E_Linear ) ) m_easingFunction = easeOutLinear;
-      else if ( drawRadio( "Quadratic", E_Quadratic, true ) ) m_easingFunction = easeOutQuad;
-      else if ( drawRadio( "Cubic", E_Cubic, true ) ) m_easingFunction = easeOutCubic;
-      else if ( drawRadio( "Quartic", E_Quartic, true ) ) m_easingFunction = easeOutQuart;
+      if ( drawRadio( "None", E_TimeEasingType::E_None ) ) m_easingFunction = useNone;
+      else if ( drawRadio( "Linear", E_TimeEasingType::E_Linear ) ) m_easingFunction = easeOutLinear;
+      else if ( drawRadio( "Quadratic", E_TimeEasingType::E_Quadratic, true ) ) m_easingFunction = easeOutQuad;
+      else if ( drawRadio( "Cubic", E_TimeEasingType::E_Cubic, true ) ) m_easingFunction = easeOutCubic;
+      else if ( drawRadio( "Quartic", E_TimeEasingType::E_Quartic, true ) ) m_easingFunction = easeOutQuart;
 
-      else if ( drawRadio( "Sine", E_Sine ) ) m_easingFunction = easeOutSine;
-      else if ( drawRadio( "Expo", E_Expo, true ) ) m_easingFunction = easeOutExpo;
-      else if ( drawRadio( "Bounce", E_Bounce, true ) ) m_easingFunction = easeOutBounce;
-      else if ( drawRadio( "Back", E_Back, true ) ) m_easingFunction = easeOutBack;
-      else if ( drawRadio( "Impulse", E_Impulse, true ) ) m_easingFunction = impulse;
+      else if ( drawRadio( "Sine", E_TimeEasingType::E_Sine ) ) m_easingFunction = easeOutSine;
+      else if ( drawRadio( "Expo", E_TimeEasingType::E_Expo, true ) ) m_easingFunction = easeOutExpo;
+      else if ( drawRadio( "Bounce", E_TimeEasingType::E_Bounce, true ) ) m_easingFunction = easeOutBounce;
+      else if ( drawRadio( "Back", E_TimeEasingType::E_Back, true ) ) m_easingFunction = easeOutBack;
+      else if ( drawRadio( "Impulse", E_TimeEasingType::E_Impulse, true ) ) m_easingFunction = impulse;
 
-      else if ( drawRadio( "PulseSine", E_PulseSine ) ) m_easingFunction = pulseSine;
-      else if ( drawRadio( "PulsePing", E_PulsePing, true ) ) m_easingFunction = pulsePing;
-      else if ( drawRadio( "SparkleFlicker", E_SparkleFlicker, true ) ) m_easingFunction = sparkleFlicker;
-      else if ( drawRadio( "SmoothPulse", E_SmoothPulseDecay, true ) ) m_easingFunction = smoothDecayPulse;
+      else if ( drawRadio( "PulseSine", E_TimeEasingType::E_PulseSine ) ) m_easingFunction = pulseSine;
+      else if ( drawRadio( "PulsePing", E_TimeEasingType::E_PulsePing, true ) ) m_easingFunction = pulsePing;
+      else if ( drawRadio( "SparkleFlicker", E_TimeEasingType::E_SparkleFlicker, true ) ) m_easingFunction = sparkleFlicker;
+      else if ( drawRadio( "SmoothPulse", E_TimeEasingType::E_SmoothPulseDecay, true ) ) m_easingFunction = smoothDecayPulse;
 
       ImGui::PopID();
     }
@@ -143,19 +143,19 @@ namespace nx
     {
       switch ( easingType )
       {
-        case E_None: m_easingFunction = useNone; break;
-        case E_Quadratic: m_easingFunction = easeOutQuad; break;
-        case E_Cubic: m_easingFunction = easeOutCubic; break;
-        case E_Quartic: m_easingFunction = easeOutQuart; break;
-        case E_Sine: m_easingFunction = easeOutSine; break;
-        case E_Expo: m_easingFunction = easeOutExpo; break;
-        case E_Bounce: m_easingFunction = easeOutBounce; break;
-        case E_Back: m_easingFunction = easeOutBack; break;
-        case E_PulsePing: m_easingFunction = pulsePing; break;
-        case E_PulseSine: m_easingFunction = pulseSine; break;
-        case E_Impulse: m_easingFunction = impulse; break;
-        case E_SparkleFlicker: m_easingFunction = sparkleFlicker; break;
-        case E_SmoothPulseDecay: m_easingFunction = smoothDecayPulse; break;
+        case E_TimeEasingType::E_None: m_easingFunction = useNone; break;
+        case E_TimeEasingType::E_Quadratic: m_easingFunction = easeOutQuad; break;
+        case E_TimeEasingType::E_Cubic: m_easingFunction = easeOutCubic; break;
+        case E_TimeEasingType::E_Quartic: m_easingFunction = easeOutQuart; break;
+        case E_TimeEasingType::E_Sine: m_easingFunction = easeOutSine; break;
+        case E_TimeEasingType::E_Expo: m_easingFunction = easeOutExpo; break;
+        case E_TimeEasingType::E_Bounce: m_easingFunction = easeOutBounce; break;
+        case E_TimeEasingType::E_Back: m_easingFunction = easeOutBack; break;
+        case E_TimeEasingType::E_PulsePing: m_easingFunction = pulsePing; break;
+        case E_TimeEasingType::E_PulseSine: m_easingFunction = pulseSine; break;
+        case E_TimeEasingType::E_Impulse: m_easingFunction = impulse; break;
+        case E_TimeEasingType::E_SparkleFlicker: m_easingFunction = sparkleFlicker; break;
+        case E_TimeEasingType::E_SmoothPulseDecay: m_easingFunction = smoothDecayPulse; break;
         default:
           m_easingFunction = easeOutLinear; break;
       }
@@ -277,20 +277,20 @@ namespace nx
 
     NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
     {
-      { E_None, "None" },
-      { E_Linear, "Linear" },
-      { E_Quadratic, "Quadratic" },
-      { E_Cubic, "Cubic" },
-      { E_Quartic, "Quartic" },
-      { E_Sine, "Sine" },
-      { E_Expo, "Expo" },
-      { E_Bounce, "Bounce" },
-      { E_Back, "Back" },
-      { E_SmoothPulseDecay, "SmoothPulse" },
-      { E_Impulse, "Impulse" },
-      { E_SparkleFlicker, "SparkleFlicker" },
-      { E_PulsePing, "PulsePing" },
-      { E_PulseSine, "PulseSine" }
+      { E_TimeEasingType::E_None, "None" },
+      { E_TimeEasingType::E_Linear, "Linear" },
+      { E_TimeEasingType::E_Quadratic, "Quadratic" },
+      { E_TimeEasingType::E_Cubic, "Cubic" },
+      { E_TimeEasingType::E_Quartic, "Quartic" },
+      { E_TimeEasingType::E_Sine, "Sine" },
+      { E_TimeEasingType::E_Expo, "Expo" },
+      { E_TimeEasingType::E_Bounce, "Bounce" },
+      { E_TimeEasingType::E_Back, "Back" },
+      { E_TimeEasingType::E_SmoothPulseDecay, "SmoothPulse" },
+      { E_TimeEasingType::E_Impulse, "Impulse" },
+      { E_TimeEasingType::E_SparkleFlicker, "SparkleFlicker" },
+      { E_TimeEasingType::E_PulsePing, "PulsePing" },
+      { E_TimeEasingType::E_PulseSine, "PulseSine" }
     })
 
   };

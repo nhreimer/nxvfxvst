@@ -63,7 +63,7 @@ namespace nx
     }
 
     // identify type for easier loading
-    E_ShaderType getType() const override { return E_BlurShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_BlurShader; }
 
     void update( const sf::Time& deltaTime ) override {}
 

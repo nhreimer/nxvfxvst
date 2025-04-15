@@ -13,7 +13,7 @@ public:
   : ParticleConsumer( winfo )
   {}
 
-  E_LayoutType getType() const override { return E_RandomLayout; }
+  E_LayoutType getType() const override { return E_LayoutType::E_RandomLayout; }
 
   void drawMenu() override
   {

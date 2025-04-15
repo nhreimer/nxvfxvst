@@ -24,7 +24,7 @@ namespace nx
     void deserialize(const nlohmann::json &j) override {}
 
     [[nodiscard]]
-    E_BehaviorType getType() const override { return E_MagneticBehavior; }
+    E_BehaviorType getType() const override { return E_BehaviorType::E_MagneticBehavior; }
 
     void applyOnSpawn(TimedParticle_t *, const Midi_t&) override
     {}

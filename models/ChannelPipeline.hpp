@@ -173,31 +173,31 @@ namespace nx
       {
         ImGui::Text( "Layouts" );
         {
-          if ( ImGui::RadioButton( "Empty", m_particleLayout->getType() == E_EmptyLayout ) )
+          if ( ImGui::RadioButton( "Empty", m_particleLayout->getType() == E_LayoutType::E_EmptyLayout ) )
             changeLayout< EmptyParticleLayout >();
 
           ImGui::SameLine();
-          if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_RandomLayout ) )
+          if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_LayoutType::E_RandomLayout ) )
             changeLayout< RandomParticleLayout >();
 
 
-          if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_SpiralLayout ) )
+          if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_LayoutType::E_SpiralLayout ) )
             changeLayout< SpiralParticleLayout >();
 
           ImGui::SameLine();
-          if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LissajousCurveLayout ) )
+          if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LayoutType::E_LissajousCurveLayout ) )
             changeLayout< LissajousCurveLayout >();
 
 
-          if ( ImGui::RadioButton( "Fractal Ring", m_particleLayout->getType() == E_FractalRingLayout ) )
+          if ( ImGui::RadioButton( "Fractal Ring", m_particleLayout->getType() == E_LayoutType::E_FractalRingLayout ) )
             changeLayout< FractalRingLayout >();
 
           ImGui::SameLine();
-          if ( ImGui::RadioButton( "L-System Curve", m_particleLayout->getType() == E_LSystemCurveLayout ) )
+          if ( ImGui::RadioButton( "L-System Curve", m_particleLayout->getType() == E_LayoutType::E_LSystemCurveLayout ) )
             changeLayout< LSystemCurveLayout >();
 
 #ifdef DEBUG
-          if ( ImGui::RadioButton( "Test", m_particleLayout->getType() == E_TestLayout ) )
+          if ( ImGui::RadioButton( "Test", m_particleLayout->getType() == E_LayoutType::E_TestLayout ) )
             changeLayout< TestParticleLayout >();
 #endif
         }

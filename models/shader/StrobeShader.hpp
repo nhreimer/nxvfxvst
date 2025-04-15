@@ -50,7 +50,7 @@ namespace nx
       m_easing.deserialize( j.at( "easing" ) );
     }
 
-    E_ShaderType getType() const override { return E_StrobeShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_StrobeShader; }
 
     void drawMenu() override
     {

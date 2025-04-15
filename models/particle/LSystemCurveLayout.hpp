@@ -65,7 +65,7 @@ namespace nx
         m_behaviorPipeline.loadModifierPipeline( j["behaviors"] );
     }
 
-    E_LayoutType getType() const override { return E_LSystemCurveLayout; }
+    E_LayoutType getType() const override { return E_LayoutType::E_LSystemCurveLayout; }
 
     void drawMenu() override
     {

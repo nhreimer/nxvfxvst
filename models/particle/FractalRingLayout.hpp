@@ -53,7 +53,7 @@ public:
   }
 
   [[nodiscard]]
-  E_LayoutType getType() const override { return E_FractalRingLayout; }
+  E_LayoutType getType() const override { return E_LayoutType::E_FractalRingLayout; }
 
   void addMidiEvent( const Midi_t &midiEvent ) override
   {

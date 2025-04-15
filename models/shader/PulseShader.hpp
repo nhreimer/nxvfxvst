@@ -59,7 +59,7 @@ namespace nx
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
-    E_ShaderType getType() const override { return E_PulseShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_PulseShader; }
 
     void update( const sf::Time &deltaTime ) override {}
     void trigger(const Midi_t &midi) override

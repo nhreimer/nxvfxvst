@@ -52,7 +52,7 @@ namespace nx
     }
 
     [[nodiscard]]
-    E_LayoutType getType() const override { return E_LissajousCurveLayout; }
+    E_LayoutType getType() const override { return E_LayoutType::E_LissajousCurveLayout; }
 
     void drawMenu() override
     {

@@ -57,7 +57,7 @@ namespace nx
       m_data.morphDuration = j.at( "morphDuration" ).get<float>();
     }
 
-    E_BehaviorType getType() const override { return E_ColorMorphBehavior; }
+    E_BehaviorType getType() const override { return E_BehaviorType::E_ColorMorphBehavior; }
 
     void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override
     {

@@ -36,7 +36,7 @@ namespace nx
     bool isActive() const override { return m_isActive; }
     void processMidiEvent(const Midi_t &midiEvent) override {}
 
-    E_ModifierType getType() const override { return E_FullMeshModifier; }
+    E_ModifierType getType() const override { return E_ModifierType::E_FullMeshModifier; }
 
     void drawMenu() override
     {

@@ -77,7 +77,7 @@ namespace nx
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
-    E_ShaderType getType() const override { return E_GlitchShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_GlitchShader; }
 
     ///////////////////////////////////////////////////////
     /// IMENUABLE

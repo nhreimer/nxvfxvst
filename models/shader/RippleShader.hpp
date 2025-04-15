@@ -61,7 +61,7 @@ namespace nx
       m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
     }
 
-    E_ShaderType getType() const override { return E_RippleShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_RippleShader; }
 
     void drawMenu() override
     {

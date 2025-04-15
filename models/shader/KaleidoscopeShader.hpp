@@ -68,7 +68,7 @@ namespace nx
     }
 
 
-    E_ShaderType getType() const override { return E_KaleidoscopeShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_KaleidoscopeShader; }
 
     void update( const sf::Time& deltaTime ) override
     {

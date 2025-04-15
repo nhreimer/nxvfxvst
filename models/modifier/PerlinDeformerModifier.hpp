@@ -51,7 +51,7 @@ namespace nx
     }
 
     [[nodiscard]]
-    E_ModifierType getType() const override { return E_PerlinDeformerModifier; }
+    E_ModifierType getType() const override { return E_ModifierType::E_PerlinDeformerModifier; }
 
     bool isActive() const override { return m_isActive; }
     void processMidiEvent(const Midi_t &midiEvent) override {}

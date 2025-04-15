@@ -34,7 +34,7 @@ namespace nx
 
     void deserialize(const nlohmann::json &j) override {}
 
-    E_LayoutType getType() const override { return E_TestLayout; }
+    E_LayoutType getType() const override { return E_LayoutType::E_TestLayout; }
 
     void drawMenu() override
     {

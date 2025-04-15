@@ -16,7 +16,7 @@ namespace nx
 
     ~EmptyParticleLayout() override = default;
 
-    E_LayoutType getType() const override { return E_EmptyLayout; }
+    E_LayoutType getType() const override { return E_LayoutType::E_EmptyLayout; }
 
     void drawMenu() override
     {

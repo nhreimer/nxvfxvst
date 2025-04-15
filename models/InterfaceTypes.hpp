@@ -2,7 +2,7 @@
 
 namespace nx
 {
-  enum E_ShaderType : int8_t
+  enum class E_ShaderType : int8_t
   {
     E_InvalidShader,
     E_GlitchShader,
@@ -15,7 +15,7 @@ namespace nx
     E_SmearShader
   };
 
-  enum E_LayoutType : int8_t
+  enum class E_LayoutType : int8_t
   {
     E_EmptyLayout,
     E_RandomLayout,
@@ -27,7 +27,7 @@ namespace nx
     E_TestLayout
   };
 
-  enum E_ModifierType : int8_t
+  enum class E_ModifierType : int8_t
   {
     E_InvalidModifier,
     E_SequentialModifier,
@@ -38,7 +38,7 @@ namespace nx
     E_TestModifier
   };
 
-  enum E_BehaviorType : int8_t
+  enum class E_BehaviorType : int8_t
   {
     E_InvalidBehavior,
     E_RadialSpreaderBehavior,

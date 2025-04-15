@@ -32,7 +32,7 @@ namespace nx
       m_data.jitterMultiplier = j.at( "jitterMultiplier" ).get<float>();
     }
 
-    E_BehaviorType getType() const override { return E_JitterBehavior; }
+    E_BehaviorType getType() const override { return E_BehaviorType::E_JitterBehavior; }
 
     void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override
     {

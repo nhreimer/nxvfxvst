@@ -23,7 +23,7 @@ namespace nx
     ~SpiralParticleLayout() override = default;
 
     [[nodiscard]]
-    E_LayoutType getType() const override { return E_SpiralLayout; }
+    E_LayoutType getType() const override { return E_LayoutType::E_SpiralLayout; }
 
     void drawMenu() override
     {
