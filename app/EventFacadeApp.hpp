@@ -196,9 +196,9 @@ namespace nx
 
     std::array< test::MidiGenerator, 4 > m_midiGen {
       test::MidiGenerator { 0, 1000, m_onEvent },
-      test::MidiGenerator { 1, 1100, m_onEvent },
-      test::MidiGenerator { 2, 1200, m_onEvent },
-      test::MidiGenerator { 3, 1300, m_onEvent } };
+      test::MidiGenerator { 1, 100, m_onEvent },
+      test::MidiGenerator { 2, 5000, m_onEvent },
+      test::MidiGenerator { 3, 500, m_onEvent } };
 
     GlobalInfo_t m_globalInfo;
 

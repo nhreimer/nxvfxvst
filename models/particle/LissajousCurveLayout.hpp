@@ -10,17 +10,13 @@ namespace nx
 
     float phaseDelta { 0.5f };
     float phaseSpread { 0.5f };
-
-
-    int32_t tracerCount = 8;
-    float tracerDelayStep = 0.04f; // how far apart each ghost is in phase
-    float fadeExponent = 1.5f;     // higher = faster fade
-    float sizeFalloff = 0.75f;     // scaling down radius
   };
 
   /// This layout places each particle along a mathematically beautiful Lissajous curve using parametric sine functions
   /// x = A * sin(a * t + δ)
   /// y = B * sin(b * t)
+  /// A = size of window.x
+  /// B = size of window.y
   /// a = pitch-based frequency
   /// b = velocity-based frequency
   /// t = time or phase (based on global time)
@@ -42,10 +38,6 @@ namespace nx
       j[ "phaseBStep" ] = m_data.phaseBStep;
       j[ "phaseDelta" ] = m_data.phaseDelta;
       j[ "phaseSpread" ] = m_data.phaseSpread;
-      j[ "tracerCount" ] = m_data.tracerCount;
-      j[ "tracerDelayStep" ] = m_data.tracerDelayStep;
-      j[ "fadeExponent" ] = m_data.fadeExponent;
-      j[ "sizeFalloff" ] = m_data.sizeFalloff;
 
       return j;
     }
@@ -57,10 +49,6 @@ namespace nx
       m_data.phaseBStep = j.value( "phaseBStep", 3.0f );
       m_data.phaseDelta = j.value( "phaseDelta", 0.5f );
       m_data.phaseSpread = j.value( "phaseSpread", 0.5f );
-      m_data.tracerCount = j.value( "tracerCount", 8 );
-      m_data.tracerDelayStep = j.value( "tracerDelayStep", 0.5f );
-      m_data.fadeExponent = j.value( "fadeExponent", 1.0f );
-      m_data.sizeFalloff = j.value( "sizeFalloff", 0.5f );
     }
 
     [[nodiscard]]
@@ -79,13 +67,6 @@ namespace nx
         ImGui::SliderFloat("Phase Spread", &m_data.phaseSpread, 0.f, 1.0f);
 
         ImGui::Separator();
-
-        ImGui::SliderInt( "Tracer Count", &m_data.tracerCount, 0, 128 );
-        ImGui::SliderFloat( "Tracer Delay Step", &m_data.tracerDelayStep, 0.0f, 3.0f );
-        ImGui::SliderFloat( "Fade Exponent", &m_data.fadeExponent, 0.0f, 1.0f );
-        ImGui::SliderFloat( "Size Falloff", &m_data.sizeFalloff, 0.0f, 1.0f );
-
-        ImGui::Separator();
         m_behaviorPipeline.drawMenu();
 
         ImGui::TreePop();
@@ -100,30 +81,13 @@ namespace nx
       const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
       const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
 
-      const auto * lastAdded = m_particles.back();
+      const float localT = m_globalInfo.elapsedTimeSeconds;
 
-      for ( int i = 0; i <= m_data.tracerCount; ++i )
-      {
-        const float localT = m_globalInfo.elapsedTimeSeconds - i * m_data.tracerDelayStep;
+      const float x = ( m_globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
+      const float y = ( m_globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * localT);
 
-        const float x = ( m_globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
-        const float y = ( m_globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * localT);
-
-        auto * p = m_particles.emplace_back( new TimedParticle_t( *lastAdded ) );
-        const float lifeScale = 1.0f - std::pow(static_cast<float>(i) / m_data.tracerCount, m_data.fadeExponent);
-        const float sizeScale = std::pow(m_data.sizeFalloff, static_cast<float>(i));
-
-        p->shape.setRadius( 5.f * sizeScale );
-        p->shape.setPosition( { x, y } );
-
-        auto faded = p->shape.getFillColor();
-        faded.a = static_cast< uint8_t >( 255 * lifeScale ); // fade out
-        p->shape.setFillColor(faded);
-        p->initialColor = faded;
-
-        p->spawnTime = m_globalInfo.elapsedTimeSeconds;
-        p->timeLeft = static_cast<int32_t>(m_data.timeoutInMS * lifeScale); // shorter life
-      }
+      auto * p = m_particles.emplace_back( new TimedParticle_t() );
+      p->shape.setPosition( { x, y } );
     }
 
   protected:
