@@ -3,7 +3,7 @@
 namespace nx
 {
 
-  class MagneticAttractorBehavior : public IParticleBehavior
+  class MagneticAttractorBehavior final : public IParticleBehavior
   {
   public:
     explicit MagneticAttractorBehavior(const GlobalInfo_t &info) : m_globalInfo(info) {}
@@ -30,7 +30,7 @@ namespace nx
       sf::Vector2f normDir = dir / distance;
 
       // Falloff based on distance
-      float force = m_strength;
+      float force = m_strength * 2.f;
       if (m_useFalloff) {
         force *= 1.f / std::pow(distance, m_falloffExponent);
       }
@@ -40,8 +40,8 @@ namespace nx
         force *= -1.f;
 
       // Apply movement offset
-      sf::Vector2f offset = normDir * force * dt.asSeconds();
-      p->shape.move(offset);
+      const sf::Vector2f offset = normDir * force * dt.asSeconds();
+      p->shape.move( offset );
     }
 
     void drawMenu() override
@@ -55,8 +55,8 @@ namespace nx
       if ( ImGui::SliderFloat( "Magnet x##1", &m_magnetLocation.x, 0.f, 1.f ) ||
            ImGui::SliderFloat( "Magnet y##1", &m_magnetLocation.y, 0.f, 1.f ) )
       {
-        const sf::Vector2f calibrated { m_magnetLocation.x * ( float )m_globalInfo.windowSize.x,
-                                        m_magnetLocation.y * ( float )m_globalInfo.windowSize.y };
+        const sf::Vector2f calibrated { m_magnetLocation.x * static_cast< float >( m_globalInfo.windowSize.x ),
+                                        m_magnetLocation.y * static_cast< float >( m_globalInfo.windowSize.y ) };
         m_timedCursor.setPosition( calibrated );
       }
 
