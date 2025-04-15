@@ -71,6 +71,9 @@ namespace nx
                                           m_data.magnetLocation.y * static_cast< float >( m_globalInfo.windowSize.y ) };
           m_timedCursor.setPosition( calibrated );
         }
+
+        ImGui::TreePop();
+        ImGui::Spacing();
       }
 
       if ( !m_timedCursor.hasExpired() )
