@@ -26,20 +26,6 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Test Modifier" ) )
       {
-        ImGui::SliderFloat("Ring Spacing", &m_ringSpacing, 20.f, 200.f);
-        ImGui::Checkbox("Draw Ring Loops", &m_drawRings);
-        ImGui::Checkbox("Draw Radials", &m_drawSpokes);
-        ImVec4 color = m_lineColor;
-        if ( ImGui::ColorEdit4("Line Color", reinterpret_cast<float*>(&color)) )
-          m_lineColor = color;
-
-        ImGui::SeparatorText("Pulse Alpha");
-        ImGui::Checkbox("Enable Pulse", &m_enablePulse);
-        if (m_enablePulse) {
-          ImGui::SliderFloat("Pulse Speed (Hz)", &m_pulseSpeed, 0.1f, 10.0f);
-          ImGui::SliderFloat("Min Alpha", &m_minAlpha, 0.f, 255.f);
-          ImGui::SliderFloat("Max Alpha", &m_maxAlpha, 0.f, 255.f);
-        }
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -71,7 +57,7 @@ namespace nx
       sf::Color pulsedColor = m_lineColor;
       pulsedColor.a = static_cast<uint8_t>(alpha);
 
-      auto* lines = new sf::VertexArray(sf::PrimitiveType::Lines);
+      auto* lines =new sf::VertexArray(sf::PrimitiveType::Lines);
       const sf::Vector2f& center = m_globalInfo.windowHalfSize;
 
       // Step 1: Group particles into rings
@@ -89,7 +75,8 @@ namespace nx
         if (ringParticles.size() < 2) continue;
 
         // Sort particles clockwise by angle
-        std::sort(ringParticles.begin(), ringParticles.end(),
+        std::ranges::sort(
+        ringParticles,
           [&](TimedParticle_t* a, TimedParticle_t* b) {
             return angleFromCenter(center, a->shape.getPosition()) <
                    angleFromCenter(center, b->shape.getPosition());
@@ -101,9 +88,9 @@ namespace nx
             auto* p2 = ringParticles[(i + 1) % ringParticles.size()]; // wrap around
             // lines->append(sf::Vertex(p1->shape.getPosition(), m_lineColor));
             // lines->append(sf::Vertex(p2->shape.getPosition(), m_lineColor));
+
             lines->append(sf::Vertex(p1->shape.getPosition(), pulsedColor));
             lines->append(sf::Vertex(p2->shape.getPosition(), pulsedColor));
-
           }
         }
 

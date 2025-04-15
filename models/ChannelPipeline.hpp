@@ -14,6 +14,7 @@
 
 #include "models/particle/LissajousCurveLayout.hpp"
 #include "models/particle/FractalRingLayout.hpp"
+#include "models/particle/TestParticleLayout.hpp"
 
 #include "shapes/TimedMessage.hpp"
 
@@ -188,6 +189,11 @@ namespace nx
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_RandomLayout ) )
             changeLayout< RandomParticleLayout >();
+
+#ifdef DEBUG
+          if ( ImGui::RadioButton( "Test", m_particleLayout->getType() == E_RandomLayout ) )
+            changeLayout< TestParticleLayout >();
+#endif
         }
 
         ImGui::TreePop();

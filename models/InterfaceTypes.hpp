@@ -21,7 +21,9 @@ namespace nx
     E_RandomLayout,
     E_SpiralLayout,
     E_LissajousCurveLayout,
-    E_FractalRingLayout
+    E_FractalRingLayout,
+
+    E_TestLayout
   };
 
   enum E_ModifierType : int8_t
@@ -30,6 +32,8 @@ namespace nx
     E_SequentialModifier,
     E_FullMeshModifier,
     E_PerlinDeformerModifier,
+    E_RingZoneMeshModifier,
+
     E_TestModifier
   };
 

@@ -27,6 +27,7 @@ namespace nx
       {
         if ( e == E_SequentialModifier ) return "SequentialModifier";
         if ( e == E_FullMeshModifier ) return "FullMeshModifier";
+        if ( e == E_RingZoneMeshModifier ) return "RingZoneMeshModifier";
         if ( e == E_PerlinDeformerModifier ) return "PerlinDeformerModifier";
       }
 
@@ -79,6 +80,7 @@ namespace nx
     {
       if ( modifierType == "SequentialModifier" ) return E_SequentialModifier;
       if ( modifierType == "FullMeshModifier" ) return E_FullMeshModifier;
+      if ( modifierType == "RingZoneMeshModifier" ) return E_RingZoneMeshModifier;
       if ( modifierType == "PerlinDeformerModifier" ) return E_PerlinDeformerModifier;
       return E_InvalidModifier;
     }

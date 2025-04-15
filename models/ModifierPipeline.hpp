@@ -3,14 +3,9 @@
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 #include "models/modifier/PerlinDeformerModifier.hpp"
+#include "models/modifier/RingZoneMeshModifier.hpp"
 
-#ifndef DEBUG
-#define DEBUG
-#endif
-
-#ifdef DEBUG
 #include "models/modifier/TestModifier.hpp"
-#endif
 
 namespace nx
 {
@@ -68,6 +63,10 @@ public:
 
         case E_ModifierType::E_PerlinDeformerModifier:
           deserializeModifier< PerlinDeformerModifier >( modifierData );
+          break;
+
+        case E_ModifierType::E_RingZoneMeshModifier:
+          deserializeModifier< RingZoneMeshModifier >( modifierData );
           break;
 
         default:
@@ -204,6 +203,9 @@ private:
         createModifier< ParticleFullMeshLineModifier >();
 
       ImGui::SameLine();
+      if ( ImGui::Button( "Ring Zone Mesh##3" ) )
+        createModifier< RingZoneMeshModifier >();
+
       if ( ImGui::Button( "Perlin Deformer##3" ) )
         createModifier< PerlinDeformerModifier >();
 
