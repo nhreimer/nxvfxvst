@@ -77,7 +77,7 @@ namespace nx
           m_timedCursor.setPosition( calibrated );
         }
 
-        ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 10.f, 50.f );
+        ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 0.f, 50.f );
         ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
 
         // TODO: these are inverted, i think because lower = slower for m_data.speed

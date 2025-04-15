@@ -63,8 +63,14 @@ namespace nx
 
     void drawMenu() override
     {
-      ImGui::SliderFloat( "Spread Multiplier", &m_data.spreadMultiplier, 0.0f, 5.0f );
-      ImGui::SliderFloat( "Spread Speed", &m_data.speed, 0.0f, 5.0f );
+      if ( ImGui::TreeNode( "Radial Spreading Behavior" ) )
+      {
+        ImGui::SliderFloat( "Spread Multiplier", &m_data.spreadMultiplier, 0.0f, 5.0f );
+        ImGui::SliderFloat( "Spread Speed", &m_data.speed, 0.0f, 5.0f );
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
     }
 
   private:

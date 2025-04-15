@@ -85,6 +85,9 @@ namespace nx
         ImGui::SliderFloat( "Fade Exponent", &m_data.fadeExponent, 0.0f, 1.0f );
         ImGui::SliderFloat( "Size Falloff", &m_data.sizeFalloff, 0.0f, 1.0f );
 
+        ImGui::Separator();
+        m_behaviorPipeline.drawMenu();
+
         ImGui::TreePop();
         ImGui::Separator();
       }

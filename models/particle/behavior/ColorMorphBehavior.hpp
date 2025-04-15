@@ -79,19 +79,25 @@ namespace nx
 
     void drawMenu() override
     {
-      ImGui::Checkbox( "Use Hue Offset", &m_data.useHueOffset );
-      ImGui::Checkbox( "Use Skittles Morph", &m_data.useSkittles );
-      ImGui::SliderFloat("Hue Quantize Step", &m_data.quantizeStep, 0.f, 90.f );
-      ImGui::SliderFloat("Saturation", &m_data.saturation, 0.f, 1.f);
-      ImGui::SliderFloat("Brightness", &m_data.brightness, 0.f, 1.f);
-      ImGui::SliderFloat("Color Morph Speed", &m_data.speed, 0.f, 5.f);
+      if ( ImGui::TreeNode( "Color Morph Behavior" ) )
+      {
+        ImGui::Checkbox( "Use Hue Offset", &m_data.useHueOffset );
+        ImGui::Checkbox( "Use Skittles Morph", &m_data.useSkittles );
+        ImGui::SliderFloat("Hue Quantize Step", &m_data.quantizeStep, 0.f, 90.f );
+        ImGui::SliderFloat("Saturation", &m_data.saturation, 0.f, 1.f);
+        ImGui::SliderFloat("Brightness", &m_data.brightness, 0.f, 1.f);
+        ImGui::SliderFloat("Color Morph Speed", &m_data.speed, 0.f, 5.f);
 
-      ImGui::Checkbox( "Reverse Bounce", &m_data.reverseColors );
-      ImGui::SliderFloat("Morph Duration (sec)", &m_data.morphDuration, 0.1f, 10.f);
-      ImVec4 color = m_data.morphToColor;
+        ImGui::Checkbox( "Reverse Bounce", &m_data.reverseColors );
+        ImGui::SliderFloat("Morph Duration (sec)", &m_data.morphDuration, 0.1f, 10.f);
+        ImVec4 color = m_data.morphToColor;
 
-      if ( ImGui::ColorEdit4("Target Color", reinterpret_cast< float * >( &color) ) )
-        m_data.morphToColor = color;
+        if ( ImGui::ColorEdit4("Target Color", reinterpret_cast< float * >( &color) ) )
+          m_data.morphToColor = color;
+
+        ImGui::TreePop();
+        ImGui::Separator();
+      }
     }
 
   private:

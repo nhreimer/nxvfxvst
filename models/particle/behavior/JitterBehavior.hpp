@@ -44,10 +44,14 @@ namespace nx
       p->shape.setPosition( getJitterPosition( p ) );
     }
 
-  public:
     void drawMenu() override
     {
-      ImGui::SliderFloat( "Jitter", &m_data.jitterMultiplier, 0.f, 5.f );
+      if ( ImGui::TreeNode( "Jitter Behavior" ) )
+      {
+        ImGui::SliderFloat( "Jitter", &m_data.jitterMultiplier, 0.f, 5.f );
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
     }
 
   private:

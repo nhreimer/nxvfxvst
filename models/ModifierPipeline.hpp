@@ -93,8 +93,6 @@ public:
       }
     }
 
-    const sf::RenderTexture * currentTexture = nullptr;
-
     std::deque< sf::Drawable* > newArtifacts;
 
     for ( const auto& modifier : m_modifiers )

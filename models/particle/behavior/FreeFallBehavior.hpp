@@ -22,10 +22,10 @@ namespace nx
     nlohmann::json serialize() const override
     {
       return
-   {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "timeDivisor", m_data.timeDivisor }
-   };
+      {
+        { "type", SerialHelper::serializeEnum( getType() ) },
+        { "timeDivisor", m_data.timeDivisor }
+      };
     }
 
     void deserialize(const nlohmann::json &j) override
@@ -46,7 +46,12 @@ namespace nx
 
     void drawMenu() override
     {
-      ImGui::SliderFloat( "##Free Fall Time", &m_data.timeDivisor, 0.5f, 50.f, "Free Fall Time %0.2f" );
+      if ( ImGui::TreeNode( "Free Fall Behavior" ) )
+      {
+        ImGui::SliderFloat( "##Free Fall Time", &m_data.timeDivisor, 0.5f, 50.f, "Free Fall Time %0.2f" );
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
     }
 
   private:

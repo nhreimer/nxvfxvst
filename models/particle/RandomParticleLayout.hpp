@@ -23,6 +23,9 @@ public:
     {
       ParticleHelper::drawMenu( m_data );
 
+      ImGui::Separator();
+      m_behaviorPipeline.drawMenu();
+
       ImGui::TreePop();
       ImGui::Spacing();
     }

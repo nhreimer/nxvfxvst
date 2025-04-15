@@ -19,7 +19,8 @@ class FractalRingLayout final : public IParticleLayout
 public:
 
   explicit FractalRingLayout( const GlobalInfo_t& globalInfo )
-    : m_globalInfo( globalInfo )
+    : m_globalInfo( globalInfo ),
+      m_behaviorPipeline( globalInfo )
   {}
 
   [[nodiscard]]
@@ -31,6 +32,7 @@ public:
     j[ "baseRingCount" ] = m_data.baseRingCount;
     j[ "radiusAdjustment" ] = m_data.radiusAdjustment;
     j[ "delayFractalFadesMultiplier" ] = m_data.delayFractalFadesMultiplier;
+    j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
     return j;
   }
 
@@ -42,6 +44,7 @@ public:
     m_data.baseRingCount = j["baseRingCount"];
     m_data.radiusAdjustment = j["radiusAdjustment"];
     m_data.delayFractalFadesMultiplier = j["delayFractalFadesMultiplier"];
+    m_behaviorPipeline.loadModifierPipeline( j[ "behaviors" ] );
   }
 
   [[nodiscard]]
@@ -102,6 +105,9 @@ public:
       ImGui::SliderFloat( "Radius Adjustment", &m_data.radiusAdjustment, 0.f, 1.f );
       ImGui::SliderFloat( "Radial Spread", &m_data.radialSpread, 0.f, 5.f );
       ImGui::SliderFloat( "Fractal Depth Fade Offset", &m_data.delayFractalFadesMultiplier, 0.f, 5.f );
+
+      ImGui::Separator();
+      m_behaviorPipeline.drawMenu();
 
       ImGui::TreePop();
       ImGui::Spacing();
@@ -179,6 +185,8 @@ private:
   const GlobalInfo_t& m_globalInfo;
   std::deque< TimedParticle_t * > m_particles;
   FractalRingLayoutData_t m_data;
+
+  ParticleBehaviorPipeline m_behaviorPipeline;
 };
 
 }
