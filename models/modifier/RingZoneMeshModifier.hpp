@@ -13,6 +13,8 @@ namespace nx
       bool drawSpokes = true;
       sf::Color lineColor = sf::Color(255, 255, 255, 100);
 
+      float lineWidth { 2.f };
+
       float pulseSpeed = 1.0f; // Hz
       float minAlpha = 32.f;
       float maxAlpha = 200.f;
@@ -34,6 +36,7 @@ namespace nx
         { "drawRings", m_data.drawRings },
         { "drawSpokes", m_data.drawSpokes },
         { "lineColor", SerialHelper::convertColorToJson( m_data.lineColor ) },
+        { "lineWidth", m_data.lineWidth },
         { "pulseSpeed", m_data.pulseSpeed },
         { "minAlpha", m_data.minAlpha },
          { "maxAlpha", m_data.maxAlpha },
@@ -48,6 +51,7 @@ namespace nx
         m_data.isActive = j[ "isActive" ].get<bool>();
         m_data.ringSpacing = j.at( "ringSpacing" ).get<float>();
         m_data.drawRings = j.at( "drawRings" ).get<bool>();
+        m_data.lineWidth = j.at( "lineWidth" ).get<float>();
         m_data.pulseSpeed = j.at( "pulseSpeed" ).get<float>();
         m_data.minAlpha = j.at( "minAlpha" ).get<float>();
         m_data.maxAlpha = j.at( "maxAlpha" ).get<float>();
@@ -62,11 +66,13 @@ namespace nx
 
     void drawMenu() override
     {
-      if (ImGui::TreeNode("Test Modifier"))
+      if (ImGui::TreeNode("Ring Zone Mesh Modifier"))
       {
         ImGui::SliderFloat("Ring Spacing", &m_data.ringSpacing, 20.f, 200.f);
         ImGui::Checkbox("Draw Ring Loops", &m_data.drawRings);
         ImGui::Checkbox("Draw Radials", &m_data.drawSpokes);
+        ImGui::SliderFloat("Line Width", &m_data.lineWidth, 1.f, 50.f);
+
         ImVec4 color = m_data.lineColor;
         if (ImGui::ColorEdit4("Line Color", reinterpret_cast< float * >(&color)))
           m_data.lineColor = color;
@@ -107,7 +113,8 @@ namespace nx
       sf::Color pulsedColor = m_data.lineColor;
       pulsedColor.a = static_cast< uint8_t >(alpha);
 
-      auto *lines = new sf::VertexArray(sf::PrimitiveType::Lines);
+      //auto *lines = new sf::VertexArray(sf::PrimitiveType::Lines);
+      //auto * lines = static_cast< GradientLine * >(outArtifacts.emplace_back(new GradientLine()));
       const sf::Vector2f &center = m_globalInfo.windowHalfSize;
 
       // Step 1: Group particles into rings
@@ -141,8 +148,15 @@ namespace nx
             // lines->append(sf::Vertex(p1->shape.getPosition(), m_lineColor));
             // lines->append(sf::Vertex(p2->shape.getPosition(), m_lineColor));
 
-            lines->append(sf::Vertex(p1->shape.getPosition(), pulsedColor));
-            lines->append(sf::Vertex(p2->shape.getPosition(), pulsedColor));
+            outArtifacts.emplace_back(
+              new GradientLine( p1->shape.getPosition(),
+                                     p2->shape.getPosition(),
+                                     m_data.lineWidth,
+                                     pulsedColor,
+                                     pulsedColor )
+            );
+            // lines->append(sf::Vertex(p1->shape.getPosition(), pulsedColor));
+            // lines->append(sf::Vertex(p2->shape.getPosition(), pulsedColor));
           }
         }
 
@@ -153,13 +167,20 @@ namespace nx
 
           for (size_t i = 0; i < minCount; ++i)
           {
-            lines->append(sf::Vertex(ringParticles[ i ]->shape.getPosition(), pulsedColor));
-            lines->append(sf::Vertex(prevRing[ i ]->shape.getPosition(), pulsedColor));
+            outArtifacts.emplace_back(
+              new GradientLine( ringParticles[ i ]->shape.getPosition(),
+                                 prevRing[ i ]->shape.getPosition(),
+                                 m_data.lineWidth,
+                                 pulsedColor,
+                                 pulsedColor )
+            );
+            // lines->append(sf::Vertex(ringParticles[ i ]->shape.getPosition(), pulsedColor));
+            // lines->append(sf::Vertex(prevRing[ i ]->shape.getPosition(), pulsedColor));
           }
         }
       }
 
-      outArtifacts.push_back(lines);
+      // outArtifacts.push_back(lines);
     }
 
   private:
