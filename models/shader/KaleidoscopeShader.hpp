@@ -8,14 +8,15 @@ namespace nx
   struct KaleidoscopeData_t
   {
     bool isActive { true };
+    float intensity { 0.2f };
 
-    float centerX { 0.5f };
-    float centerY { 0.5f };
-    int32_t segments { 5 };
-    float time { 0.f };
-    float rotationSpeed { 0.1f };
+    // Slices | Vibe
+    //--------|--------------------------
+    // 3–4    | Triangular shard symmetry
+    // 6–8    | Mandala snowflake bloom
+    // 12+    | Fractal kaleido insanity
 
-    bool automateTime { false };
+    float slices { 6.f };
   };
 
   class KaleidoscopeShader final : public IShader
@@ -47,12 +48,8 @@ namespace nx
    {
         { "type", SerialHelper::serializeEnum( getType() ) },
         { "isActive", m_data.isActive },
-        { "centerX", m_data.centerX },
-        { "centerY", m_data.centerY },
-        { "segments", m_data.segments },
-        { "time", m_data.time },
-        { "rotationSpeed", m_data.rotationSpeed },
-        { "automateTime", m_data.automateTime }
+           { "intensity", m_data.intensity },
+          { "slices", m_data.slices }
       };
     }
 
@@ -60,13 +57,9 @@ namespace nx
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.centerX = j.value("centerX", 0.5f);
-        m_data.centerY = j.value("centerY", 0.5f);
-        m_data.segments = j.value("segments", 0);
-        m_data.time = j.value("time", 0.f);
-        m_data.rotationSpeed = j.value("rotationSpeed", 0.1f);
-        m_data.automateTime = j.value("automateTime", false);
+        m_data.isActive = j.value("isActive", true);
+        m_data.intensity = j.value("intensity", 0.2f);
+        m_data.slices = j.value("slices", 6.f);
       }
       else
       {
@@ -79,30 +72,21 @@ namespace nx
 
     void update( const sf::Time& deltaTime ) override
     {
-      if ( m_data.automateTime )
-        m_data.time = static_cast< float >( ::clock() ) / CLOCKS_PER_SEC;
+      // if ( m_data.automateTime )
+      //   m_data.time = static_cast< float >( ::clock() ) / CLOCKS_PER_SEC;
     }
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Kaleidoscope" ) )
+      if ( ImGui::TreeNode( "Polar-Kaleidoscope" ) )
       {
-        ImGui::Checkbox( "Kaleidoscope Active##1", &m_data.isActive );
+        ImGui::Checkbox( "Polar-Kaleido Active##1", &m_data.isActive );
+        ImGui::SliderFloat( "Polar-Kaleido Intensity", &m_data.intensity, 0.f, 1.f );
+        ImGui::SliderFloat( "Kaleido Slices", &m_data.slices, 1.f, 24.f, "%.1f" );
 
-        ImGui::SliderInt( "Segments##1", &m_data.segments, 0, 255 );
-        if ( ImGui::SliderFloat( "Center x##1", &m_data.centerX, 0.0f, 1.0f ) ||
-             ImGui::SliderFloat( "Center y##1", &m_data.centerY, 0.0f, 1.0f ) )
-        {
-          const sf::Vector2f calibrated { m_data.centerX * static_cast< float >(m_globalInfo.windowSize.x),
-                                          m_data.centerY * static_cast< float >(m_globalInfo.windowSize.y) };
-          m_timedCursor.setPosition( calibrated );
-        }
-
-        ImGui::SliderFloat( "Rotate##1", &m_data.time, 0.f, 1.f );
-
-        ImGui::Separator();
-        ImGui::Checkbox( "Automate Rotation##1", &m_data.automateTime );
-        ImGui::SliderFloat( "Rotation Speed##1", &m_data.rotationSpeed, 0.f, 1.f );
+        // ImGui::Separator();
+        // ImGui::Checkbox( "Automate Rotation##1", &m_data.automateTime );
+        // ImGui::SliderFloat( "Rotation Speed##1", &m_data.rotationSpeed, 0.f, 1.f );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -118,7 +102,7 @@ namespace nx
     }
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive && m_data.segments > 0; }
+    bool isShaderActive() const override { return m_data.isActive; }
 
     [[nodiscard]]
     sf::RenderTexture& applyShader(
@@ -132,12 +116,12 @@ namespace nx
         }
       }
 
-      m_shader.setUniform( "texture", sf::Shader::CurrentTexture );
-      m_shader.setUniform( "resolution", sf::Vector2f( m_globalInfo.windowSize ) );
-      m_shader.setUniform( "center", sf::Vector2f( m_data.centerX, m_data.centerY ) ); // Center in UV space
-      m_shader.setUniform( "numSegments", m_data.segments );
-      m_shader.setUniform( "time", m_data.time );
-      m_shader.setUniform( "rotationSpeed", m_data.rotationSpeed );
+      m_shader.setUniform("u_texture", inputTexture.getTexture());
+      m_shader.setUniform("u_time", m_globalInfo.elapsedTimeSeconds);
+      m_shader.setUniform("u_intensity", m_data.intensity);
+      m_shader.setUniform("u_kaleidoSlices", m_data.slices);
+      m_shader.setUniform("u_resolution", sf::Vector2f(inputTexture.getSize()));
+
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -157,39 +141,34 @@ namespace nx
 
     TimedCursorPosition m_timedCursor;
 
-    const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
-uniform vec2 resolution;     // Window size
-uniform vec2 center;         // Center of the kaleidoscope
-uniform int numSegments;     // Number of mirrored segments
-uniform float time;          // Optional time to animate
-uniform float rotationSpeed; //
+    const static inline std::string m_fragmentShader = R"(uniform sampler2D u_texture;
+uniform float u_time;
+uniform float u_intensity;
+uniform float u_kaleidoSlices; // number of mirrored slices
+uniform vec2 u_resolution;
 
-void main()
-{
-    vec2 uv = gl_FragCoord.xy / resolution.xy;
+const float TAU = 6.28318530718;
 
-    // Offset from center
-    vec2 delta = uv - center;
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution;
+    vec2 center = vec2(0.5, 0.5);
+    vec2 offset = uv - center;
 
-    // Convert to polar coordinates
-    float r = length(delta);
-    float theta = atan(delta.y, delta.x);
+    float radius = length(offset);
+    float angle = atan(offset.y, offset.x);
 
-    // Apply time-based rotation (optional)
-    theta += time * rotationSpeed; // 0.1 is default
+    // Kaleido magic
+    float normalizedAngle = angle / TAU;         // range [-0.5, 0.5]
+    normalizedAngle = fract(normalizedAngle * u_kaleidoSlices) * TAU;
 
-    // Mirror the angle across segment boundaries
-    float segmentAngle = 3.14159265 * 2.0 / float(numSegments);
-    theta = mod(theta, segmentAngle);
-    theta = abs(theta - segmentAngle * 0.5);
+    // Optional angular warp (swirliness)
+    float warp = sin(radius * 30.0 - u_time * 3.0) * u_intensity;
+    float finalAngle = normalizedAngle + warp;
 
-    // Convert back to cartesian
-    vec2 newDelta = vec2(cos(theta), sin(theta)) * r;
-    vec2 sampleUV = center + newDelta;
+    vec2 warpedOffset = vec2(cos(finalAngle), sin(finalAngle)) * radius;
+    vec2 warpedUV = center + warpedOffset;
 
-    // Sample the texture
-    vec4 color = texture2D(texture, sampleUV);
-    gl_FragColor = color;
+    gl_FragColor = texture2D(u_texture, warpedUV);
 })";
 
   };
