@@ -59,18 +59,25 @@ namespace nx
     }
     void deserialize( const nlohmann::json &j ) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.rumbleStrength = j.value("rumbleStrength", 20.f);
-      m_data.frequency = j.value("frequency", 40.f);
-      m_data.pulseDecay = j.value("pulseDecay", -5.f);
-      m_data.direction = SerialHelper::convertVectorFromJson< float >( j.at( "direction" ), sf::Vector2f{ 1.f, 1.f } );
-      m_data.useNoise = j.value("useNoise", false);
-      m_data.modAmplitude = j.value("modAmplitude", 0.5f);
-      m_data.modFrequency = j.value("modFrequency", 10.f);
-      m_data.baseColorDesync = j.value("baseColorDesync", 0.25f);
-      m_data.maxColorDesync = j.value("maxColorDesync", 0.25f);
-      m_easing.deserialize( j.at( "easing" ) );
-      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j.value("isActive", false);
+        m_data.rumbleStrength = j.value("rumbleStrength", 20.f);
+        m_data.frequency = j.value("frequency", 40.f);
+        m_data.pulseDecay = j.value("pulseDecay", -5.f);
+        m_data.direction = SerialHelper::convertVectorFromJson< float >( j.at( "direction" ), sf::Vector2f{ 1.f, 1.f } );
+        m_data.useNoise = j.value("useNoise", false);
+        m_data.modAmplitude = j.value("modAmplitude", 0.5f);
+        m_data.modFrequency = j.value("modFrequency", 10.f);
+        m_data.baseColorDesync = j.value("baseColorDesync", 0.25f);
+        m_data.maxColorDesync = j.value("maxColorDesync", 0.25f);
+        m_easing.deserialize( j.at( "easing" ) );
+        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     [[nodiscard]]

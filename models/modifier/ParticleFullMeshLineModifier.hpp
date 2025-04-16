@@ -29,8 +29,15 @@ namespace nx
 
     void deserialize( const nlohmann::json& j ) override
     {
-      m_data.isActive = j.value( "isActive", false );
-      m_data.lineThickness = j.value( "lineThickness", 1.0f );
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j.value( "isActive", false );
+        m_data.lineThickness = j.value( "lineThickness", 1.0f );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     bool isActive() const override { return m_isActive; }

@@ -45,10 +45,21 @@ namespace nx
     void deserialize(const nlohmann::json &j) override
     {
       ParticleHelper::deserialize( m_data, j );
-      m_data.phaseAStep = j.value( "phaseAStep", 2.0f );
-      m_data.phaseBStep = j.value( "phaseBStep", 3.0f );
-      m_data.phaseDelta = j.value( "phaseDelta", 0.5f );
-      m_data.phaseSpread = j.value( "phaseSpread", 0.5f );
+
+      if ( j.contains( "type" ) )
+      {
+        m_data.phaseAStep = j.value( "phaseAStep", 2.0f );
+        m_data.phaseBStep = j.value( "phaseBStep", 3.0f );
+        m_data.phaseDelta = j.value( "phaseDelta", 0.5f );
+        m_data.phaseSpread = j.value( "phaseSpread", 0.5f );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
+
+      if (j.contains("behaviors"))
+        m_behaviorPipeline.loadModifierPipeline(j.at("behaviors"));
     }
 
     [[nodiscard]]

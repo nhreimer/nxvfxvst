@@ -5,33 +5,79 @@ namespace nx
   /// this works really well with Fractal layouts
   class RingZoneMeshModifier final : public IParticleModifier
   {
+    struct RingZoneMeshData_t
+    {
+      bool isActive = true;
+      float ringSpacing = 100.f;
+      bool drawRings = true;
+      bool drawSpokes = true;
+      sf::Color lineColor = sf::Color(255, 255, 255, 100);
+
+      float pulseSpeed = 1.0f; // Hz
+      float minAlpha = 32.f;
+      float maxAlpha = 200.f;
+      bool enablePulse = true;
+    };
+
   public:
     explicit RingZoneMeshModifier(const GlobalInfo_t &info) : m_globalInfo(info) {}
 
     E_ModifierType getType() const override { return E_ModifierType::E_RingZoneMeshModifier; }
 
-    nlohmann::json serialize() const override { return {}; }
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+        { "type", SerialHelper::serializeEnum( getType() ) },
+        { "isActive", m_data.isActive },
+        { "ringSpacing", m_data.ringSpacing },
+        { "drawRings", m_data.drawRings },
+        { "drawSpokes", m_data.drawSpokes },
+        { "lineColor", SerialHelper::convertColorToJson( m_data.lineColor ) },
+        { "pulseSpeed", m_data.pulseSpeed },
+        { "minAlpha", m_data.minAlpha },
+         { "maxAlpha", m_data.maxAlpha },
+         { "enablePulse", m_data.enablePulse }
+      };
+    }
 
-    void deserialize(const nlohmann::json &j) override {}
+    void deserialize(const nlohmann::json &j) override
+    {
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j[ "isActive" ].get<bool>();
+        m_data.ringSpacing = j.at( "ringSpacing" ).get<float>();
+        m_data.drawRings = j.at( "drawRings" ).get<bool>();
+        m_data.pulseSpeed = j.at( "pulseSpeed" ).get<float>();
+        m_data.minAlpha = j.at( "minAlpha" ).get<float>();
+        m_data.maxAlpha = j.at( "maxAlpha" ).get<float>();
+        m_data.enablePulse = j.at( "enablePulse" ).get<bool>();
+        m_data.lineColor = SerialHelper::convertColorFromJson( j.at( "lineColor" ) );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
+    }
 
     void drawMenu() override
     {
       if (ImGui::TreeNode("Test Modifier"))
       {
-        ImGui::SliderFloat("Ring Spacing", &m_ringSpacing, 20.f, 200.f);
-        ImGui::Checkbox("Draw Ring Loops", &m_drawRings);
-        ImGui::Checkbox("Draw Radials", &m_drawSpokes);
-        ImVec4 color = m_lineColor;
+        ImGui::SliderFloat("Ring Spacing", &m_data.ringSpacing, 20.f, 200.f);
+        ImGui::Checkbox("Draw Ring Loops", &m_data.drawRings);
+        ImGui::Checkbox("Draw Radials", &m_data.drawSpokes);
+        ImVec4 color = m_data.lineColor;
         if (ImGui::ColorEdit4("Line Color", reinterpret_cast< float * >(&color)))
-          m_lineColor = color;
+          m_data.lineColor = color;
 
         ImGui::SeparatorText("Pulse Alpha");
-        ImGui::Checkbox("Enable Pulse", &m_enablePulse);
-        if (m_enablePulse)
+        ImGui::Checkbox("Enable Pulse", &m_data.enablePulse);
+        if (m_data.enablePulse)
         {
-          ImGui::SliderFloat("Pulse Speed (Hz)", &m_pulseSpeed, 0.1f, 10.0f);
-          ImGui::SliderFloat("Min Alpha", &m_minAlpha, 0.f, 255.f);
-          ImGui::SliderFloat("Max Alpha", &m_maxAlpha, 0.f, 255.f);
+          ImGui::SliderFloat("Pulse Speed (Hz)", &m_data.pulseSpeed, 0.1f, 10.0f);
+          ImGui::SliderFloat("Min Alpha", &m_data.minAlpha, 0.f, 255.f);
+          ImGui::SliderFloat("Max Alpha", &m_data.maxAlpha, 0.f, 255.f);
         }
 
         ImGui::TreePop();
@@ -41,24 +87,24 @@ namespace nx
 
     void update(const sf::Time &) override {}
 
-    bool isActive() const override { return m_enabled; }
+    bool isActive() const override { return m_data.isActive; }
 
     void processMidiEvent(const Midi_t &) override {}
 
     void modify(const ParticleLayoutData_t &, std::deque< TimedParticle_t * > &particles,
                 std::deque< sf::Drawable * > &outArtifacts) override
     {
-      float alpha = m_lineColor.a; // default static alpha
+      float alpha = m_data.lineColor.a; // default static alpha
 
-      if (m_enablePulse)
+      if (m_data.enablePulse)
       {
         float time = m_globalInfo.elapsedTimeSeconds;
-        float t = std::sin(time * m_pulseSpeed * NX_TAU); // [-1, 1]
+        float t = std::sin(time * m_data.pulseSpeed * NX_TAU); // [-1, 1]
         float normalized = 0.5f * (t + 1.f); // [0, 1]
-        alpha = m_minAlpha + (m_maxAlpha - m_minAlpha) * normalized;
+        alpha = m_data.minAlpha + (m_data.maxAlpha - m_data.minAlpha) * normalized;
       }
 
-      sf::Color pulsedColor = m_lineColor;
+      sf::Color pulsedColor = m_data.lineColor;
       pulsedColor.a = static_cast< uint8_t >(alpha);
 
       auto *lines = new sf::VertexArray(sf::PrimitiveType::Lines);
@@ -69,12 +115,12 @@ namespace nx
       for (auto *p: particles)
       {
         float dist = length(p->shape.getPosition() - center);
-        int ringIdx = static_cast< int >(dist / m_ringSpacing);
+        int ringIdx = static_cast< int >(dist / m_data.ringSpacing);
         rings[ ringIdx ].push_back(p);
       }
 
       // Step 2: Draw rings and spokes
-      TimedParticle_t *prevInRing = nullptr;
+      // TimedParticle_t *prevInRing = nullptr;
 
       for (auto &[ ringIdx, ringParticles ]: rings)
       {
@@ -86,7 +132,7 @@ namespace nx
         ringParticles, [ & ](TimedParticle_t *a, TimedParticle_t *b)
         { return angleFromCenter(center, a->shape.getPosition()) < angleFromCenter(center, b->shape.getPosition()); });
 
-        if (m_drawRings)
+        if (m_data.drawRings)
         {
           for (size_t i = 0; i < ringParticles.size(); ++i)
           {
@@ -100,7 +146,7 @@ namespace nx
           }
         }
 
-        if (m_drawSpokes && ringIdx > 0)
+        if (m_data.drawSpokes && ringIdx > 0)
         {
           auto &prevRing = rings[ ringIdx - 1 ];
           size_t minCount = std::min(ringParticles.size(), prevRing.size());
@@ -127,18 +173,8 @@ namespace nx
 
   private:
     const GlobalInfo_t &m_globalInfo;
+    RingZoneMeshData_t m_data;
 
-    float m_ringSpacing = 100.f;
-    bool m_drawRings = true;
-    bool m_drawSpokes = true;
-    sf::Color m_lineColor = sf::Color(255, 255, 255, 100);
-
-    float m_pulseSpeed = 1.0f; // Hz
-    float m_minAlpha = 32.f;
-    float m_maxAlpha = 200.f;
-    bool m_enablePulse = true;
-
-    bool m_enabled = true;
   };
 
 } // namespace nx

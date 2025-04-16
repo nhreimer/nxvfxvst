@@ -1,38 +1,39 @@
 #pragma once
 
 #include "models/particle/ParticleConsumer.hpp"
+#include "models/particle/ParticleLayoutBase.hpp"
 
 namespace nx
 {
 
   struct TestParticleLayoutData_t : public ParticleLayoutData_t
-  {
-  };
+  {};
 
   /// this is useful for adding time-based effects to a screen without
   /// having particles on the screen.
-  class TestParticleLayout final : public IParticleLayout
+  class TestParticleLayout final : public ParticleLayoutBase< TestParticleLayoutData_t >
   {
   public:
-    explicit TestParticleLayout(const GlobalInfo_t &globalInfo)
-      : m_globalInfo( globalInfo ),
-        m_behaviorPipeline( globalInfo )
-    {}
-
-    ~TestParticleLayout() override
-    {
-      for ( const auto * particle : m_particles )
-        delete particle;
-    }
-
+    explicit TestParticleLayout(const GlobalInfo_t &globalInfo) : ParticleLayoutBase(globalInfo) {}
 
     [[nodiscard]]
     nlohmann::json serialize() const override
     {
-      return {};
+      auto j = ParticleHelper::serialize(m_data, SerialHelper::serializeEnum(getType()));
+      // TODO: insert components of this layout here
+      j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
+      return j;
     }
 
-    void deserialize(const nlohmann::json &j) override {}
+    void deserialize(const nlohmann::json &j) override
+    {
+      ParticleHelper::deserialize(m_data, j);
+
+      // TODO: insert components of this layout here
+
+      if (j.contains("behaviors"))
+        m_behaviorPipeline.loadModifierPipeline(j.at("behaviors"));
+    }
 
     E_LayoutType getType() const override { return E_LayoutType::E_TestLayout; }
 
@@ -42,7 +43,7 @@ namespace nx
       ImGui::Separator();
       if (ImGui::TreeNode("Test Particle Layout"))
       {
-        ParticleHelper::drawMenu(m_data);
+        ParticleHelper::drawMenu(*reinterpret_cast< ParticleLayoutData_t * >(&m_data));
 
         ImGui::Separator();
         m_behaviorPipeline.drawMenu();
@@ -57,49 +58,10 @@ namespace nx
 
     }
 
-    void update( const sf::Time &deltaTime ) override
-    {
-      for ( auto i = 0; i < m_particles.size(); ++i )
-      {
-        const auto& timeParticle = m_particles[ i ];
-        timeParticle->timeLeft += deltaTime.asMilliseconds();
-        const auto percentage = static_cast< float >( timeParticle->timeLeft ) /
-                           static_cast< float >( m_data.timeoutInMS );
-
-        if ( percentage < 1.f )
-        {
-          const auto nextColor =
-            ColorHelper::getNextColor(
-              timeParticle->initialColor,
-              m_data.endColor,
-              percentage );
-
-          timeParticle->shape.setFillColor( nextColor );
-          m_behaviorPipeline.applyOnUpdate( timeParticle, deltaTime );
-        }
-        else
-        {
-          delete m_particles[ i ];
-          m_particles.erase( m_particles.begin() + i );
-        }
-      }
-    }
-
-    [[nodiscard]]
-    const ParticleLayoutData_t& getParticleOptions() const override { return m_data; }
-
-    [[nodiscard]]
-    std::deque< TimedParticle_t * > &getParticles() override { return m_particles; }
+  private:
 
   private:
 
-
-  private:
-    const GlobalInfo_t & m_globalInfo;
-    TestParticleLayoutData_t m_data;
-    ParticleBehaviorPipeline m_behaviorPipeline;
-
-    std::deque< TimedParticle_t* > m_particles;
   };
 
 } // namespace nx

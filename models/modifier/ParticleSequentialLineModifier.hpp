@@ -49,9 +49,16 @@ namespace nx
 
     void deserialize( const nlohmann::json& j ) override
     {
-      m_data.isActive = j.value( "isActive", false );
-      m_data.lineThickness = j.value( "lineThickness", 1.0f );
-      m_data.blendMode = SerialHelper::convertBlendModeFromString( j.value( "blendMode", "BlendAdd" ) );
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j.value( "isActive", false );
+        m_data.lineThickness = j.value( "lineThickness", 1.0f );
+        m_data.blendMode = SerialHelper::convertBlendModeFromString( j.value( "blendMode", "BlendAdd" ) );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     E_ModifierType getType() const override { return E_ModifierType::E_SequentialModifier; }

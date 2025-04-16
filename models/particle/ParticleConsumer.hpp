@@ -14,9 +14,7 @@
 namespace nx
 {
 
-  /// Provides midi consumption, i.e., adding it to the deque
-  /// Provides updates based on timeouts (can be overridden)
-  /// must provide setPosition
+  /// NOTE: this is deprecated! use ParticleLayoutBase
   template< typename TParticleData_t >
   class ParticleConsumer : public IParticleLayout
   {

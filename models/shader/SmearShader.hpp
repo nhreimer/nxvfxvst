@@ -45,7 +45,7 @@ namespace nx
     nlohmann::json serialize() const override
     {
       return
-    {
+      {
           { "type", SerialHelper::serializeEnum( getType() ) },
           { "isActive", m_data.isActive },
           { "directionAngleInRadians", m_data.directionAngleInRadians },
@@ -66,18 +66,25 @@ namespace nx
     }
     void deserialize(const nlohmann::json &j) override
     {
-      m_data.isActive = j.at( "isActive" ).get<bool>();
-      m_data.intensity = j.at( "intensity" ).get<float>();
-      m_data.length = j.at( "length" ).get<float>();
-      m_data.tint = SerialHelper::convertColorFromJson( j.at( "tint" ), sf::Color::White );
-      m_data.sampleCount = j.at( "sampleCount" ).get<int>();
-      m_data.jitterAmount = j.at( "jitterAmount" ).get<float>();
-      m_data.brightnessBoost = j.at( "brightnessBoost" ).get<float>();
-      m_data.brightnessPulse = j.at( "brightnessPulse" ).get<float>();
-      m_data.wiggleAmplitude = j.at( "wiggleAmplitude" ).get<float>();
-      m_data.wiggleFrequency = j.at( "wiggleFrequency" ).get<float>();
-      m_data.directionAngleInRadians = j.at( "directionAngleInRadians" ).get<float>();
-      m_data.falloffPower = j.at( "falloffPower" ).get<float>();
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j.at( "isActive" ).get<bool>();
+        m_data.intensity = j.at( "intensity" ).get<float>();
+        m_data.length = j.at( "length" ).get<float>();
+        m_data.tint = SerialHelper::convertColorFromJson( j.at( "tint" ), sf::Color::White );
+        m_data.sampleCount = j.at( "sampleCount" ).get<int>();
+        m_data.jitterAmount = j.at( "jitterAmount" ).get<float>();
+        m_data.brightnessBoost = j.at( "brightnessBoost" ).get<float>();
+        m_data.brightnessPulse = j.at( "brightnessPulse" ).get<float>();
+        m_data.wiggleAmplitude = j.at( "wiggleAmplitude" ).get<float>();
+        m_data.wiggleFrequency = j.at( "wiggleFrequency" ).get<float>();
+        m_data.directionAngleInRadians = j.at( "directionAngleInRadians" ).get<float>();
+        m_data.falloffPower = j.at( "falloffPower" ).get<float>();
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     [[nodiscard]]

@@ -51,12 +51,19 @@ namespace nx
 
     void deserialize(const nlohmann::json& j) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.threshold = j.value("threshold", 0.8f);
-      m_data.basePulseThreshold = j.value("basePulseThreshold", 1.2f);
-      m_data.burstMultiplier = j.value("burstMultiplier", 1.5f);
-      m_easing.deserialize( j.at( "easing" ) );
-      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j.value("isActive", false);
+        m_data.threshold = j.value("threshold", 0.8f);
+        m_data.basePulseThreshold = j.value("basePulseThreshold", 1.2f);
+        m_data.burstMultiplier = j.value("burstMultiplier", 1.5f);
+        m_easing.deserialize( j.at( "easing" ) );
+        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     E_ShaderType getType() const override { return E_ShaderType::E_PulseShader; }

@@ -47,7 +47,7 @@ namespace nx
     {
       return
    {
-        { "type", SerialHelper::convertShaderTypeToString( getType() ) },
+        { "type", SerialHelper::serializeEnum( getType() ) },
         { "isActive", m_data.isActive },
         { "glitchBaseStrength", m_data.glitchBaseStrength },
         { "glitchAmount", m_data.glitchAmount },
@@ -64,17 +64,24 @@ namespace nx
 
     void deserialize( const nlohmann::json& j ) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.glitchBaseStrength = j.value("glitchBaseStrength", 1.0f);
-      m_data.glitchAmount = j.value("glitchAmount", 0.4f);
-      m_data.scanlineIntensity = j.value("scanlineIntensity", 0.02f);
-      m_data.chromaFlickerAmount = j.value("chromaFlickerAmount", 0.4f);
-      m_data.pixelJumpAmount = j.value("pixelJumpAmount", 0.5f);
-      m_data.glitchPulseDecay = j.value("glitchPulseDecay", -0.5f);
-      m_data.glitchPulseBoost = j.value("glitchPulseBoost", 2.0f);
-      m_data.bandCount = j.value("bandCount", 20.0f);
-      m_easing.deserialize( j.at( "easing" ) );
-      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j.value("isActive", false);
+        m_data.glitchBaseStrength = j.value("glitchBaseStrength", 1.0f);
+        m_data.glitchAmount = j.value("glitchAmount", 0.4f);
+        m_data.scanlineIntensity = j.value("scanlineIntensity", 0.02f);
+        m_data.chromaFlickerAmount = j.value("chromaFlickerAmount", 0.4f);
+        m_data.pixelJumpAmount = j.value("pixelJumpAmount", 0.5f);
+        m_data.glitchPulseDecay = j.value("glitchPulseDecay", -0.5f);
+        m_data.glitchPulseBoost = j.value("glitchPulseBoost", 2.0f);
+        m_data.bandCount = j.value("bandCount", 20.0f);
+        m_easing.deserialize( j.at( "easing" ) );
+        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     E_ShaderType getType() const override { return E_ShaderType::E_GlitchShader; }

@@ -43,11 +43,18 @@ namespace nx
 
     void deserialize(const nlohmann::json &j) override
     {
-      m_data.noiseScale = j.at( "noiseScale" ).get<float>();
-      m_data.timeScale = j.at( "timeScale" ).get<float>();
-      m_data.deformStrength = j.at( "deformStrength" ).get<float>();
-      m_data.colorFade = j.at( "colorFade" ).get<float>();
-      m_data.octaves = j.at( "octaves" ).get<int32_t>();
+      if ( j.contains( "type" ) )
+      {
+        m_data.noiseScale = j.at( "noiseScale" ).get<float>();
+        m_data.timeScale = j.at( "timeScale" ).get<float>();
+        m_data.deformStrength = j.at( "deformStrength" ).get<float>();
+        m_data.colorFade = j.at( "colorFade" ).get<float>();
+        m_data.octaves = j.at( "octaves" ).get<int32_t>();
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     [[nodiscard]]

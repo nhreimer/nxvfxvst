@@ -53,13 +53,20 @@ namespace nx
 
     void deserialize( const nlohmann::json& j ) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.sigma = j.value("sigma", 7.f);
-      m_data.brighten = j.value("brighten", 1.f);
-      m_data.blurHorizontal = j.value("blurHorizontal", 0.f);
-      m_data.blurVertical = j.value("blurVertical", 0.f);
-      m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
-      m_easing.deserialize( j[ "easing" ] );
+      if ( j.contains("type") )
+      {
+        m_data.isActive = j.value("isActive", false);
+        m_data.sigma = j.value("sigma", 7.f);
+        m_data.brighten = j.value("brighten", 1.f);
+        m_data.blurHorizontal = j.value("blurHorizontal", 0.f);
+        m_data.blurVertical = j.value("blurVertical", 0.f);
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     // identify type for easier loading

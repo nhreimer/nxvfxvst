@@ -53,12 +53,16 @@ namespace nx
     void deserialize(const nlohmann::json &j) override
     {
       ParticleHelper::deserialize( m_data, SerialHelper::serializeEnum( getType() ) );
-      if ( j.contains( SerialHelper::serializeEnum( getType() ) ) )
+      if ( j.contains( "type" ) )
       {
         m_data.depth = j["depth"];
         m_data.turnAngle = j["turnAngle"];
         m_data.segmentLength = j["segmentLength"];
         m_data.initialAngleDeg = j["initialAngleDeg"];
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for layout {}", SerialHelper::serializeEnum( getType() ) );
       }
 
       if ( j.contains( "behaviors" ) )

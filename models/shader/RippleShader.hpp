@@ -52,13 +52,20 @@ namespace nx
 
     void deserialize(const nlohmann::json& j) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.rippleCenterX = j.value("rippleCenterX", 0.5f);
-      m_data.rippleCenterY = j.value("rippleCenterY", 0.5f);
-      // m_data.amplitude = j.value("amplitude", 0.05f);
-      m_data.frequency = j.value("frequency", 10.0f);
-      m_data.speed = j.value("speed", 0.f);
-      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      if ( j.contains("type") )
+      {
+        m_data.isActive = j.value("isActive", false);
+        m_data.rippleCenterX = j.value("rippleCenterX", 0.5f);
+        m_data.rippleCenterY = j.value("rippleCenterY", 0.5f);
+        // m_data.amplitude = j.value("amplitude", 0.05f);
+        m_data.frequency = j.value("frequency", 10.0f);
+        m_data.speed = j.value("speed", 0.f);
+        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     E_ShaderType getType() const override { return E_ShaderType::E_RippleShader; }

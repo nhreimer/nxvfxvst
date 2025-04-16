@@ -39,13 +39,17 @@ public:
   void deserialize(const nlohmann::json &j) override
   {
     ParticleHelper::deserialize( m_data, j );
-    if ( j.contains( SerialHelper::serializeEnum( getType() ) ) )
+    if ( j.contains( "type" ) )
     {
       m_data.depthLimit = j["depthLimit"];
       m_data.radialSpread = j["radialSpread"];
       m_data.baseRingCount = j["baseRingCount"];
       m_data.radiusAdjustment = j["radiusAdjustment"];
       m_data.delayFractalFadesMultiplier = j["delayFractalFadesMultiplier"];
+    }
+    else
+    {
+      LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
     }
 
     if ( j.contains( "behaviors" ) )

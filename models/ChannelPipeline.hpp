@@ -15,6 +15,7 @@
 #include "models/particle/LissajousCurveLayout.hpp"
 #include "models/particle/FractalRingLayout.hpp"
 #include "models/particle/LSystemCurveLayout.hpp"
+#include "models/particle/GoldenSpiralLayout.hpp"
 
 #include "models/particle/TestParticleLayout.hpp"
 
@@ -29,10 +30,10 @@ namespace nx
   public:
 
     explicit ChannelPipeline( const GlobalInfo_t& globalInfo )
-      : m_globalInfo(globalInfo),
-        m_particleLayout(std::make_unique< SpiralParticleLayout >(globalInfo)),
-        m_modifierPipeline(globalInfo),
-        m_shaderPipeline(globalInfo)
+      : m_globalInfo( globalInfo ),
+        m_particleLayout( std::make_unique< SpiralParticleLayout >( globalInfo ) ),
+        m_modifierPipeline( globalInfo ),
+        m_shaderPipeline( globalInfo )
     {}
 
     ~ChannelPipeline() = default;
@@ -180,6 +181,7 @@ namespace nx
           if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_LayoutType::E_RandomLayout ) )
             changeLayout< RandomParticleLayout >();
 
+          ImGui::SeparatorText( "Curved Layouts" );
 
           if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_LayoutType::E_SpiralLayout ) )
             changeLayout< SpiralParticleLayout >();
@@ -188,6 +190,11 @@ namespace nx
           if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LayoutType::E_LissajousCurveLayout ) )
             changeLayout< LissajousCurveLayout >();
 
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Golden Spiral", m_particleLayout->getType() == E_LayoutType::E_GoldenSpiralLayout ) )
+            changeLayout< GoldenSpiralLayout >();
+
+          ImGui::SeparatorText( "Fractal Layouts" );
 
           if ( ImGui::RadioButton( "Fractal Ring", m_particleLayout->getType() == E_LayoutType::E_FractalRingLayout ) )
             changeLayout< FractalRingLayout >();

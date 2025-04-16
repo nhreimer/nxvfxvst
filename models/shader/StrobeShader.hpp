@@ -37,17 +37,24 @@ namespace nx
           { "type", SerialHelper::serializeEnum( getType() ) },
           { "isActive", m_data.isActive },
           { "midiTriggers", m_midiNoteControl.serialize() },
-            { "pulseSpeed", m_data.pulseSpeed },
-            { "easing", m_easing.serialize() }
+          { "pulseSpeed", m_data.pulseSpeed },
+          { "easing", m_easing.serialize() }
       };
     }
 
     void deserialize(const nlohmann::json& j) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.pulseSpeed = j.value( "pulseSpeed", 0.f );
-      m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
-      m_easing.deserialize( j.at( "easing" ) );
+      if ( j.contains("type") )
+      {
+        m_data.isActive = j.value("isActive", false);
+        m_data.pulseSpeed = j.value( "pulseSpeed", 0.f );
+        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+        m_easing.deserialize( j.at( "easing" ) );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     E_ShaderType getType() const override { return E_ShaderType::E_StrobeShader; }

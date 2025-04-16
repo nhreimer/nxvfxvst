@@ -58,13 +58,20 @@ namespace nx
 
     void deserialize( const nlohmann::json& j ) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.centerX = j.value("centerX", 0.5f);
-      m_data.centerY = j.value("centerY", 0.5f);
-      m_data.segments = j.value("segments", 0);
-      m_data.time = j.value("time", 0.f);
-      m_data.rotationSpeed = j.value("rotationSpeed", 0.1f);
-      m_data.automateTime = j.value("automateTime", false);
+      if ( j.contains( "type" ) )
+      {
+        m_data.isActive = j.value("isActive", false);
+        m_data.centerX = j.value("centerX", 0.5f);
+        m_data.centerY = j.value("centerY", 0.5f);
+        m_data.segments = j.value("segments", 0);
+        m_data.time = j.value("time", 0.f);
+        m_data.rotationSpeed = j.value("rotationSpeed", 0.1f);
+        m_data.automateTime = j.value("automateTime", false);
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
 
