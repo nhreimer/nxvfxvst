@@ -26,17 +26,20 @@ namespace nx
 
     ~MultichannelPipeline() = default;
 
+    [[nodiscard]]
     nlohmann::json saveState() const
     {
       nlohmann::json j = nlohmann::json::array();
 
       for ( int i = 0; i < m_channels.size(); ++i )
-        j.push_back( m_channels[ i ]->saveChannelPipeline() );
-
+      {
+        j[ i ] = m_channels[ i ]->saveChannelPipeline();
+        LOG_INFO( j[ i ].dump() );
+      }
       return j;
     }
 
-    void restoreState( nlohmann::json &j )
+    void restoreState( const nlohmann::json &j ) const
     {
       for ( int i = 0; i < j.size(); ++i )
         m_channels[ i ]->loadChannelPipeline( j.at( i ) );
@@ -89,6 +92,42 @@ namespace nx
       m_channels[ m_selectedChannel ]->drawMenu();
 
       ImGui::Separator();
+      if ( ImGui::Button( "export" ) )
+      {
+        const auto json = saveState();
+        ImGui::SetClipboardText( json.dump().c_str() );
+        m_messageClock.setMessage( "data copied to clipboard." );
+      }
+      ImGui::SameLine();
+      if ( ImGui::Button( "import" ) )
+      {
+        const auto json = std::string( ImGui::GetClipboardText() );
+        if ( !json.empty() )
+        {
+          const auto importedData =
+            nlohmann::json::parse( json.c_str(), nullptr, false );
+
+          if ( !importedData.is_discarded() )
+          {
+            restoreState( importedData );
+            m_messageClock.setMessage( "data copied from clipboard." );
+          }
+          else
+            m_messageClock.setMessage( "failed to import: invalid json." );
+        }
+        else
+          m_messageClock.setMessage( "failed to import: empty clipboard." );
+      }
+
+      // TODO: add color wheel and slider for cursor time out
+
+      if ( !m_messageClock.hasExpired() )
+      {
+        ImGui::Separator();
+        ImGui::TextUnformatted( m_messageClock.getMessage().data() );
+      }
+
+      ImGui::Separator();
       ImGui::Text( "%s", BUILD_NUMBER );
       ImGui::End();
     }
@@ -97,6 +136,7 @@ namespace nx
     const GlobalInfo_t &m_globalInfo;
 
     std::array< std::unique_ptr< ChannelPipeline >, MAX_CHANNELS > m_channels;
+    TimedMessage m_messageClock;
 
     int m_selectedChannel = 0;
   };

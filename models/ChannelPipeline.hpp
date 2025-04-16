@@ -43,28 +43,46 @@ namespace nx
 
     nlohmann::json saveChannelPipeline() const
     {
-      nlohmann::json j =
-      {
-      { "particles", {} },
-      { "shaders", {} }
-      };
-
-      j[ "particles" ] = m_particleLayout->serialize();
-      j[ "modifiers" ] = m_modifierPipeline.saveModifierPipeline();
-      j[ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
+      nlohmann::json j = {};
+      j[ "channel" ][ "particles" ] = m_particleLayout->serialize();
+      j[ "channel" ][ "modifiers" ] = m_modifierPipeline.saveModifierPipeline();
+      j[ "channel" ][ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
       return j;
     }
 
     void loadChannelPipeline( const nlohmann::json& j )
     {
-      if ( j.contains( "particles" ) )
-        m_particleLayout->deserialize( j.at( "particles" ) );
+      if ( j.contains( "channel" ) )
+      {
+        const auto& jchannel = j[ "channel" ];
+        if ( jchannel.contains( "particles" ) )
+          m_particleLayout->deserialize( jchannel.at( "particles" ) );
+        else
+        {
+          // a channel particle should always be available
+          LOG_WARN( "Deserializer: Channel particle layout not found" );
+        }
 
-      if ( j.contains( "modifiers" ) )
-        m_modifierPipeline.loadModifierPipeline( j.at( "modifiers" ) );
+        if ( jchannel.contains( "modifiers" ) )
+          m_modifierPipeline.loadModifierPipeline( jchannel.at( "modifiers" ) );
+        else
+        {
+          // optional whether any exist
+          LOG_DEBUG( "Deserializer: No channel modifiers found" );
+        }
 
-      if ( j.contains( "shaders" ) )
-        m_shaderPipeline.loadShaderPipeline( j.at( "shaders" ) );
+        if ( jchannel.contains( "shaders" ) )
+          m_shaderPipeline.loadShaderPipeline( jchannel.at( "shaders" ) );
+        else
+        {
+          // optional whether any exist
+          LOG_DEBUG( "Deserializer: No channel shaders found" );
+        }
+      }
+      else
+      {
+        LOG_WARN( "Deserializer: No channel data found" );
+      }
     }
 
     void processMidiEvent( const Midi_t& midiEvent ) const
@@ -124,47 +142,11 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Global Options" ) )
       {
-        ImGui::Separator();
+        ImGui::SeparatorText( "Channel Blend" );
         MenuHelper::drawBlendOptions( m_blendMode );
 
         ImGui::TreePop();
         ImGui::Spacing();
-      }
-
-      ImGui::Separator();
-      if ( ImGui::Button( "export" ) )
-      {
-        const auto json = saveChannelPipeline();
-        ImGui::SetClipboardText( json.dump().c_str() );
-        m_messageClock.setMessage( "data copied to clipboard." );
-      }
-      ImGui::SameLine();
-      if ( ImGui::Button( "import" ) )
-      {
-        const auto json = std::string( ImGui::GetClipboardText() );
-        if ( !json.empty() )
-        {
-          const auto importedData =
-            nlohmann::json::parse( json.c_str(), nullptr, false );
-
-          if ( !importedData.is_discarded() )
-          {
-            loadChannelPipeline( importedData );
-            m_messageClock.setMessage( "data copied from clipboard." );
-          }
-          else
-            m_messageClock.setMessage( "failed to import: invalid json." );
-        }
-        else
-          m_messageClock.setMessage( "failed to import: empty clipboard." );
-      }
-
-      // TODO: add color wheel and slider for cursor time out
-
-      if ( !m_messageClock.hasExpired() )
-      {
-        ImGui::Separator();
-        ImGui::TextUnformatted( m_messageClock.getMessage().data() );
       }
     }
 
@@ -239,8 +221,6 @@ namespace nx
     std::unique_ptr< IParticleLayout > m_particleLayout;
     ModifierPipeline m_modifierPipeline;
     ShaderPipeline m_shaderPipeline;
-
-    TimedMessage m_messageClock;
 
     bool m_isBypassed { false };
   };

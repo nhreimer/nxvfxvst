@@ -44,8 +44,8 @@ namespace nx
       { "threshold", m_data.threshold },
       { "basePulseThreshold", m_data.basePulseThreshold },
       { "burstMultiplier", m_data.burstMultiplier },
-         { "easing", m_easing.serialize() },
-         { "midiTriggers", m_midiNoteControl.serialize() }
+      { "easing", m_easing.serialize() },
+      { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
 

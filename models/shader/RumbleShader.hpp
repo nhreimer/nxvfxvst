@@ -35,6 +35,10 @@ namespace nx
       {
         LOG_ERROR( "Failed to load rumble fragment shader" );
       }
+      else
+      {
+        LOG_DEBUG( "Rumble fragment shader loaded successfully" );
+      }
     }
 
     [[nodiscard]]

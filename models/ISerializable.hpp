@@ -2,17 +2,16 @@
 
 namespace nx
 {
-  template < typename T >
+  template <typename TEnum>
   struct ISerializable
   {
     virtual ~ISerializable() = default;
 
     [[nodiscard]]
     virtual nlohmann::json serialize() const = 0;
-    virtual void deserialize( const nlohmann::json& j ) = 0;
+    virtual void deserialize(const nlohmann::json& j) = 0;
 
-    // identify type for easier loading
     [[nodiscard]]
-    virtual T getType() const = 0;
+    virtual TEnum getType() const = 0;
   };
 }

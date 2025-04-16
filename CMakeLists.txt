@@ -96,7 +96,6 @@ if ( BUILD_PLUGIN )
       Rpcrt4.lib
 
       nlohmann_json::nlohmann_json
-
       # must use the patched version
       C:/Precision/projects/SFML/cmake-build-release/lib/sfml-system-s.lib
       C:/Precision/projects/SFML/cmake-build-release/lib/sfml-window-s.lib

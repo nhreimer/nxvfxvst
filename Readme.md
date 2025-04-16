@@ -149,33 +149,51 @@ Contributions, ideas, and suggestions are welcome!
 
 ```text
 +---------------------+
-|  EventFacadeVST     |
+|   nxvfx VST Plugin  |
+|         0..n        |  Supports multiple plugin instantiations
 +---------------------+
-       │ │ │ │          <---  multichannel provider 
-       ▼ ▼ ▼ ▼
+
+
++---------------------+
+|  EventFacadeVst     |
+|         1           |  IVSTPlugin implementation forwards events here
++---------------------+
+          │
+          ▼
++------------------------+
+|  MultichannelPipeline  |
+|         1              |  Manages multiple midi channels
++------------------------+
+          │
+          ▼
 +---------------------+
 |  ChannelPipeline    |
+|        1..n         |  Each midi channel is independent of the other
 +---------------------+
-        │
-        ▼
+          │
+          ▼
 +---------------------+      +--------------------+
-|  ParticlePipeline   | ---> |  Behavior Pipeline |  
+|  ParticlePipeline 1 | ---> |  Behavior Pipeline | 
+|         1           |      |        0..n        |
 +---------------------+      +--------------------+
-        │
-        ▼
+          │
+          ▼
 +---------------------+
 |  ModifierPipeline   |
+|       0..n          |
 +---------------------+
-        │
-        ▼
+          │
+          ▼
 +--------------------+      +--------------------+
-|  ShaderPipeline    | ---> |      Easings       +
+|  ShaderPipeline    | ---> |      Easings       |
+|       0..n         |      |         1          |
 +--------------------+      +--------------------+
-        │
-        ▼
+          │
+          ▼
 +------------------+
-|   RenderWindow   |
+|   RenderWindow   |  All the graphical output from each channel output here
 +------------------+
+
 ```
 
 🔁 = manages multiple instances of a type, e.g., ShaderPipeline manages multiple shaders
@@ -237,7 +255,8 @@ Applies post-processing shaders to the result of the modifier stack.
 A shared read-only context passed throughout all components that help:
 
 ```c++
-struct GlobalInfo_t {
+struct GlobalInfo_t 
+{
   sf::Vector2u windowSize;
   sf::View windowView;
   sf::Vector2f windowHalfSize;
@@ -256,12 +275,15 @@ Used for:
 
 ## Serialization
 
-Each ChannelPipeline supports full JSON serialization:
+MultichannelPipeline supports full JSON serialization:
 
-    Layout configuration
-    Modifier stack
-    Shader chain
-    UI state
+    - Global State
+    - Channel Serialization
+        - Layout
+            - Behaviors
+        - Modifiers
+        - Shaders
+            - Easing
 
 This enables saving and restoring complex visual setups per channel.
 
