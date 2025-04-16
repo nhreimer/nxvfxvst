@@ -4,12 +4,21 @@
 
 #include "models/InterfaceTypes.hpp"
 
+#include <models/ISerializable.hpp>
+
 namespace nx
 {
 
   class SerialHelper
   {
   public:
+
+    template < typename TEnum >
+    static bool isTypeGood( const nlohmann::json& j, const TEnum pipelineType )
+    {
+      return j.contains( "type" ) &&
+             pipelineType == deserializeEnum< TEnum >( j.at( "type" ) );
+    }
 
     template <typename Enum>
     static constexpr auto serializeEnum( Enum e )
@@ -65,47 +74,50 @@ namespace nx
       return "UNKNOWN";
     }
 
-    static E_LayoutType convertStringToLayoutType( const std::string& layoutType )
+    ///////////////////////////////////////////////////////////////////////////
+    template < typename TEnum >
+    static constexpr auto deserializeEnum( const std::string& typeName )
     {
-      if ( layoutType == "EmptyLayout" ) return E_LayoutType::E_EmptyLayout;
-      if ( layoutType == "RandomLayout" ) return E_LayoutType::E_RandomLayout;
-      if ( layoutType == "SpiralLayout" ) return E_LayoutType::E_SpiralLayout;
-      if ( layoutType == "FractalRingLayout" ) return E_LayoutType::E_FractalRingLayout;
-      if ( layoutType == "LSystemCurveLayout" ) return E_LayoutType::E_LSystemCurveLayout;
-      if ( layoutType == "GoldenSpiralLayout" ) return E_LayoutType::E_GoldenSpiralLayout;
-      return E_LayoutType::E_EmptyLayout;
-    }
-
-    static E_ShaderType convertStringToShaderType( const std::string& shaderType )
-    {
-      if ( shaderType == "GlitchShader" ) return E_ShaderType::E_GlitchShader;
-      if ( shaderType == "PulseShader" ) return E_ShaderType::E_PulseShader;
-      if ( shaderType == "BlurShader" ) return E_ShaderType::E_BlurShader;
-      if ( shaderType == "StrobeShader" ) return E_ShaderType::E_StrobeShader;
-      if ( shaderType == "RippleShader" ) return E_ShaderType::E_RippleShader;
-      if ( shaderType == "KaleidoscopeShader" ) return E_ShaderType::E_KaleidoscopeShader;
-      if ( shaderType == "RumbleShader" ) return E_ShaderType::E_RumbleShader;
-      if ( shaderType == "SmearShader" ) return E_ShaderType::E_SmearShader;
-      return E_ShaderType::E_InvalidShader;
-    }
-
-    static E_ModifierType convertStringToModifierType( const std::string& modifierType )
-    {
-      if ( modifierType == "SequentialModifier" ) return E_ModifierType::E_SequentialModifier;
-      if ( modifierType == "FullMeshModifier" ) return E_ModifierType::E_FullMeshModifier;
-      if ( modifierType == "RingZoneMeshModifier" ) return E_ModifierType::E_RingZoneMeshModifier;
-      if ( modifierType == "PerlinDeformerModifier" ) return E_ModifierType::E_PerlinDeformerModifier;
-      return E_ModifierType::E_InvalidModifier;
-    }
-
-    static E_BehaviorType convertStringToBehaviorType( const std::string& behaviorType )
-    {
-      if ( behaviorType == "JitterBehavior" ) return E_BehaviorType::E_JitterBehavior;
-      if ( behaviorType == "FreeFallBehavior" ) return E_BehaviorType::E_FreeFallBehavior;
-      if ( behaviorType == "RadialSpreaderBehavior" ) return E_BehaviorType::E_RadialSpreaderBehavior;
-      if ( behaviorType == "ColorMorphBehavior" ) return E_BehaviorType::E_ColorMorphBehavior;
-      if ( behaviorType == "MagneticBehavior" ) return E_BehaviorType::E_MagneticBehavior;
-      return E_BehaviorType::E_InvalidBehavior;
+      if constexpr ( std::is_same_v< TEnum, E_LayoutType > )
+      {
+        if ( typeName == "EmptyLayout" ) return E_LayoutType::E_EmptyLayout;
+        if ( typeName == "RandomLayout" ) return E_LayoutType::E_RandomLayout;
+        if ( typeName == "SpiralLayout" ) return E_LayoutType::E_SpiralLayout;
+        if ( typeName == "FractalRingLayout" ) return E_LayoutType::E_FractalRingLayout;
+        if ( typeName == "LissajousCurveLayout" ) return E_LayoutType::E_LissajousCurveLayout;
+        if ( typeName == "LSystemCurveLayout" ) return E_LayoutType::E_LSystemCurveLayout;
+        if ( typeName == "GoldenSpiralLayout" ) return E_LayoutType::E_GoldenSpiralLayout;
+        return E_LayoutType::E_EmptyLayout;
+      }
+      else if constexpr ( std::is_same_v< TEnum, E_ShaderType > )
+      {
+        if ( typeName == "GlitchShader" ) return E_ShaderType::E_GlitchShader;
+        if ( typeName == "PulseShader" ) return E_ShaderType::E_PulseShader;
+        if ( typeName == "BlurShader" ) return E_ShaderType::E_BlurShader;
+        if ( typeName == "StrobeShader" ) return E_ShaderType::E_StrobeShader;
+        if ( typeName == "RippleShader" ) return E_ShaderType::E_RippleShader;
+        if ( typeName == "KaleidoscopeShader" ) return E_ShaderType::E_KaleidoscopeShader;
+        if ( typeName == "RumbleShader" ) return E_ShaderType::E_RumbleShader;
+        if ( typeName == "SmearShader" ) return E_ShaderType::E_SmearShader;
+        return E_ShaderType::E_InvalidShader;
+      }
+      else if constexpr ( std::is_same_v< TEnum, E_ModifierType > )
+      {
+        if ( typeName == "SequentialModifier" ) return E_ModifierType::E_SequentialModifier;
+        if ( typeName == "FullMeshModifier" ) return E_ModifierType::E_FullMeshModifier;
+        if ( typeName == "RingZoneMeshModifier" ) return E_ModifierType::E_RingZoneMeshModifier;
+        if ( typeName == "PerlinDeformerModifier" ) return E_ModifierType::E_PerlinDeformerModifier;
+        return E_ModifierType::E_InvalidModifier;
+      }
+      else if constexpr ( std::is_same_v< TEnum, E_BehaviorType > )
+      {
+        if ( typeName == "JitterBehavior" ) return E_BehaviorType::E_JitterBehavior;
+        if ( typeName == "FreeFallBehavior" ) return E_BehaviorType::E_FreeFallBehavior;
+        if ( typeName == "RadialSpreaderBehavior" ) return E_BehaviorType::E_RadialSpreaderBehavior;
+        if ( typeName == "ColorMorphBehavior" ) return E_BehaviorType::E_ColorMorphBehavior;
+        if ( typeName == "MagneticBehavior" ) return E_BehaviorType::E_MagneticBehavior;
+        return E_BehaviorType::E_InvalidBehavior;
+      }
     }
 
     static std::string convertBlendModeToString( const sf::BlendMode& mode )

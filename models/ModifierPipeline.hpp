@@ -50,7 +50,7 @@ public:
     for ( const auto& modifierData : j )
     {
       const auto type =
-        SerialHelper::convertStringToModifierType( modifierData.value("type", "" ) );
+        SerialHelper::deserializeEnum< E_ModifierType >( j );
       switch ( type )
       {
         case E_ModifierType::E_SequentialModifier:

@@ -66,7 +66,7 @@ namespace nx
     }
     void deserialize(const nlohmann::json &j) override
     {
-      if ( j.contains( "type" ) )
+      if ( SerialHelper::isTypeGood( j, getType() ) )
       {
         m_data.isActive = j.at( "isActive" ).get<bool>();
         m_data.intensity = j.at( "intensity" ).get<float>();

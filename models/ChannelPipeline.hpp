@@ -218,14 +218,19 @@ namespace nx
     template < typename T >
     void changeLayout()
     {
-      const auto& savedSettings = m_particleLayout->serialize();
+      m_tempSettings[ SerialHelper::serializeEnum( m_particleLayout->getType() ) ] = m_particleLayout->serialize();
       m_particleLayout.reset( new T( m_globalInfo ) );
-      m_particleLayout->deserialize( savedSettings );
+
+      const auto newLayoutName = SerialHelper::serializeEnum( m_particleLayout->getType() );
+      if ( m_tempSettings.contains( newLayoutName ) )
+        m_particleLayout->deserialize( m_tempSettings[ newLayoutName ] );
     }
 
   private:
 
     const GlobalInfo_t& m_globalInfo;
+
+    nlohmann::json m_tempSettings;
 
     // the blend mode is important in case there are multiple channel pipelines
     sf::BlendMode m_blendMode { sf::BlendAdd };

@@ -32,7 +32,7 @@ namespace nx
       for ( const auto& data : j )
       {
         const auto type =
-          SerialHelper::convertStringToBehaviorType( data.value("type", "" ) );
+          SerialHelper::deserializeEnum< E_BehaviorType >( data.value("type", "" ) );
         switch ( type )
         {
           case E_BehaviorType::E_JitterBehavior:

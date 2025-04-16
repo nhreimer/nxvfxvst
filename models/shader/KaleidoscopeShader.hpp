@@ -58,7 +58,7 @@ namespace nx
 
     void deserialize( const nlohmann::json& j ) override
     {
-      if ( j.contains( "type" ) )
+      if ( SerialHelper::isTypeGood( j, getType() ) )
       {
         m_data.isActive = j.value("isActive", false);
         m_data.centerX = j.value("centerX", 0.5f);

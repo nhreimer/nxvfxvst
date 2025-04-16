@@ -103,7 +103,7 @@ namespace nx
       for ( const auto& shaderData : j )
       {
         auto type = shaderData.value("type", "" );
-        createShader( SerialHelper::convertStringToShaderType( type ), shaderData );
+        createShader( SerialHelper::deserializeEnum< E_ShaderType >( type ), shaderData );
       }
     }
 

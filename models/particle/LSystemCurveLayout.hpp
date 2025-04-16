@@ -53,7 +53,7 @@ namespace nx
     void deserialize(const nlohmann::json &j) override
     {
       ParticleHelper::deserialize( m_data, SerialHelper::serializeEnum( getType() ) );
-      if ( j.contains( "type" ) )
+      if ( SerialHelper::isTypeGood( j, getType() ) )
       {
         m_data.depth = j["depth"];
         m_data.turnAngle = j["turnAngle"];

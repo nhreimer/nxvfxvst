@@ -51,7 +51,7 @@ namespace nx
     {
       ParticleHelper::deserialize(m_data, j);
 
-      if ( j.contains( "type" ) )
+      if ( SerialHelper::isTypeGood( j, getType() ) )
       {
         m_data.depth = j["depth"].get<int>();
         m_data.scaleFactor = j["scaleFactor"].get<float>();

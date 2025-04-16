@@ -47,7 +47,8 @@ namespace nx
 
     void deserialize(const nlohmann::json& j) override
     {
-      ParticleHelper::deserialize( m_data, j );
+      if ( SerialHelper::isTypeGood( j, getType() ) )
+        ParticleHelper::deserialize( m_data, j );
       if ( j.contains( "behaviors" ) )
         m_behaviorPipeline.loadModifierPipeline( j.at( "behaviors" ) );
     }

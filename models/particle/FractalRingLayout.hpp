@@ -39,7 +39,7 @@ public:
   void deserialize(const nlohmann::json &j) override
   {
     ParticleHelper::deserialize( m_data, j );
-    if ( j.contains( "type" ) )
+    if ( SerialHelper::isTypeGood( j, getType() ) )
     {
       m_data.depthLimit = j["depthLimit"];
       m_data.radialSpread = j["radialSpread"];

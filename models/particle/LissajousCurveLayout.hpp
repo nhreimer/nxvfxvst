@@ -46,7 +46,7 @@ namespace nx
     {
       ParticleHelper::deserialize( m_data, j );
 
-      if ( j.contains( "type" ) )
+      if ( SerialHelper::isTypeGood( j, getType() ) )
       {
         m_data.phaseAStep = j.value( "phaseAStep", 2.0f );
         m_data.phaseBStep = j.value( "phaseBStep", 3.0f );
