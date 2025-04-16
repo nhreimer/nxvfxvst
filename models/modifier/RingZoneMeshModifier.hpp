@@ -12,6 +12,7 @@ namespace nx
       bool drawRings = true;
       bool drawSpokes = true;
       sf::Color lineColor = sf::Color(255, 255, 255, 100);
+      sf::Color otherLineColor = sf::Color(255, 255, 255, 100);
 
       float lineWidth { 2.f };
 
@@ -36,6 +37,7 @@ namespace nx
         { "drawRings", m_data.drawRings },
         { "drawSpokes", m_data.drawSpokes },
         { "lineColor", SerialHelper::convertColorToJson( m_data.lineColor ) },
+        { "otherLineColor", SerialHelper::convertColorToJson( m_data.otherLineColor ) },
         { "lineWidth", m_data.lineWidth },
         { "pulseSpeed", m_data.pulseSpeed },
         { "minAlpha", m_data.minAlpha },
@@ -57,6 +59,7 @@ namespace nx
         m_data.maxAlpha = j.at( "maxAlpha" ).get<float>();
         m_data.enablePulse = j.at( "enablePulse" ).get<bool>();
         m_data.lineColor = SerialHelper::convertColorFromJson( j.at( "lineColor" ) );
+        m_data.otherLineColor = SerialHelper::convertColorFromJson( j.at( "otherLineColor" ) );
       }
       else
       {
@@ -76,6 +79,10 @@ namespace nx
         ImVec4 color = m_data.lineColor;
         if (ImGui::ColorEdit4("Line Color", reinterpret_cast< float * >(&color)))
           m_data.lineColor = color;
+
+        color = m_data.otherLineColor;
+        if (ImGui::ColorEdit4("Other Line Color", reinterpret_cast< float * >(&color)))
+          m_data.otherLineColor = color;
 
         ImGui::SeparatorText("Pulse Alpha");
         ImGui::Checkbox("Enable Pulse", &m_data.enablePulse);
@@ -110,8 +117,11 @@ namespace nx
         alpha = m_data.minAlpha + (m_data.maxAlpha - m_data.minAlpha) * normalized;
       }
 
-      sf::Color pulsedColor = m_data.lineColor;
+      auto pulsedColor = m_data.lineColor;
       pulsedColor.a = static_cast< uint8_t >(alpha);
+
+      auto otherPulsedColor = m_data.otherLineColor;
+      otherPulsedColor.a = static_cast< uint8_t >( alpha );
 
       //auto *lines = new sf::VertexArray(sf::PrimitiveType::Lines);
       //auto * lines = static_cast< GradientLine * >(outArtifacts.emplace_back(new GradientLine()));
@@ -153,7 +163,7 @@ namespace nx
                                      p2->shape.getPosition(),
                                      m_data.lineWidth,
                                      pulsedColor,
-                                     pulsedColor )
+                                     otherPulsedColor )
             );
             // lines->append(sf::Vertex(p1->shape.getPosition(), pulsedColor));
             // lines->append(sf::Vertex(p2->shape.getPosition(), pulsedColor));
@@ -172,7 +182,7 @@ namespace nx
                                  prevRing[ i ]->shape.getPosition(),
                                  m_data.lineWidth,
                                  pulsedColor,
-                                 pulsedColor )
+                                 otherPulsedColor )
             );
             // lines->append(sf::Vertex(ringParticles[ i ]->shape.getPosition(), pulsedColor));
             // lines->append(sf::Vertex(prevRing[ i ]->shape.getPosition(), pulsedColor));
