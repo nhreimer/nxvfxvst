@@ -19,8 +19,6 @@
 
 #include "models/particle/TestParticleLayout.hpp"
 
-#include "shapes/TimedMessage.hpp"
-
 #include <future>
 
 namespace nx
@@ -152,7 +150,7 @@ namespace nx
 
     void drawParticleMenu()
     {
-      if ( ImGui::TreeNode( "Particles" ) )
+      if ( ImGui::TreeNode( "Layouts Available" ) )
       {
         ImGui::Text( "Layouts" );
         {

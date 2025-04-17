@@ -224,6 +224,16 @@ Manages the particle layout (initial placement & creation) and passes particles 
     Delegates visual transformation to modifiers
     Sends particle data to the modifier pipeline via std::deque<TimedParticle_t*>
 
+| Layout Type     | Description                                    |
+|-----------------|------------------------------------------------|
+| Empty           | no particles are drawn at all                  |
+| Random          | randomly generates positions                   |
+| Spiral          | spirals from the center out based on midi note |
+| Golden Spiral   | uses the golden ratio                          | 
+| Lissajous Curve |                                                |
+| L-System Curve  |                                                |
+| Fractal Ring    |                                                |
+
 ## Particle Behavior Pipeline
 
 Manages behaviors that change particles directly (useful for making adjustments on a single particle basis),
@@ -231,6 +241,14 @@ e.g., Jitter, Gravity, Spread. Cannot be used for adding or removing particles.
 
     Alters particles on a per-particle basis
     Does not own any memory
+
+| Behavior Name | Description |
+|---------------|-------------|
+| Color Morph   |             |
+| Free Fall     |             |
+| Jitter        |             |
+| Magnetic      |             |
+| Radial Spread |             |
 
 ## Modifier Pipeline
 
@@ -241,6 +259,13 @@ Processes a stack of IParticleModifier objects sequentially. It modifies the par
     Those transformations can directly alter the Particles in a deque or add std::deque<sf::Drawable*>
     Renders output to an internal sf::RenderTexture that gets handed off to the shader pipeline 
 
+| Modifier Type        | Description |
+|----------------------|-------------|
+| Full Mesh Lines      |             |
+| Sequential Lines     |             |
+| Ring Zone Mesh Lines |             |
+| Perlin Deformer      |             |
+
 ## ShaderPipeline
 
 Applies post-processing shaders to the result of the modifier stack.
@@ -249,6 +274,18 @@ Applies post-processing shaders to the result of the modifier stack.
     Applies one or more chained fragment shaders (e.g., glow, blur, ripple, glitch)
     Applies many different types of easings
     Produces the final visual output for the sf::RenderWindow
+
+| Shader Type      | Description |
+|------------------|-------------|
+| Blur             |             |
+| Cosmic-Kaleido   |             |
+| Density Heat Map |             |
+| Glitch           |             |
+| Pulse            |             |
+| Ripple           |             |
+| Rumble           |             |
+| Smear            |             |
+| Strobe           |             |
 
 ## GlobalInfo
 
@@ -261,8 +298,8 @@ struct GlobalInfo_t
   sf::View windowView;
   sf::Vector2f windowHalfSize;
   bool hideMenu = false;
-  double bpm = 0.0;
-  float elapsedTimeSeconds = 0.0f;
+  double bpm = 0.0;                 // in standalone mode this is always zero
+  float elapsedTimeSeconds = 0.0f;  // runtime
   std::uint64_t frameCount = 0;
 };
 ```
@@ -304,6 +341,7 @@ Available Easing Types
 ```text 
 Name	          Description
 -----------------------------------------------------------------------------------------------
+None              Uses elapsed time
 Linear	          Constant rate of change. No curve — useful for mechanical or unstyled fades.
 Quadratic	  Accelerates or decelerates quickly. Good for soft ease-ins/outs.
 Cubic	          More dramatic curve than quadratic. Smoother transitions with more tension.
@@ -320,3 +358,22 @@ Smooth Pulse	  Curved rise and fall — good for glow or aura-like pulsing.
 ```
 
 Additionally, there is a Cumulative Easing, that can combine multiple easings, but it's currently only applied to the LayeredGlitch Effect.
+
+# Tips
+
+## Layouts
+
+## Behaviors
+
+## Modifiers
+
+## Effects
+
+### Density Heat Map
+
+1. add blur before the density heat map
+2. increase particle size
+3. play with particle timeout
+4. play with falloff in density heat map
+
+Bonus: add ripple before density heat map to get lava lamp vibes

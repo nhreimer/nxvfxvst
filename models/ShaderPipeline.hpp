@@ -161,6 +161,10 @@ namespace nx
           shader = deserializeShader< SmearShader >( j );
           break;
 
+        case E_ShaderType::E_DensityHeatMapShader:
+          shader = deserializeShader< DensityHeatMapShader >( j );
+          break;
+
         default:
           LOG_ERROR( "Unsupported shader type" );
           break;
