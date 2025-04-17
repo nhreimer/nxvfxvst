@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models/ChannelPipeline.hpp"
+#include "shapes/TimedMessage.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"

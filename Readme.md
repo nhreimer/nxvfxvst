@@ -359,6 +359,8 @@ Smooth Pulse	  Curved rise and fall — good for glow or aura-like pulsing.
 
 Additionally, there is a Cumulative Easing, that can combine multiple easings, but it's currently only applied to the LayeredGlitch Effect.
 
+---
+
 # Tips
 
 ## Layouts
@@ -371,9 +373,12 @@ Additionally, there is a Cumulative Easing, that can combine multiple easings, b
 
 ### Density Heat Map
 
+Requires blurring to get good results
+
 1. add blur before the density heat map
 2. increase particle size
 3. play with particle timeout
 4. play with falloff in density heat map
 
 Bonus: add ripple before density heat map to get lava lamp vibes
+Bonus: add smear afterward, set blend mode to "alpha" and play with settings

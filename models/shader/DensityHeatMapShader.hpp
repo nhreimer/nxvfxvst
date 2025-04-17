@@ -11,6 +11,11 @@ namespace nx
   {
     bool isActive { true };
     float falloff { 0.2f };
+
+    // 0    -> trail never fades (fully persistent)
+    // 255  -> instant erase (same as normal clear)
+    // 8–32 -> sweet spot for glowy echoes
+    // int32_t trailFadeAlpha { 8 };
   };
 
   class DensityHeatMapShader final : public IShader
@@ -66,7 +71,7 @@ namespace nx
       {
         ImGui::Checkbox( "Heat Map Active##1", &m_data.isActive );
         ImGui::SliderFloat("Density Falloff", &m_data.falloff, 0.1f, 5.0f);
-
+        // ImGui::SliderInt("Ghost Trail Fade", &m_data.trailFadeAlpha, 0, 255);
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -91,11 +96,19 @@ namespace nx
         }
       }
 
+      auto screenSize = sf::Vector2f { inputTexture.getSize() };
+
       m_shader.setUniform("u_densityTexture", inputTexture.getTexture());
       m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
       m_shader.setUniform("u_falloff", m_data.falloff);
 
       m_outputTexture.clear( sf::Color::Transparent );
+
+      // sf::RectangleShape fadeQuad;
+      // fadeQuad.setSize(screenSize);
+      // fadeQuad.setFillColor(sf::Color(0, 0, 0, static_cast< uint8_t >(m_data.trailFadeAlpha))); // e.g., 8–32
+      // m_outputTexture.draw( fadeQuad, sf::BlendAlpha );
+
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
       m_outputTexture.display();
 
