@@ -204,7 +204,7 @@ namespace nx
       // 3. Fade feedback with a semi-transparent black quad to prevent infinite trails
       m_feedbackFadeShape.setFillColor(
         sf::Color(0, 0, 0,
-                    static_cast<uint8_t>( 255 * m_data.feedbackFade ) ) );
+                    static_cast< uint8_t >( 255 * m_data.feedbackFade ) ) );
 
       m_feedbackTexture.draw(m_feedbackFadeShape, sf::BlendAlpha);
 

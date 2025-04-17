@@ -26,7 +26,7 @@ namespace nx
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
-        LOG_ERROR( "Failed to load strobe fragment shader" );
+        LOG_ERROR( "Failed to load density heat map fragment shader" );
       }
       else
       {
@@ -96,7 +96,7 @@ namespace nx
         }
       }
 
-      auto screenSize = sf::Vector2f { inputTexture.getSize() };
+      // auto screenSize = sf::Vector2f { inputTexture.getSize() };
 
       m_shader.setUniform("u_densityTexture", inputTexture.getTexture());
       m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });

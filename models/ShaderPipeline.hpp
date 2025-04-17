@@ -10,6 +10,7 @@
 #include "models/shader/LayeredGlitchShader.hpp"
 #include "models/shader/SmearShader.hpp"
 #include "models/shader/DensityHeatMapShader.hpp"
+#include "models/shader/FeedbackShader.hpp"
 
 namespace nx
 {
@@ -230,6 +231,9 @@ namespace nx
 
         if ( ImGui::Button( "Density Map##1" ) )
           createShader< DensityHeatMapShader >();
+
+        if ( ImGui::Button( "Feedback##1" ) )
+          createShader< FeedbackShader >();
 
         ImGui::TreePop();
         ImGui::Spacing();
