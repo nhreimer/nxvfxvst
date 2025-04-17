@@ -4,8 +4,6 @@
 
 #include "models/InterfaceTypes.hpp"
 
-#include <models/ISerializable.hpp>
-
 namespace nx
 {
 
@@ -54,6 +52,7 @@ namespace nx
           case E_ShaderType::E_RumbleShader: return "RumbleShader";
           case E_ShaderType::E_KaleidoscopeShader: return "KaleidoscopeShader";
           case E_ShaderType::E_SmearShader: return "SmearShader";
+          case E_ShaderType::E_DensityHeatMapShader: return "DensityHeatMapShader";
           default: break;
         }
       }
@@ -99,6 +98,7 @@ namespace nx
         if ( typeName == "KaleidoscopeShader" ) return E_ShaderType::E_KaleidoscopeShader;
         if ( typeName == "RumbleShader" ) return E_ShaderType::E_RumbleShader;
         if ( typeName == "SmearShader" ) return E_ShaderType::E_SmearShader;
+        if ( typeName == "DensityHeatMapShader" ) return E_ShaderType::E_DensityHeatMapShader;
         return E_ShaderType::E_InvalidShader;
       }
       else if constexpr ( std::is_same_v< TEnum, E_ModifierType > )

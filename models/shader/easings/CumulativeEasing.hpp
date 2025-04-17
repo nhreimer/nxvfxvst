@@ -21,6 +21,8 @@ namespace nx
       return m_masterEasing.serialize();
     }
 
+    E_TimeEasingType getEasingType() const { return m_masterEasing.getEasingType(); }
+
     void drawMenu()
     {
       m_masterEasing.drawMenu();

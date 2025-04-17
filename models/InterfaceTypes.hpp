@@ -12,7 +12,8 @@ namespace nx
     E_StrobeShader,
     E_KaleidoscopeShader,
     E_RumbleShader,
-    E_SmearShader
+    E_SmearShader,
+    E_DensityHeatMapShader
   };
 
   enum class E_LayoutType : int8_t

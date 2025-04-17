@@ -9,6 +9,7 @@
 #include "models/shader/RumbleShader.hpp"
 #include "models/shader/LayeredGlitchShader.hpp"
 #include "models/shader/SmearShader.hpp"
+#include "models/shader/DensityHeatMapShader.hpp"
 
 namespace nx
 {
@@ -222,6 +223,9 @@ namespace nx
         ImGui::SameLine();
         if ( ImGui::Button( "Smear##1" ) )
           createShader< SmearShader >();
+
+        if ( ImGui::Button( "Density Map##1" ) )
+          createShader< DensityHeatMapShader >();
 
         ImGui::TreePop();
         ImGui::Spacing();

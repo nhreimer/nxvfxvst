@@ -112,7 +112,7 @@ namespace nx
       {
         int32_t sides = data.shapeSides;
         if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) data.shapeSides = sides;
-        ImGui::SliderFloat( "Radius##1", &data.radius, 1.0f, 100.0f );
+        ImGui::SliderFloat( "Radius##1", &data.radius, 0.0f, 500.0f );
         ImGui::SliderInt( "Timeout##1", &data.timeoutInMS, 15, 10000 );
         ImGui::SliderFloat( "Boost##1", &data.boostVelocity, 0.f, 1.f );
         ImGui::SliderFloat( "Velocity Size Mult##1", &data.velocitySizeMultiplier, 0.f, 50.f );

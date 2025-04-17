@@ -81,8 +81,8 @@ namespace nx
         ImGui::Checkbox( "Blur Active##1", &m_data.isActive );
         ImGui::SliderFloat( "Smoothing##1", &m_data.sigma, 0.f, 50.f );
         ImGui::SliderFloat( "Brighten##1", &m_data.brighten, 0.0f, 5.f );
-        ImGui::SliderFloat( "Horizontal##1", &m_data.blurHorizontal, 0.f, 5.f );
-        ImGui::SliderFloat( "Vertical##1", &m_data.blurVertical, 0.f, 5.f );
+        ImGui::SliderFloat( "Horizontal##1", &m_data.blurHorizontal, 0.f, 20.f );
+        ImGui::SliderFloat( "Vertical##1", &m_data.blurVertical, 0.f, 20.f );
 
         ImGui::Separator();
 
@@ -129,6 +129,7 @@ namespace nx
       m_blurShader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
       m_blurShader.setUniform( "sigma", m_data.sigma );
       m_blurShader.setUniform( "brighten", m_data.brighten );
+
       m_blurShader.setUniform( "intensity", easing );
 
       m_intermediary.clear(sf::Color::Transparent);

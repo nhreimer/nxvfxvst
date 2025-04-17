@@ -58,8 +58,16 @@ namespace nx
    {
         { "type", SerialHelper::serializeEnum( getType() ) },
         { "isActive", m_data.isActive },
-           // { "intensity", m_data.intensity },
-          { "slices", m_data.slices }
+        { "slices", m_data.slices },
+           { "masterGain", m_data.masterGain },
+     { "swirlStrength", m_data.swirlStrength },
+     { "swirlDensity", m_data.swirlDensity },
+      { "pulseStrength", m_data.pulseStrength },
+      { "pulseFrequency", m_data.pulseFrequency },
+      { "pulseSpeed", m_data.pulseSpeed },
+     { "angleSteps", m_data.angleSteps },
+      { "radialStretch", m_data.radialStretch },
+      { "noiseStrength", m_data.noiseStrength }
       };
     }
 
@@ -68,8 +76,20 @@ namespace nx
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
         m_data.isActive = j.value("isActive", true);
-        // m_data.intensity = j.value("intensity", 0.2f);
+
         m_data.slices = j.value("slices", 6.f);
+        m_data.masterGain = j.value("masterGain", 0.1f);
+
+        m_data.angleSteps  = j.value("angleSteps", 32);
+        m_data.noiseStrength = j.value("noiseStrength", 0.5f);
+        m_data.radialStretch = j.value("radialStretch", 1.f);
+
+        m_data.pulseFrequency = j.value("pulseFrequency", 10.f);
+        m_data.pulseSpeed  = j.value("pulseSpeed", 50.f);
+        m_data.pulseStrength = j.value("pulseStrength", 1.f);
+
+        m_data.swirlDensity = j.value("swirlDensity", 1.f);
+        m_data.swirlStrength = j.value("swirlStrength", 0.5f);
       }
       else
       {
@@ -90,9 +110,9 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Cosmic-Kaleidoscope" ) )
       {
-        ImGui::Checkbox( "Polar-Kaleido Active##1", &m_data.isActive );
+        ImGui::Checkbox( "Cosmis-Kaleido Active##1", &m_data.isActive );
 
-        ImGui::SeparatorText("🌀 Polar Kaleido Shader");
+        ImGui::SeparatorText("Cosmis-Kaleido Shader");
         ImGui::SliderFloat("Master Gain", &m_data.masterGain, 0.f, 1.f);
         ImGui::SliderFloat("Slices", &m_data.slices, 1.f, 32.f);
         ImGui::SliderFloat("Swirl Strength", &m_data.swirlStrength, 0.f, 2.f);
@@ -140,8 +160,9 @@ namespace nx
         }
       }
 
+      m_shader.setUniform( "u_time", m_easings.getEasing() );
+
       m_shader.setUniform("u_texture", inputTexture.getTexture());
-      m_shader.setUniform("u_time", m_globalInfo.elapsedTimeSeconds);
       m_shader.setUniform("u_intensity", m_data.masterGain);
       m_shader.setUniform("u_resolution", sf::Vector2f(inputTexture.getSize()));
 
