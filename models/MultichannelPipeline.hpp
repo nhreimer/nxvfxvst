@@ -2,6 +2,7 @@
 
 #include "models/ChannelPipeline.hpp"
 #include "shapes/TimedMessage.hpp"
+#include "models/encoder/RawEncoder.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
@@ -19,7 +20,8 @@ namespace nx
 
   public:
     explicit MultichannelPipeline( const GlobalInfo_t &globalInfo )
-      : m_globalInfo( globalInfo )
+      : m_globalInfo( globalInfo ),
+        m_filename( {} )
     {
       for ( int i = 0; i < m_channels.size(); ++i )
         m_channels[ i ] = std::make_unique< ChannelPipeline >( globalInfo );
@@ -56,6 +58,8 @@ namespace nx
     {
       for ( const auto& channel: m_channels )
         channel->draw( window );
+
+      if ( m_encoder ) m_encoder->writeFrame( window );
     }
 
     void update( const sf::Time &deltaTime ) const
@@ -120,7 +124,31 @@ namespace nx
           m_messageClock.setMessage( "failed to import: empty clipboard." );
       }
 
-      // TODO: add color wheel and slider for cursor time out
+      if ( ImGui::TreeNode( "Video Encoder" ) )
+      {
+        ImGui::InputText( "Filename ", m_filename.data(), m_filename.size() );
+
+        if ( m_encoder )
+        {
+          if ( ImGui::Button( "Stop Recording" ) )
+          {
+            const auto * ptr = m_encoder.release();
+            delete ptr;
+
+            m_messageClock.setMessage( "RECORDING STOPPED!" );
+          }
+        }
+        else if ( ImGui::Button( "Start Recording" ) )
+        {
+          m_encoder.reset(
+            new RawEncoder( std::string( m_filename.data() ) ) );
+
+          m_messageClock.setMessage( "RECORDING STARTED!" );
+        }
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
 
       if ( !m_messageClock.hasExpired() )
       {
@@ -134,11 +162,18 @@ namespace nx
     }
 
   private:
+
     const GlobalInfo_t &m_globalInfo;
 
     std::array< std::unique_ptr< ChannelPipeline >, MAX_CHANNELS > m_channels;
     TimedMessage m_messageClock;
 
-    int m_selectedChannel = 0;
+    int m_selectedChannel { 0 };
+
+    // used for saving to video
+    std::unique_ptr< IEncoder > m_encoder;
+    std::array< char, 512 > m_filename;
+
   };
+
 } // namespace nx

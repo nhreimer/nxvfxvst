@@ -69,7 +69,7 @@ if ( BUILD_PLUGIN )
   if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 
     find_package(spdlog CONFIG REQUIRED)
-
+    target_link_directories(${PROJECT_NAME} PRIVATE ${FFMPEG_LIBRARY_DIRS})
     target_link_libraries( ${PROJECT_NAME}
       PRIVATE
 
@@ -148,7 +148,6 @@ else()
   find_package(nlohmann_json CONFIG REQUIRED)
 
   add_executable(${PROJECT_NAME} main.cpp)
-
   target_link_libraries( ${PROJECT_NAME}
     PRIVATE
 

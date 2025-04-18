@@ -239,11 +239,13 @@ namespace priv
 
   Steinberg::tresult onKeyDown( Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers ) override
   {
+    m_eventFacade.onKeyDown( key, keyCode, modifiers );
     return Steinberg::kResultTrue;
   }
 
   Steinberg::tresult onKeyUp( Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers ) override
   {
+    m_eventFacade.onKeyUp( key, keyCode, modifiers );
     return Steinberg::kResultTrue;
   }
 
