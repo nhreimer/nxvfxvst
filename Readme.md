@@ -21,6 +21,8 @@ A highly configurable and modular Video Effects Engine for midi events. It VST3 
   * Particle modifiers
   * Easings (for time decays)
   * Triggers at multiple stages of a pipeline (for time synchronization)
+* Real-time video encoder (uses raw encoding format at the moment)
+
 
 ## Dependencies
 
@@ -193,6 +195,12 @@ Contributions, ideas, and suggestions are welcome!
 +------------------+
 |   RenderWindow   |  All the graphical output from each channel output here
 +------------------+
+          │
+          ▼
++------------------+
+|   Video Encoder  |  Raw encoding available
++------------------+
+
 
 ```
 
@@ -280,6 +288,7 @@ Applies post-processing shaders to the result of the modifier stack.
 | Blur             |             |
 | Cosmic-Kaleido   |             |
 | Density Heat Map |             |
+| Feedback         |             |
 | Glitch           |             |
 | Pulse            |             |
 | Ripple           |             |

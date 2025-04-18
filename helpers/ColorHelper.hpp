@@ -15,11 +15,26 @@ namespace nx
       );
     }
 
+    static sf::Glsl::Vec3 convertFromVec4(const sf::Color& c)
+    {
+      return sf::Glsl::Vec3( c.r / 255.f, c.g / 255.f, c.b / 255.f );
+    }
+
     static void drawImGuiColorEdit4( const std::string& label, sf::Color& color )
     {
       ImVec4 imColor = color;
       if ( ImGui::ColorEdit4( label.c_str(), reinterpret_cast< float * >( &imColor ) ) )
         color = imColor;
+    }
+
+    static void drawImGuiColorEdit3( const std::string& label, sf::Color& color )
+    {
+      ImVec4 imColor = color;
+      if ( ImGui::ColorEdit3( label.c_str(), reinterpret_cast< float * >( &imColor ) ) )
+      {
+        color = imColor;
+        color.a = 255.f;
+      }
     }
 
     static sf::Color getNextColor( const sf::Color& fromColor,
