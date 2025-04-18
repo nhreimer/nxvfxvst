@@ -14,7 +14,8 @@ namespace nx
     E_RumbleShader,
     E_SmearShader,
     E_DensityHeatMapShader,
-    E_FeedbackShader
+    E_FeedbackShader,
+    E_DualKawaseBlurShader
   };
 
   enum class E_LayoutType : int8_t

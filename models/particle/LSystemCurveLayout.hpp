@@ -5,27 +5,28 @@
 namespace nx
 {
 
-  enum class E_BranchMode : int8_t
-  {
-    E_Both,
-    E_LeftOnly,
-    E_RightOnly,
-    E_MidiPitch
-  };
-
-  struct LSystemCurveLayoutData_t : public ParticleLayoutData_t
-  {
-    int depth = 4; // number of recursive steps
-    float turnAngle = 25.f; // degrees turned on L/R
-    float segmentLength = 20.f; // length of each forward step
-    float initialAngleDeg = 0.f;
-    E_BranchMode m_branchMode = E_BranchMode::E_Both;
-  };
-
   /// this is useful for adding time-based effects to a screen without
   /// having particles on the screen.
   class LSystemCurveLayout final : public IParticleLayout
   {
+
+    enum class E_BranchMode : int8_t
+    {
+      E_Both,
+      E_LeftOnly,
+      E_RightOnly,
+      E_MidiPitch
+    };
+
+    struct LSystemCurveLayoutData_t : public ParticleLayoutData_t
+    {
+      int depth = 4; // number of recursive steps
+      float turnAngle = 25.f; // degrees turned on L/R
+      float segmentLength = 20.f; // length of each forward step
+      float initialAngleDeg = 0.f;
+      E_BranchMode m_branchMode = E_BranchMode::E_Both;
+    };
+
   public:
     explicit LSystemCurveLayout(const GlobalInfo_t &globalInfo)
       : m_globalInfo( globalInfo ),

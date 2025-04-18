@@ -3,14 +3,15 @@
 #include "models/shader/BlurShader.hpp"
 #include "models/shader/KaleidoscopeShader.hpp"
 // #include "models/shader/GlitchShader.hpp"
-#include "models/shader/RippleShader.hpp"
-#include "models/shader/StrobeShader.hpp"
-#include "models/shader/PulseShader.hpp"
-#include "models/shader/RumbleShader.hpp"
-#include "models/shader/LayeredGlitchShader.hpp"
-#include "models/shader/SmearShader.hpp"
 #include "models/shader/DensityHeatMapShader.hpp"
+#include "models/shader/DualKawaseBlurShader.hpp"
 #include "models/shader/FeedbackShader.hpp"
+#include "models/shader/LayeredGlitchShader.hpp"
+#include "models/shader/PulseShader.hpp"
+#include "models/shader/RippleShader.hpp"
+#include "models/shader/RumbleShader.hpp"
+#include "models/shader/SmearShader.hpp"
+#include "models/shader/StrobeShader.hpp"
 
 namespace nx
 {
@@ -166,6 +167,10 @@ namespace nx
           shader = deserializeShader< DensityHeatMapShader >( j );
           break;
 
+        case E_ShaderType::E_FeedbackShader:
+          shader = deserializeShader< FeedbackShader >( j );
+          break;
+
         default:
           LOG_ERROR( "Unsupported shader type" );
           break;
@@ -197,43 +202,56 @@ namespace nx
     {
       if ( ImGui::TreeNode( "FX Available" ) )
       {
-        if ( ImGui::Button( "Blur##1" ) )
-          createShader< BlurShader >();
+        ImGui::SeparatorText( "Utilities" );
+        {
+          if ( ImGui::Button( "Blur##1" ) )
+            createShader< BlurShader >();
 
+          ImGui::SameLine();
+          if ( ImGui::Button( "DK Blur##1" ) )
+            createShader< DualKawaseBlurShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Feedback##1" ) )
+            createShader< FeedbackShader >();
+        }
+
+        ImGui::SeparatorText( "Impact" );
+        {
+          if ( ImGui::Button( "Glitch##1" ) )
+            createShader< LayeredGlitchShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Pulse##1" ) )
+            createShader< PulseShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Rumble##1" ) )
+            createShader< RumbleShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Strobe##1" ) )
+            createShader< StrobeShader >();
+        }
+
+        ImGui::SeparatorText( "Warping" );
+        {
+          if ( ImGui::Button( "Cosmic-Kaleido##1" ) )
+            createShader< KaleidoscopeShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Density Map##1" ) )
+            createShader< DensityHeatMapShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Ripple##1" ) )
+            createShader< RippleShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Smear##1" ) )
+            createShader< SmearShader >();
+        }
         ImGui::SameLine();
-        if ( ImGui::Button( "Glitch##1" ) )
-          createShader< LayeredGlitchShader >();
-          //createShader< GlitchShader >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Kaleido##1" ) )
-          createShader< KaleidoscopeShader >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Pulse##1" ) )
-          createShader< PulseShader >();
-
-        //ImGui::SameLine();
-        if ( ImGui::Button( "Ripple##1" ) )
-          createShader< RippleShader >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Rumble##1" ) )
-          createShader< RumbleShader >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Strobe##1" ) )
-          createShader< StrobeShader >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Smear##1" ) )
-          createShader< SmearShader >();
-
-        if ( ImGui::Button( "Density Map##1" ) )
-          createShader< DensityHeatMapShader >();
-
-        if ( ImGui::Button( "Feedback##1" ) )
-          createShader< FeedbackShader >();
 
         ImGui::TreePop();
         ImGui::Spacing();

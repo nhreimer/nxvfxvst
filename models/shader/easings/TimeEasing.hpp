@@ -7,7 +7,8 @@ namespace nx
 
   enum class E_TimeEasingType : int8_t
   {
-    E_None,
+    E_Fixed,          // fixed number: uses intensity only
+    E_Time,           // elapsed time
     E_Linear,
     E_Quadratic,
     E_Cubic,
@@ -24,16 +25,16 @@ namespace nx
     E_PulseSine
   };
 
-  struct TimeEasingData_t
-  {
-    float decayRate { 0.1f };
-    float intensity { 0.f }; // used for certain ones
-
-    E_TimeEasingType easingType { E_TimeEasingType::E_None };
-  };
-
   class TimeEasing
   {
+
+     struct TimeEasingData_t
+    {
+      float decayRate { 0.1f };
+      float intensity { 0.f }; // used for certain ones
+
+      E_TimeEasingType easingType { E_TimeEasingType::E_Time };
+    };
 
   public:
 
@@ -74,7 +75,10 @@ namespace nx
 
       switch ( m_data.easingType )
       {
-        case E_TimeEasingType::E_None:
+        case E_TimeEasingType::E_Fixed:
+          return m_data.intensity;
+
+        case E_TimeEasingType::E_Time:
           return m_clock.getElapsedTime().asSeconds();
 
         // use elapsed over decay by a multiplier
@@ -99,12 +103,13 @@ namespace nx
       ImGui::SliderFloat( "##DecayRate", &m_data.decayRate, 0.01f, 1.5f, "Decay Rate %0.2f seconds" );
       if ( m_data.easingType == E_TimeEasingType::E_SparkleFlicker )
         ImGui::SliderFloat( "##Sparkle Intensity", &m_data.intensity, 0.f, 3.f, "Intensity %0.2f" );
-      else if ( m_data.easingType == E_TimeEasingType::E_Impulse )
+      else if ( m_data.easingType == E_TimeEasingType::E_Impulse || m_data.easingType == E_TimeEasingType::E_Fixed )
         ImGui::SliderFloat( "##Impulse Scale", &m_data.intensity, 0.f, 10.f, "Scale %0.2f" );
 
       ImGui::Text( "Time Easing Functions:" );
 
-      if ( drawRadio( "None", E_TimeEasingType::E_None ) ) m_easingFunction = useNone;
+      if ( drawRadio( "Fixed", E_TimeEasingType::E_Fixed ) ) m_easingFunction = useNone;
+      else if ( drawRadio( "None", E_TimeEasingType::E_Time ) ) m_easingFunction = useNone;
       else if ( drawRadio( "Linear", E_TimeEasingType::E_Linear ) ) m_easingFunction = easeOutLinear;
       else if ( drawRadio( "Quadratic", E_TimeEasingType::E_Quadratic, true ) ) m_easingFunction = easeOutQuad;
       else if ( drawRadio( "Cubic", E_TimeEasingType::E_Cubic, true ) ) m_easingFunction = easeOutCubic;
@@ -145,7 +150,9 @@ namespace nx
     {
       switch ( easingType )
       {
-        case E_TimeEasingType::E_None: m_easingFunction = useNone; break;
+        case E_TimeEasingType::E_Fixed:
+        case E_TimeEasingType::E_Time: m_easingFunction = useNone; break;
+
         case E_TimeEasingType::E_Quadratic: m_easingFunction = easeOutQuad; break;
         case E_TimeEasingType::E_Cubic: m_easingFunction = easeOutCubic; break;
         case E_TimeEasingType::E_Quartic: m_easingFunction = easeOutQuart; break;
@@ -279,7 +286,8 @@ namespace nx
 
     NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
     {
-      { E_TimeEasingType::E_None, "None" },
+      { E_TimeEasingType::E_Fixed, "Fixed" },
+      { E_TimeEasingType::E_Time, "None" },
       { E_TimeEasingType::E_Linear, "Linear" },
       { E_TimeEasingType::E_Quadratic, "Quadratic" },
       { E_TimeEasingType::E_Cubic, "Cubic" },
