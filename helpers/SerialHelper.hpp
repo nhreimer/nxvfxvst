@@ -38,6 +38,7 @@ namespace nx
         if ( e == E_ModifierType::E_FullMeshModifier ) return "FullMeshModifier";
         if ( e == E_ModifierType::E_RingZoneMeshModifier ) return "RingZoneMeshModifier";
         if ( e == E_ModifierType::E_PerlinDeformerModifier ) return "PerlinDeformerModifier";
+        if ( e == E_ModifierType::E_MirrorModifier ) return "MirrorModifier";
       }
 
       else if constexpr ( std::is_same_v< Enum, E_ShaderType > )
@@ -111,6 +112,7 @@ namespace nx
         if ( typeName == "FullMeshModifier" ) return E_ModifierType::E_FullMeshModifier;
         if ( typeName == "RingZoneMeshModifier" ) return E_ModifierType::E_RingZoneMeshModifier;
         if ( typeName == "PerlinDeformerModifier" ) return E_ModifierType::E_PerlinDeformerModifier;
+        if ( typeName == "MirrorModifier" ) return E_ModifierType::E_MirrorModifier;
         return E_ModifierType::E_InvalidModifier;
       }
       else if constexpr ( std::is_same_v< TEnum, E_BehaviorType > )

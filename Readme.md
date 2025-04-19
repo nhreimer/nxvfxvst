@@ -165,6 +165,7 @@ Applies post-processing shaders to the result of the modifier stack.
 |------------------|-------------|
 | Blur             |             |
 | Cosmic-Kaleido   |             |
+| Dual-Kawase Blur |             |
 | Density Heat Map |             |
 | Feedback         |             |
 | Glitch           |             |

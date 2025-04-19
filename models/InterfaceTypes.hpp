@@ -38,6 +38,7 @@ namespace nx
     E_FullMeshModifier,
     E_PerlinDeformerModifier,
     E_RingZoneMeshModifier,
+    E_MirrorModifier,
 
     E_TestModifier
   };

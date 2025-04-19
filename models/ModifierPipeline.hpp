@@ -5,7 +5,7 @@
 #include "models/modifier/PerlinDeformerModifier.hpp"
 #include "models/modifier/RingZoneMeshModifier.hpp"
 
-#include "models/modifier/TestModifier.hpp"
+#include "models/modifier/MirrorModifier.hpp"
 
 namespace nx
 {
@@ -67,6 +67,10 @@ public:
 
         case E_ModifierType::E_RingZoneMeshModifier:
           deserializeModifier< RingZoneMeshModifier >( modifierData );
+          break;
+
+        case E_ModifierType::E_MirrorModifier:
+          deserializeModifier< MirrorModifier >( modifierData );
           break;
 
         default:
@@ -195,24 +199,29 @@ private:
       MenuHelper::drawBlendOptions( m_blendMode );
       ImGui::NewLine();
 
-      if ( ImGui::Button( "Seq Line##1" ) )
-        createModifier< ParticleSequentialLineModifier >();
+      ImGui::SeparatorText( "Line Modifiers" );
+      {
+        if ( ImGui::Button( "Seq Line##1" ) )
+          createModifier< ParticleSequentialLineModifier >();
 
-      ImGui::SameLine();
-      if ( ImGui::Button( "Mesh Line##1" ) )
-        createModifier< ParticleFullMeshLineModifier >();
+        ImGui::SameLine();
+        if ( ImGui::Button( "Mesh Line##1" ) )
+          createModifier< ParticleFullMeshLineModifier >();
 
-      ImGui::SameLine();
-      if ( ImGui::Button( "Ring Zone Mesh##3" ) )
-        createModifier< RingZoneMeshModifier >();
+        ImGui::SameLine();
+        if ( ImGui::Button( "Ring Zone Mesh##3" ) )
+          createModifier< RingZoneMeshModifier >();
+      }
 
-      if ( ImGui::Button( "Perlin Deformer##3" ) )
-        createModifier< PerlinDeformerModifier >();
+      ImGui::SeparatorText( "Augmentation Modifiers" );
+      {
+        if ( ImGui::Button( "Perlin Deformer##3" ) )
+          createModifier< PerlinDeformerModifier >();
 
-#ifdef DEBUG
-      if ( ImGui::Button( "Test##3" ) )
-        createModifier< TestModifier >();
-#endif
+        ImGui::SameLine();
+        if ( ImGui::Button( "Mirror##3" ) )
+          createModifier< MirrorModifier >();
+      }
 
       ImGui::TreePop();
       ImGui::Spacing();
