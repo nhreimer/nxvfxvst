@@ -23,6 +23,11 @@ namespace nx
       // 1.5+	Lift post-blur darkening
       // 2.0+	Glowing nebula core vibes
       float brightness = 1.0f;
+
+      // u_mixFactor = 0.0 → No bloom
+      // u_mixFactor = 1.0 → Full bloom overlay
+      // u_mixFactor > 1.0 → Overdriven glow
+      float mixFactor = 1.0f;
     };
 
   public:
@@ -30,13 +35,14 @@ namespace nx
     explicit DualKawaseBlurShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) ||
+           !m_compositeShader.loadFromMemory( m_compositeFragmentShader, sf::Shader::Type::Fragment ) )
       {
-        LOG_ERROR( "Failed to load blur fragment shader" );
+        LOG_ERROR( "Failed to load dk blur fragment shader" );
       }
       else
       {
-        LOG_INFO( "loaded blur shader" );
+        LOG_INFO( "loaded dk blur shader" );
       }
     }
 
@@ -47,9 +53,16 @@ namespace nx
     nlohmann::json serialize() const override
     {
       return
-      {
+     {
           { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive }
+          { "passes", m_data.passes },
+          { "offset", m_data.offset },
+          { "bloomGain", m_data.bloomGain },
+          { "brightness", m_data.brightness },
+          { "mixFactor", m_data.mixFactor },
+          { "isActive", m_data.isActive },
+          { "easing", m_easing.serialize() },
+          { "midiTriggers", m_midiNoteControl.serialize() }
       };
     }
 
@@ -58,7 +71,11 @@ namespace nx
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
         m_data.isActive = j.value("isActive", false);
-        // m_data.sigma = j.value("sigma", 7.f);
+        m_data.passes = j.value("passes", 4);
+        m_data.offset = j.value("offset", 0.0f);
+        m_data.bloomGain = j.value("bloomGain", 1.0f);
+        m_data.brightness = j.value("brightness", 1.0f);
+        m_data.mixFactor = j.value("mixFactor", 1.0f);
         m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
         m_easing.deserialize( j[ "easing" ] );
       }
@@ -83,7 +100,7 @@ namespace nx
         ImGui::SliderFloat("Blur Offset", &m_data.offset, 0.5f, 4.0f);
         ImGui::SliderFloat("Bloom Gain", &m_data.bloomGain, 0.1f, 5.0f);
         ImGui::SliderFloat("Blur Brightness", &m_data.brightness, 0.1f, 3.0f);
-
+        ImGui::SliderFloat("Mix Factor", &m_data.mixFactor, 0.0f, 2.0f);
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -111,7 +128,8 @@ namespace nx
       if ( m_pingTexture.getSize() != inputTexture.getSize() )
       {
         if ( !m_pingTexture.resize( inputTexture.getSize() ) ||
-             !m_pongTexture.resize( inputTexture.getSize() ) )
+             !m_pongTexture.resize( inputTexture.getSize() ) ||
+             !m_compositeTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "Failed to resize DK Blur Texture(s) texture" );
         }
@@ -145,7 +163,16 @@ namespace nx
         std::swap(src, dst); // ping-pong
       }
 
-      return *src; // final output
+      // Composite final bloom with original
+      m_compositeTexture.clear();
+      m_compositeShader.setUniform("u_scene", inputTexture.getTexture());
+      m_compositeShader.setUniform("u_bloom", src->getTexture());
+      m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor);
+
+      m_compositeTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_compositeShader );
+      m_compositeTexture.display();
+
+      return m_compositeTexture;
     }
 
   private:
@@ -153,10 +180,12 @@ namespace nx
     const GlobalInfo_t& m_globalInfo;
 
     sf::Shader m_shader;
+    sf::Shader m_compositeShader;
 
-    // ping-pong texture strategy for n passes
+    // ping-pong texture strategy for n passes + composite for mixing
     sf::RenderTexture m_pingTexture;
     sf::RenderTexture m_pongTexture;
+    sf::RenderTexture m_compositeTexture;
 
     DKBlurData_t m_data;
 
@@ -186,6 +215,24 @@ void main() {
 
     gl_FragColor = vec4(color, 1.0);
 })";
+
+    inline static const std::string m_compositeFragmentShader = R"(uniform sampler2D u_scene;     // original render
+uniform sampler2D u_bloom;     // blurred bloom texture
+uniform float u_mixFactor;     // 0.0 = off, 1.0 = full blend, >1.0 = glow boost
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy / vec2(textureSize(u_scene, 0));
+
+    vec3 sceneColor = texture2D(u_scene, uv).rgb;
+    vec3 bloomColor = texture2D(u_bloom, uv).rgb;
+
+    // Blend bloom back into the original
+    vec3 finalColor = mix(sceneColor, sceneColor + bloomColor, u_mixFactor);
+
+    gl_FragColor = vec4(finalColor, 1.0);
+}
+)";
 
   };
 }

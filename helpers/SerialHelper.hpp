@@ -53,6 +53,8 @@ namespace nx
           case E_ShaderType::E_KaleidoscopeShader: return "KaleidoscopeShader";
           case E_ShaderType::E_SmearShader: return "SmearShader";
           case E_ShaderType::E_DensityHeatMapShader: return "DensityHeatMapShader";
+          case E_ShaderType::E_FeedbackShader: return "FeedbackShader";
+          case E_ShaderType::E_DualKawaseBlurShader: return "DualKawaseBlurShader";
           default: break;
         }
       }
@@ -99,6 +101,8 @@ namespace nx
         if ( typeName == "RumbleShader" ) return E_ShaderType::E_RumbleShader;
         if ( typeName == "SmearShader" ) return E_ShaderType::E_SmearShader;
         if ( typeName == "DensityHeatMapShader" ) return E_ShaderType::E_DensityHeatMapShader;
+        if ( typeName == "FeedbackShader" ) return E_ShaderType::E_FeedbackShader;
+        if ( typeName == "DualKawaseBlurShader" ) return E_ShaderType::E_DualKawaseBlurShader;
         return E_ShaderType::E_InvalidShader;
       }
       else if constexpr ( std::is_same_v< TEnum, E_ModifierType > )
