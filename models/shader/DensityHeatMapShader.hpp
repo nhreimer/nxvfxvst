@@ -7,36 +7,37 @@
 namespace nx
 {
 
-  struct DensityHeatMapData_t
-  {
-    bool isActive { true };
-    float falloff { 0.2f };
-
-    // 0    -> trail never fades (fully persistent)
-    // 255  -> instant erase (same as normal clear)
-    // 8–32 -> sweet spot for glowy echoes
-    // int32_t trailFadeAlpha { 8 };
-
-    sf::Color colorCoolStart { 0, 0, 0 };
-    sf::Color colorCoolEnd { 0, 0, 255 };
-
-    sf::Color colorWarmStart { 0, 0, 255 };
-    sf::Color colorWarmEnd { 0, 255, 255 };
-
-    sf::Color colorHotStart { 0, 255, 255 };
-    sf::Color colorHotEnd { 255, 255, 0 };
-
-    sf::Color colorMaxStart { 255, 255, 0 };
-    sf::Color colorMaxEnd { 255, 0, 0 };
-
-    // if (t < 0.25) return mix(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), t / 0.25);
-    // if (t < 0.5)  return mix(vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 1.0), (t - 0.25) / 0.25);
-    // if (t < 0.75) return mix(vec3(0.0, 1.0, 1.0), vec3(1.0, 1.0, 0.0), (t - 0.5) / 0.25);
-    // return mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0), (t - 0.75) / 0.25);
-  };
-
   class DensityHeatMapShader final : public IShader
   {
+
+    struct DensityHeatMapData_t
+    {
+      bool isActive { true };
+      float falloff { 0.2f };
+
+      // 0    -> trail never fades (fully persistent)
+      // 255  -> instant erase (same as normal clear)
+      // 8–32 -> sweet spot for glowy echoes
+      // int32_t trailFadeAlpha { 8 };
+
+      sf::Color colorCoolStart { 0, 0, 0 };
+      sf::Color colorCoolEnd { 0, 0, 255 };
+
+      sf::Color colorWarmStart { 0, 0, 255 };
+      sf::Color colorWarmEnd { 0, 255, 255 };
+
+      sf::Color colorHotStart { 0, 255, 255 };
+      sf::Color colorHotEnd { 255, 255, 0 };
+
+      sf::Color colorMaxStart { 255, 255, 0 };
+      sf::Color colorMaxEnd { 255, 0, 0 };
+
+      // if (t < 0.25) return mix(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), t / 0.25);
+      // if (t < 0.5)  return mix(vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 1.0), (t - 0.25) / 0.25);
+      // if (t < 0.75) return mix(vec3(0.0, 1.0, 1.0), vec3(1.0, 1.0, 0.0), (t - 0.5) / 0.25);
+      // return mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0), (t - 0.75) / 0.25);
+    };
+
   public:
     explicit DensityHeatMapShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
@@ -63,7 +64,15 @@ namespace nx
       {
           { "type", SerialHelper::serializeEnum( getType() ) },
           { "isActive", m_data.isActive },
-          { "falloff", m_data.falloff }
+          { "falloff", m_data.falloff },
+          { "colorCoolStart", SerialHelper::convertColorToJson( m_data.colorCoolStart ) },
+          { "colorCoolEnd", SerialHelper::convertColorToJson( m_data.colorCoolEnd ) },
+          { "colorWarmStart", SerialHelper::convertColorToJson( m_data.colorWarmStart ) },
+          { "colorWarmEnd", SerialHelper::convertColorToJson( m_data.colorWarmEnd ) },
+          { "colorHotStart", SerialHelper::convertColorToJson( m_data.colorHotStart ) },
+          { "colorHotEnd", SerialHelper::convertColorToJson( m_data.colorHotEnd ) },
+          { "colorMaxStart", SerialHelper::convertColorToJson( m_data.colorMaxStart ) },
+          { "colorMaxEnd", SerialHelper::convertColorToJson( m_data.colorMaxEnd ) },
       };
     }
 
@@ -73,6 +82,14 @@ namespace nx
       {
         m_data.isActive = j.value("isActive", false);
         m_data.falloff = j.value("falloff", 0.2f);
+        m_data.colorCoolStart = SerialHelper::convertColorFromJson( j.at( "colorCoolStart" ) );
+        m_data.colorCoolEnd = SerialHelper::convertColorFromJson( j.at( "colorCoolEnd" ) );
+        m_data.colorWarmStart = SerialHelper::convertColorFromJson( j.at( "colorWarmStart" ) );
+        m_data.colorWarmEnd = SerialHelper::convertColorFromJson( j.at( "colorWarmEnd" ) );
+        m_data.colorHotStart = SerialHelper::convertColorFromJson( j.at( "colorHotStart" ) );
+        m_data.colorHotEnd = SerialHelper::convertColorFromJson( j.at( "colorHotEnd" ) );
+        m_data.colorMaxStart = SerialHelper::convertColorFromJson( j.at( "colorMaxStart" ) );
+        m_data.colorMaxEnd = SerialHelper::convertColorFromJson( j.at( "colorMaxEnd" ) );
       }
       else
       {

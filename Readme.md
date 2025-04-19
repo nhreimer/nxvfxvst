@@ -145,12 +145,13 @@ Processes a stack of IParticleModifier objects sequentially. It modifies the par
     Those transformations can directly alter the Particles in a deque or add std::deque<sf::Drawable*>
     Renders output to an internal sf::RenderTexture that gets handed off to the shader pipeline 
 
-| Modifier Type        | Description |
-|----------------------|-------------|
-| Full Mesh Lines      |             |
-| Sequential Lines     |             |
-| Ring Zone Mesh Lines |             |
-| Perlin Deformer      |             |
+| Modifier Type        | Description        |
+|----------------------|--------------------|
+| Full Mesh Lines      |                    |
+| Sequential Lines     |                    |
+| Ring Zone Mesh Lines |                    |
+| Perlin Deformer      |                    |
+| Mirror               | CPU-side mirroring |
 
 ## ShaderPipeline
 

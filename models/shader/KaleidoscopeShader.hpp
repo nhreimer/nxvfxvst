@@ -5,34 +5,32 @@
 namespace nx
 {
 
-  struct KaleidoscopeData_t
-  {
-    bool isActive { true };
-
-    // Slices | Vibe
-    //--------|--------------------------
-    // 3–4    | Triangular shard symmetry
-    // 6–8    | Mandala snowflake bloom
-    // 12+    | Fractal kaleido insanity
-
-    float masterGain { 0.1f };
-    float slices { 6.f };
-    float swirlStrength { 1.f };
-    float swirlDensity { 1.f };
-
-    float pulseStrength { 0.2f };
-    float pulseFrequency { 10.f };
-    float pulseSpeed { 5.f };
-
-    float angleSteps { 32.f };
-    float radialStretch { 1.f };
-    float noiseStrength { 0.5f };
-  };
-
   class KaleidoscopeShader final : public IShader
   {
 
-    const static inline std::string m_typeName = "KaleidoscopeShader";
+    struct KaleidoscopeData_t
+    {
+      bool isActive { true };
+
+      // Slices | Vibe
+      //--------|--------------------------
+      // 3–4    | Triangular shard symmetry
+      // 6–8    | Mandala snowflake bloom
+      // 12+    | Fractal kaleido insanity
+
+      float masterGain { 0.1f };
+      float slices { 6.f };
+      float swirlStrength { 1.f };
+      float swirlDensity { 1.f };
+
+      float pulseStrength { 0.2f };
+      float pulseFrequency { 10.f };
+      float pulseSpeed { 5.f };
+
+      float angleSteps { 32.f };
+      float radialStretch { 1.f };
+      float noiseStrength { 0.5f };
+    };
 
   public:
 

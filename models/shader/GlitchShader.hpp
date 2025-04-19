@@ -5,28 +5,26 @@
 namespace nx
 {
 
-  struct GlitchData_t
-  {
-    bool isActive { true };
-
-    float glitchBaseStrength { 0.1f };   // this is adjustable
-    float glitchStrength { 1.f };       // [CALCULATED] How intense glitches are (0.0 to 1.0+)
-    float glitchAmount { 0.1f };        // How frequent glitches are (0.0 to 1.0)
-    float scanlineIntensity { 0.02f };  // Scanline brightness
-    float chromaFlickerAmount { 0.4f };  // 0.0 = off, 1.0 = frequent flickers
-    // float strobeAmount { 0.0f };         // 0.0 = no strobe, 1.0 = frequent
-    float pixelJumpAmount { 0.1f };      // 0.0 = off, 1.0 = chaos
-
-    float glitchPulseDecay { -0.5f };
-    float glitchPulseBoost { 1.f };
-
-    float bandCount { 20.f };            // smaller value = bigger chunks
-  };
-
   // deprecated: use the LayeredGlitchShader because it uses layered easings and is smoother
   class GlitchShader final : public IShader
   {
+    struct GlitchData_t
+    {
+      bool isActive { true };
 
+      float glitchBaseStrength { 0.1f };   // this is adjustable
+      float glitchStrength { 1.f };       // [CALCULATED] How intense glitches are (0.0 to 1.0+)
+      float glitchAmount { 0.1f };        // How frequent glitches are (0.0 to 1.0)
+      float scanlineIntensity { 0.02f };  // Scanline brightness
+      float chromaFlickerAmount { 0.4f };  // 0.0 = off, 1.0 = frequent flickers
+      // float strobeAmount { 0.0f };         // 0.0 = no strobe, 1.0 = frequent
+      float pixelJumpAmount { 0.1f };      // 0.0 = off, 1.0 = chaos
+
+      float glitchPulseDecay { -0.5f };
+      float glitchPulseBoost { 1.f };
+
+      float bandCount { 20.f };            // smaller value = bigger chunks
+    };
   public:
     explicit GlitchShader( const GlobalInfo_t& winfo )
       : m_winfo( winfo )

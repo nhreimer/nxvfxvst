@@ -3,31 +3,31 @@
 namespace nx
 {
 
-  struct SmearData_t
-  {
-    bool isActive { true };
-    float directionAngleInRadians { 0.f };
-    float length { 0.2f };                             // 0.0–1.0
-    float intensity { 0.5f };                          // blend amount
-    sf::Color tint { 255, 255, 255 };   // optional colorization
-    int sampleCount { 32 };                            // more = smoother, but slower
-
-    float jitterAmount { 0.0f };
-    float brightnessBoost{ 1.0f };
-    float brightnessPulse{ 1.f };
-    float falloffPower { 1.0f };
-
-    float wiggleAmplitude { 0.4f };    // in radians
-    float wiggleFrequency { 5.0f };    // Hz
-
-    float feedbackFade = 0.05f; // 0 = no fade, 1 = instant clear
-    sf::BlendMode feedbackBlendMode { sf::BlendAdd };
-
-    float feedbackRotation = 0.f;  // degrees
-  };
-
   class SmearShader final : public IShader
   {
+    struct SmearData_t
+    {
+      bool isActive { true };
+      float directionAngleInRadians { 0.f };
+      float length { 0.2f };                             // 0.0–1.0
+      float intensity { 0.5f };                          // blend amount
+      sf::Color tint { 255, 255, 255 };   // optional colorization
+      int sampleCount { 32 };                            // more = smoother, but slower
+
+      float jitterAmount { 0.0f };
+      float brightnessBoost{ 1.0f };
+      float brightnessPulse{ 1.f };
+      float falloffPower { 1.0f };
+
+      float wiggleAmplitude { 0.4f };    // in radians
+      float wiggleFrequency { 5.0f };    // Hz
+
+      float feedbackFade = 0.05f; // 0 = no fade, 1 = instant clear
+      sf::BlendMode feedbackBlendMode { sf::BlendAdd };
+
+      float feedbackRotation = 0.f;  // degrees
+    };
+
   public:
 
     explicit SmearShader( const GlobalInfo_t& globalInfo )

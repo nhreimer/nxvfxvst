@@ -200,7 +200,10 @@ namespace nx
       test::MidiGenerator { 2, 5000, m_onEvent },
       test::MidiGenerator { 3, 500, m_onEvent } };
 
-    GlobalInfo_t m_globalInfo;
+    GlobalInfo_t m_globalInfo
+    {
+      .bpm = 120.f
+    };
 
     sf::Clock m_timer;
 

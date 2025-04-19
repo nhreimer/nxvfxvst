@@ -4,20 +4,20 @@
 
 namespace nx
 {
-  struct RippleData_t
-  {
-    bool isActive { true };
-
-    float rippleCenterX { 0.5f };
-    float rippleCenterY { 0.5f };
-
-    float amplitude { 0.05f };    // calculated for us
-    float frequency { 10.0f };
-    float speed { 0.f };
-  };
-
   class RippleShader final : public IShader
   {
+    struct RippleData_t
+    {
+      bool isActive { true };
+
+      float rippleCenterX { 0.5f };
+      float rippleCenterY { 0.5f };
+
+      float amplitude { 0.05f };    // calculated for us
+      float frequency { 10.0f };
+      float speed { 0.f };
+    };
+
   public:
 
     explicit RippleShader( const GlobalInfo_t& globalInfo )

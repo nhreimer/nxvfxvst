@@ -4,6 +4,7 @@
 
 
 #include "models/shader/easings/CumulativeEasing.hpp"
+#include "shapes/BPMSelector.hpp"
 
 namespace nx
 {

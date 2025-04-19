@@ -5,18 +5,19 @@
 namespace nx
 {
 
-  struct BlurData_t
-  {
-    bool isActive { true };
-
-    float sigma { 7.f };
-    float brighten { 1.f };
-    float blurHorizontal { 0.1f };
-    float blurVertical { 0.1f };
-  };
-
   class BlurShader final : public IShader
   {
+
+    struct BlurData_t
+    {
+      bool isActive { true };
+
+      float sigma { 7.f };
+      float brighten { 1.f };
+      float blurHorizontal { 0.1f };
+      float blurVertical { 0.1f };
+    };
+
   public:
 
     explicit BlurShader( const GlobalInfo_t& globalInfo )

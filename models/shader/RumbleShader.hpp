@@ -5,27 +5,27 @@
 namespace nx
 {
 
-  struct RumbleData_t
-  {
-    bool isActive { true };
-
-    float rumbleStrength { 20.f };      // max px offset
-    float frequency { 40.f };           // wiggle speed
-    float pulseDecay { -5.f };          // how fast the shake fades
-    sf::Vector2f direction { 1.f, 1.f }; // shake X, Y
-    bool useNoise { false };            // toggle for noise mode
-
-    float modAmplitude { 0.5f };   //  0.0–1.0 wobble amount
-    float modFrequency { 10.f };   //  0.0–50.0 wobble speed
-    float colorDesync { 1.0f };    //  RGB shift multiplier
-
-    // adjust how much the colors come detach from the center of the particle
-    float baseColorDesync { 0.25f };
-    float maxColorDesync { 0.25f };
-  };
-
   class RumbleShader final : public IShader
   {
+    struct RumbleData_t
+    {
+      bool isActive { true };
+
+      float rumbleStrength { 20.f };      // max px offset
+      float frequency { 40.f };           // wiggle speed
+      float pulseDecay { -5.f };          // how fast the shake fades
+      sf::Vector2f direction { 1.f, 1.f }; // shake X, Y
+      bool useNoise { false };            // toggle for noise mode
+
+      float modAmplitude { 0.5f };   //  0.0–1.0 wobble amount
+      float modFrequency { 10.f };   //  0.0–50.0 wobble speed
+      float colorDesync { 1.0f };    //  RGB shift multiplier
+
+      // adjust how much the colors come detach from the center of the particle
+      float baseColorDesync { 0.25f };
+      float maxColorDesync { 0.25f };
+    };
+
   public:
 
     explicit RumbleShader( const GlobalInfo_t& globalInfo )

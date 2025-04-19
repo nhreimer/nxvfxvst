@@ -5,15 +5,16 @@
 namespace nx
 {
 
-  struct StrobeData_t
-  {
-    bool isActive { true };
-    float pulseSpeed { 20.f };
-    sf::Color targetColor { sf::Color::White };
-  };
-
   class StrobeShader final : public IShader
   {
+
+    struct StrobeData_t
+    {
+      bool isActive { true };
+      float pulseSpeed { 20.f };
+      sf::Color targetColor { sf::Color::White };
+    };
+
   public:
     explicit StrobeShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )

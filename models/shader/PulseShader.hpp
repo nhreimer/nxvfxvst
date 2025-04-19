@@ -5,18 +5,18 @@
 namespace nx
 {
 
-  struct PulseData_t
-  {
-    bool isActive { true };
-    float threshold { 0.8f };
-
-    float glowIntensity { 1.2f };
-    float burstMultiplier { 1.5f };
-    float basePulseThreshold { 0.1f };
-  };
-
   class PulseShader final : public IShader
   {
+    struct PulseData_t
+    {
+      bool isActive { true };
+      float threshold { 0.8f };
+
+      float glowIntensity { 1.2f };
+      float burstMultiplier { 1.5f };
+      float basePulseThreshold { 0.1f };
+    };
+
   public:
 
     explicit PulseShader( const GlobalInfo_t& globalInfo )
