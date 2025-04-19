@@ -15,8 +15,9 @@ namespace nx
     {
       bool isActive { true };
 
-      // 0    -> trail never fades (fully persistent)
+      // 0 -> trail never fades (fully persistent)
       int32_t trailFadeAlpha { 8 };
+      sf::Color fadeColor { sf::Color::Black };
     };
 
   public:
@@ -36,7 +37,8 @@ namespace nx
       {
           { "type", SerialHelper::serializeEnum( getType() ) },
           { "isActive", m_data.isActive },
-           { "trailFadeAlpha", m_data.trailFadeAlpha }
+           { "trailFadeAlpha", m_data.trailFadeAlpha },
+        { "fadeColor", SerialHelper::convertColorToJson( m_data.fadeColor ) }
       };
     }
 
@@ -46,6 +48,7 @@ namespace nx
       {
         m_data.isActive = j.value("isActive", false);
         m_data.trailFadeAlpha = j.value("trailFadeAlpha", 0);
+        m_data.fadeColor = SerialHelper::convertColorFromJson( j.at( "fadeColor" ), sf::Color::Black );
       }
       else
       {
@@ -61,6 +64,7 @@ namespace nx
       {
         ImGui::Checkbox( "Feedback Active##1", &m_data.isActive );
         ImGui::SliderInt("Fade Factor (Feedback)", &m_data.trailFadeAlpha, 0, 255);
+        ColorHelper::drawImGuiColorEdit3( "Fade Color", m_data.fadeColor );
 
         if ( ImGui::SmallButton( "Clear" ) )
           m_outputTexture.clear( sf::Color::Transparent );
@@ -93,7 +97,10 @@ namespace nx
 
       // Resize fade quad
       m_fadeQuad.setSize(targetSize);
-      m_fadeQuad.setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(m_data.trailFadeAlpha)));
+      m_fadeQuad.setFillColor(sf::Color(m_data.fadeColor.r,
+                                            m_data.fadeColor.g,
+                                            m_data.fadeColor.b,
+                                            static_cast<uint8_t>(m_data.trailFadeAlpha)));
 
       // Step 1: Fade out previous trail
       m_outputTexture.draw(m_fadeQuad, sf::BlendAlpha);

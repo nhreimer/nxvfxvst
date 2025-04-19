@@ -146,7 +146,7 @@ namespace nx
       m_pingTexture.draw(sf::Sprite(inputTexture.getTexture()));
       m_pingTexture.display();
 
-      auto easing = m_easing.getEasing();
+      const auto easing = m_easing.getEasing();
 
       for (int i = 0; i < m_data.passes; ++i)
       {
