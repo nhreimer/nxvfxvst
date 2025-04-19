@@ -146,6 +146,8 @@ namespace nx
       m_pingTexture.draw(sf::Sprite(inputTexture.getTexture()));
       m_pingTexture.display();
 
+      auto easing = m_easing.getEasing();
+
       for (int i = 0; i < m_data.passes; ++i)
       {
         dst->clear();
@@ -153,8 +155,8 @@ namespace nx
         m_shader.setUniform("u_texture", src->getTexture());
         m_shader.setUniform("u_texelSize", sf::Glsl::Vec2(1.f / inputTexture.getSize().x, 1.f / inputTexture.getSize().y));
         m_shader.setUniform("u_offset", m_data.offset + i); // optional increase per pass
-        m_shader.setUniform("u_bloomGain", m_data.bloomGain);     // user/MIDI-driven
-        m_shader.setUniform("u_brightness", m_data.brightness);   // compensate blur
+        m_shader.setUniform("u_bloomGain", m_data.bloomGain * easing);     // user/MIDI-driven
+        m_shader.setUniform("u_brightness", m_data.brightness * easing);   // compensate blur
 
 
         dst->draw(sf::Sprite(src->getTexture()), &m_shader);
@@ -167,7 +169,7 @@ namespace nx
       m_compositeTexture.clear();
       m_compositeShader.setUniform("u_scene", inputTexture.getTexture());
       m_compositeShader.setUniform("u_bloom", src->getTexture());
-      m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor);
+      m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor * easing);
 
       m_compositeTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_compositeShader );
       m_compositeTexture.display();
