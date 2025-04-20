@@ -31,6 +31,9 @@ namespace nx
       m_particleBehaviors.clear();
       for ( const auto& data : j )
       {
+        if ( !j.contains( "type" ) )
+          continue;
+
         const auto type =
           SerialHelper::deserializeEnum< E_BehaviorType >( data.value("type", "" ) );
         switch ( type )

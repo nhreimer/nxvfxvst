@@ -49,6 +49,9 @@ public:
     m_modifiers.clear();
     for ( const auto& modifierData : j )
     {
+      if ( !j.contains( "type" ) )
+        continue;
+
       const auto type =
         SerialHelper::deserializeEnum< E_ModifierType >( j );
       switch ( type )
