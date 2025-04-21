@@ -112,7 +112,12 @@ namespace nx
 
     void addMidiEvent( const Midi_t &midiEvent ) override
     {
-      drawLSystem( m_globalInfo.windowHalfSize,
+      // 127 - 21 = full pitch range
+      const auto offsetX = midiEvent.pitch / 106.f;
+      const sf::Vector2f position = { m_globalInfo.windowSize.x * offsetX,
+                                        m_globalInfo.windowSize.y * offsetX };
+
+      drawLSystem( position, // m_globalInfo.windowHalfSize,
                    m_data.initialAngleDeg,
                    m_data.depth,
                    midiEvent );
