@@ -25,6 +25,7 @@ namespace nx
 {
   class ChannelPipeline final
   {
+
   public:
 
     explicit ChannelPipeline( const GlobalInfo_t& globalInfo )

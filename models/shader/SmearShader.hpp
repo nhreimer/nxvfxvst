@@ -19,8 +19,8 @@ namespace nx
       float brightnessPulse{ 1.f };
       float falloffPower { 1.0f };
 
-      float wiggleAmplitude { 0.4f };    // in radians
-      float wiggleFrequency { 5.0f };    // Hz
+      float wiggleAmplitude { 0.0f };    // in radians
+      float wiggleFrequency { 0.0f };    // Hz
 
       float feedbackFade = 0.05f; // 0 = no fade, 1 = instant clear
       sf::BlendMode feedbackBlendMode { sf::BlendAdd };

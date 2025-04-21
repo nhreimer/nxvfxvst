@@ -176,6 +176,10 @@ namespace nx
           shader = deserializeShader< DualKawaseBlurShader >( j );
           break;
 
+        case E_ShaderType::E_TransformShader:
+          shader = deserializeShader< TransformShader >( j );
+          break;
+
         default:
           LOG_ERROR( "Unsupported shader type" );
           break;
