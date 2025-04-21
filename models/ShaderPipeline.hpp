@@ -12,6 +12,7 @@
 #include "models/shader/RumbleShader.hpp"
 #include "models/shader/SmearShader.hpp"
 #include "models/shader/StrobeShader.hpp"
+#include "models/shader/TransformShader.hpp"
 
 namespace nx
 {
@@ -208,16 +209,22 @@ namespace nx
       {
         ImGui::SeparatorText( "Utilities" );
         {
+          if ( ImGui::Button( "Feedback##1" ) )
+            createShader< FeedbackShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Transform##1" ) )
+            createShader< TransformShader >();
+        }
+
+        ImGui::SeparatorText( "Blur" );
+        {
           if ( ImGui::Button( "Blur##1" ) )
             createShader< BlurShader >();
 
           ImGui::SameLine();
           if ( ImGui::Button( "DK Blur##1" ) )
             createShader< DualKawaseBlurShader >();
-
-          ImGui::SameLine();
-          if ( ImGui::Button( "Feedback##1" ) )
-            createShader< FeedbackShader >();
         }
 
         ImGui::SeparatorText( "Impact" );
