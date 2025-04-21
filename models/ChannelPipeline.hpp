@@ -210,6 +210,8 @@ namespace nx
 
     const GlobalInfo_t& m_globalInfo;
 
+    std::atomic< bool > m_isReady { false };
+
     nlohmann::json m_tempSettings;
 
     // the blend mode is important in case there are multiple channel pipelines

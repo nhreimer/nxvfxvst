@@ -29,7 +29,7 @@ namespace nx
     {
       ImGui::Text( "Particles: %d", m_particles.size() );
       ImGui::Separator();
-      if ( ImGui::TreeNode( "Particle Layout " ) )
+      if ( ImGui::TreeNode( "Spiral Layout " ) )
       {
         ParticleHelper::drawMenu( m_data );
         ImGui::Separator();

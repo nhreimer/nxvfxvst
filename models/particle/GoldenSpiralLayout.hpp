@@ -8,16 +8,18 @@ namespace nx
 
   struct GoldenSpiralLayoutData_t : public ParticleLayoutData_t
   {
-    int depth = 100; // Total number of particles
+    int depth = 3; // Total number of particles
     float scaleFactor = 1.1f; // How much each radius increases
     float angleOffset = 0.f; // Rotate the whole spiral
     float baseRadius = 3.f; // radius of circle
 
     float spiralTightness = 1.f;
     bool useClamp = false;
-    bool useRadiusFalloff = false;
     bool spiralInward = false;
+
+    // the following two are disabled
     float radiusFalloff = 0.98f;
+    bool useRadiusFalloff = false;
   };
 
   /// this is useful for adding time-based effects to a screen without
@@ -33,7 +35,6 @@ namespace nx
     nlohmann::json serialize() const override
     {
       auto j = ParticleHelper::serialize(m_data, SerialHelper::serializeEnum(getType()));
-      // TODO: insert components of this layout here
       j[ "depth" ] = m_data.depth;
       j[ "scaleFactor" ] = m_data.scaleFactor;
       j[ "angleOffset" ] = m_data.angleOffset;
@@ -62,7 +63,7 @@ namespace nx
         m_data.useClamp = j["useClamp"].get<bool>();
         m_data.spiralTightness = j["spiralTightness"].get<float>();
         m_data.spiralInward = j["spiralInward"].get<bool>();
-        m_data.useRadiusFalloff = j["useRadiusFalloff"].get<float>();
+        m_data.useRadiusFalloff = j["useRadiusFalloff"].get<bool>();
       }
       else
       {
@@ -73,18 +74,19 @@ namespace nx
         m_behaviorPipeline.loadModifierPipeline(j.at("behaviors"));
     }
 
+    [[nodiscard]]
     E_LayoutType getType() const override { return E_LayoutType::E_GoldenSpiralLayout; }
 
     void drawMenu() override
     {
       ImGui::Text("Particles: %zu", m_particles.size());
       ImGui::Separator();
-      if (ImGui::TreeNode("Test Particle Layout"))
+      if (ImGui::TreeNode("Golden Spiral Layout"))
       {
         ParticleHelper::drawMenu(*reinterpret_cast< ParticleLayoutData_t * >(&m_data));
 
         ImGui::Separator();
-        ImGui::SliderInt("Particle Count", &m_data.depth, 10, 1000);
+        ImGui::SliderInt("Particle Count", &m_data.depth, 1, 100);
         ImGui::SliderFloat("Base Radius", &m_data.baseRadius, 0.01f, 10.f);
         ImGui::SliderFloat("Scale Factor", &m_data.scaleFactor, 1.01f, 2.0f);
         ImGui::SliderFloat("Angle Offset", &m_data.angleOffset, 0.f, 360.f);
@@ -93,8 +95,8 @@ namespace nx
         ImGui::SliderFloat("Tightness", &m_data.spiralTightness, 0.1f, 2.0f);
         ImGui::Checkbox("Use Clamp", &m_data.useClamp);
         ImGui::Checkbox("Spiral Inward", &m_data.spiralInward);
-        ImGui::Checkbox("Shrink Outer Particles", &m_data.useRadiusFalloff);
-        ImGui::SliderFloat("Radius Falloff", &m_data.radiusFalloff, 0.01f, 2.0f);
+        //ImGui::Checkbox("Shrink Outer Particles", &m_data.useRadiusFalloff);
+        //ImGui::SliderFloat("Radius Falloff", &m_data.radiusFalloff, 0.01f, 2.0f);
 
         ImGui::Separator();
         m_behaviorPipeline.drawMenu();
@@ -106,28 +108,37 @@ namespace nx
 
     void addMidiEvent(const Midi_t &midiEvent) override
     {
-      for (int i = 0; i < m_data.depth; ++i)
+
+      const auto pitchSlices = static_cast< int32_t >( midiEvent.pitch / static_cast< float >( m_data.depth ) );
+
+      for ( int32_t i = 1; i <= m_data.depth; ++i )
       {
-        auto * p = m_particles.emplace_back(new TimedParticle_t());
-        const auto pos = getSpiralPosition( i, m_data.depth );
+        auto * p = m_particles.emplace_back( new TimedParticle_t() );
+        const auto pos = getSpiralPosition( i * pitchSlices, m_data.depth );
         p->shape.setPosition( pos );
         ParticleLayoutBase::initializeParticle( p, midiEvent );
-
-        if ( m_data.useRadiusFalloff )
-          p->shape.setRadius( m_data.baseRadius * std::pow(m_data.radiusFalloff, i) );
-        else
-          p->shape.setRadius(m_data.baseRadius);
       }
+
+      // auto * p = m_particles.emplace_back( new TimedParticle_t() );
+      // const auto pos = getSpiralPosition( midiEvent.pitch, m_data.depth );
+      // p->shape.setPosition( pos );
+      // ParticleLayoutBase::initializeParticle( p, midiEvent );
+
+      // if ( m_data.useRadiusFalloff )
+      //   p->shape.setRadius( m_data.baseRadius * std::pow(m_data.radiusFalloff, midiEvent.pitch) );
+      // else
+      //   p->shape.setRadius(m_data.baseRadius);
     }
 
   private:
 
+    [[nodiscard]]
     sf::Vector2f getSpiralPosition( const int index,
                                     const int total ) const
     {
       const int i = m_data.spiralInward ? (total - 1) - index : index;
 
-      const float angleDeg = i * GOLDEN_ANGLE_DEG * m_data.spiralTightness + m_data.angleOffset;
+      const float angleDeg = static_cast< float >( i ) * GOLDEN_ANGLE_DEG * m_data.spiralTightness + m_data.angleOffset;
       const float angleRad = angleDeg * NX_D2R; //(3.14159265f / 180.f);
 
       float radius = 0.f;
@@ -139,7 +150,7 @@ namespace nx
         if (radius > maxR)
         {
           float t = (radius - maxR) / maxR;
-          radius = maxR + std::sin(t * 3.14f) * 20.f; // optional ripple-style squish
+          radius = maxR + std::sin(t * NX_PI) * 20.f; // optional ripple-style squish
         }
       }
       else

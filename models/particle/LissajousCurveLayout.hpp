@@ -94,8 +94,8 @@ namespace nx
 
       const float localT = m_globalInfo.elapsedTimeSeconds;
 
-      const float x = ( m_globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
-      const float y = ( m_globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * localT);
+      const float x = ( static_cast< float >( m_globalInfo.windowSize.x ) * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
+      const float y = ( static_cast< float >( m_globalInfo.windowSize.y ) * m_data.phaseSpread ) * sin(b * localT);
 
       auto * p = m_particles.emplace_back( new TimedParticle_t() );
       p->shape.setPosition( { x, y } );
