@@ -10,7 +10,14 @@ namespace nx
     float lineThickness{ 2.f };
     float swellFactor { 1.5f  };
     float easeDownInSeconds { 1.f };
-    // add is the default given the default shader and texture usage
+
+    bool useParticleColors { false };
+    sf::Color lineColor = sf::Color(255, 255, 255, 100);
+    sf::Color otherLineColor = sf::Color(255, 255, 255, 100);
+
+    // TODO: this is probably not in use anymore.
+    // TODO: ModifierPipeline has a global modifier blend option that seems
+    // TODO: to be used
     sf::BlendMode blendMode { sf::BlendNone };
   };
 

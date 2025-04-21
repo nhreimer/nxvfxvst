@@ -4,6 +4,7 @@
 #include "models/data/ParticleLineData_t.hpp"
 
 #include "helpers/CommonHeaders.hpp"
+#include "helpers/ColorHelper.hpp"
 
 namespace nx
 {
@@ -22,7 +23,14 @@ namespace nx
         ImGui::Checkbox( "Connect##1", &m_data.isActive );
         ImGui::SliderFloat( "Thickness##1", &m_data.lineThickness, 1.f, 100.f, "Thickness %0.2f" );
 
-        MenuHelper::drawBlendOptions( m_data.blendMode );
+        ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
+
+        if ( !m_data.useParticleColors )
+        {
+          ColorHelper::drawImGuiColorEdit4( "Line Color", m_data.lineColor );
+          ColorHelper::drawImGuiColorEdit4( "Other Line Color", m_data.otherLineColor );
+        }
+        //MenuHelper::drawBlendOptions( m_data.blendMode );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -82,15 +90,33 @@ namespace nx
 
           if ( particles[ i ]->timeLeft > particles[ i - 1 ]->timeLeft )
           {
-            line->setGradient( particles[ i ]->shape.getFillColor(),
-                             particles[ i - 1 ]->shape.getFillColor() );
+            setLineColors( line, particles[ i ], particles[ i - 1 ] );
+            // line->setGradient( particles[ i ]->shape.getFillColor(),
+            //                  particles[ i - 1 ]->shape.getFillColor() );
           }
           else
           {
-            line->setGradient( particles[ i - 1 ]->shape.getFillColor(),
-                              particles[ i ]->shape.getFillColor() );
+            setLineColors( line, particles[ i - 1 ], particles[ i ] );
+            // line->setGradient( particles[ i - 1 ]->shape.getFillColor(),
+            //                   particles[ i ]->shape.getFillColor() );
           }
         }
+      }
+    }
+
+  private:
+
+    void setLineColors( GradientLine * line,
+                        const TimedParticle_t * pointA,
+                        const TimedParticle_t * pointB ) const
+    {
+      if ( m_data.useParticleColors )
+      {
+        line->setGradient( pointA->shape.getFillColor(), pointB->shape.getFillColor() );
+      }
+      else
+      {
+        line->setGradient( m_data.lineColor, m_data.otherLineColor );
       }
     }
 

@@ -17,6 +17,10 @@ namespace nx
       bool useDynamicRadius = false;
       float dynamicRadius = 1.f;
       float angleOffsetDegrees = 0.f;
+      bool useParticleColors = false;
+
+      sf::Color mirrorColor = sf::Color::White;
+      sf::Color mirrorOutlineColor = sf::Color::White;
     };
 
   public:
@@ -74,6 +78,13 @@ namespace nx
         ImGui::Checkbox( "Velocity Radius", &m_data.useDynamicRadius );
         ImGui::SliderFloat( "Mirror Velocity Amplifier", &m_data.dynamicRadius, 0.f, 5.f);
 
+        ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
+        if ( !m_data.useParticleColors )
+        {
+          ColorHelper::drawImGuiColorEdit4( "Mirrored Color", m_data.mirrorColor );
+          ColorHelper::drawImGuiColorEdit4( "Mirrored Outline Color", m_data.mirrorOutlineColor );
+        }
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -107,19 +118,26 @@ namespace nx
         for (int i = 0; i < m_data.count; ++i)
         {
           const float angle = baseAngle + angleOffsetRad + i * (2.f * NX_PI / m_data.count);
-          const sf::Vector2f mirrorPos = {
+          const sf::Vector2f mirrorPos =
+          {
             origin.x + std::cos(angle) * radius,
             origin.y + std::sin(angle) * radius
-        };
+          };
 
           auto* shape = new sf::CircleShape(p->shape); // copy
-          auto fillColor = shape->getFillColor();
+          auto fillColor = m_data.useParticleColors
+            ? shape->getFillColor()
+            : m_data.mirrorColor;
+
           fillColor.a = static_cast< uint8_t >(fillColor.a * m_data.mirrorAlpha);
           shape->setFillColor(fillColor);
 
           if ( shape->getOutlineThickness() > 0.f )
           {
-            auto outlineColor = shape->getOutlineColor();
+            auto outlineColor = m_data.useParticleColors
+              ? shape->getOutlineColor()
+              : m_data.mirrorOutlineColor;
+
             outlineColor.a = static_cast< uint8_t >(outlineColor.a * m_data.mirrorAlpha);
             shape->setOutlineColor(outlineColor);
           }

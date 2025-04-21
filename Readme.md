@@ -230,7 +230,9 @@ Available Easing Types
 ```text 
 Name	          Description
 -----------------------------------------------------------------------------------------------
-None              Uses elapsed time
+Fixed             Uses a predetermined value that doesn't change
+Time Continuous   Uses elapsed time without resetting
+Time Intervallic  Uses elapsed time with resetting
 Linear	          Constant rate of change. No curve — useful for mechanical or unstyled fades.
 Quadratic	  Accelerates or decelerates quickly. Good for soft ease-ins/outs.
 Cubic	          More dramatic curve than quadratic. Smoother transitions with more tension.

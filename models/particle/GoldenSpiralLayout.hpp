@@ -108,8 +108,8 @@ namespace nx
 
     void addMidiEvent(const Midi_t &midiEvent) override
     {
-
-      const auto pitchSlices = static_cast< int32_t >( midiEvent.pitch / static_cast< float >( m_data.depth ) );
+      const auto pitchSlices =
+        static_cast< int32_t >( midiEvent.pitch / static_cast< float >( m_data.depth ) );
 
       for ( int32_t i = 1; i <= m_data.depth; ++i )
       {
@@ -118,16 +118,6 @@ namespace nx
         p->shape.setPosition( pos );
         ParticleLayoutBase::initializeParticle( p, midiEvent );
       }
-
-      // auto * p = m_particles.emplace_back( new TimedParticle_t() );
-      // const auto pos = getSpiralPosition( midiEvent.pitch, m_data.depth );
-      // p->shape.setPosition( pos );
-      // ParticleLayoutBase::initializeParticle( p, midiEvent );
-
-      // if ( m_data.useRadiusFalloff )
-      //   p->shape.setRadius( m_data.baseRadius * std::pow(m_data.radiusFalloff, midiEvent.pitch) );
-      // else
-      //   p->shape.setRadius(m_data.baseRadius);
     }
 
   private:
@@ -145,12 +135,12 @@ namespace nx
       if ( m_data.useClamp )
       {
         radius = m_data.baseRadius * std::pow(m_data.scaleFactor, index);
-        float maxR = m_globalInfo.windowSize.x * 0.45f;
+        const float maxR = m_globalInfo.windowSize.x * 0.45f;
 
-        if (radius > maxR)
+        if ( radius > maxR )
         {
-          float t = (radius - maxR) / maxR;
-          radius = maxR + std::sin(t * NX_PI) * 20.f; // optional ripple-style squish
+          const float t = (radius - maxR) / maxR;
+          radius = maxR + std::sin( t * NX_PI ) * 20.f; // optional ripple-style squish
         }
       }
       else
@@ -158,8 +148,8 @@ namespace nx
 
       return
       {
-        m_globalInfo.windowHalfSize.x + std::cos(angleRad) * radius,
-        m_globalInfo.windowHalfSize.y + std::sin(angleRad) * radius
+        m_globalInfo.windowHalfSize.x + std::cos( angleRad ) * radius,
+        m_globalInfo.windowHalfSize.y + std::sin( angleRad ) * radius
       };
     }
 

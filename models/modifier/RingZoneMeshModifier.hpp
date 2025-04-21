@@ -93,6 +93,8 @@ namespace nx
           ImGui::SliderFloat("Max Alpha", &m_data.maxAlpha, 0.f, 255.f);
         }
 
+        ImGui::SeparatorText( "Blend Options" );
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -131,7 +133,7 @@ namespace nx
       std::map< int, std::vector< TimedParticle_t * > > rings;
       for (auto *p: particles)
       {
-        float dist = length(p->shape.getPosition() - center);
+        const float dist = length(p->shape.getPosition() - center);
         int ringIdx = static_cast< int >(dist / m_data.ringSpacing);
         rings[ ringIdx ].push_back(p);
       }
@@ -194,11 +196,11 @@ namespace nx
     }
 
   private:
-    float length(const sf::Vector2f &v) const { return std::sqrt(v.x * v.x + v.y * v.y); }
+    static float length(const sf::Vector2f &v) { return std::sqrt(v.x * v.x + v.y * v.y); }
 
-    float angleFromCenter(const sf::Vector2f &center, const sf::Vector2f &pos) const
+    static float angleFromCenter(const sf::Vector2f &center, const sf::Vector2f &pos)
     {
-      sf::Vector2f d = pos - center;
+      const sf::Vector2f d = pos - center;
       return std::atan2(d.y, d.x);
     }
 

@@ -16,6 +16,9 @@ namespace nx
       float colorFade = 1.f;        // how to fade the color
       E_NoiseType noiseType = E_NoiseType::E_FBM;
       int32_t octaves { 4 }; // FBM only
+
+      bool useParticleColors { false };
+      sf::Color perlinColor = sf::Color(255, 255, 255, 100);
     };
 
   public:
@@ -72,6 +75,11 @@ namespace nx
         ImGui::SliderFloat("Time Speed", &m_data.timeScale, 0.f, 5.f);
         ImGui::SliderFloat("Color fade", &m_data.colorFade, 0.f, 1.f);
 
+        ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
+
+        if ( !m_data.useParticleColors )
+          ColorHelper::drawImGuiColorEdit4( "Line Color", m_data.perlinColor );
+
         if ( m_data.noiseType == E_NoiseType::E_FBM )
           ImGui::SliderInt( "FBM Octave", &m_data.octaves, 1, 8 );
 
@@ -121,7 +129,10 @@ namespace nx
           outArtifacts.emplace_back( new sf::CircleShape( particles[ i ]->shape ) ) );
 
         copiedShape->setPosition( warpedPos );
-        const auto color = copiedShape->getFillColor();
+        const auto color = ( m_data.useParticleColors )
+          ? copiedShape->getFillColor()
+          : m_data.perlinColor;
+
         copiedShape->setFillColor( { color.r, color.g, color.b, static_cast< uint8_t >(color.a * m_data.colorFade) } );
       }
     }

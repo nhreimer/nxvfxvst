@@ -52,7 +52,15 @@ namespace nx
         ImGui::Checkbox( "Connect##1", &m_data.isActive );
         ImGui::SliderFloat( "Thickness##1", &m_data.lineThickness, 1.f, 100.f, "Thickness %0.2f" );
 
-        MenuHelper::drawBlendOptions( m_data.blendMode );
+        // MenuHelper::drawBlendOptions( m_data.blendMode );
+
+        ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
+
+        if ( !m_data.useParticleColors )
+        {
+          ColorHelper::drawImGuiColorEdit4( "Line Color", m_data.lineColor );
+          ColorHelper::drawImGuiColorEdit4( "Other Line Color", m_data.otherLineColor );
+        }
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -78,15 +86,33 @@ namespace nx
 
           if ( particles[ y ]->timeLeft > particles[ i ]->timeLeft )
           {
-            line->setGradient( particles[ y ]->shape.getFillColor(),
-                             particles[ i ]->shape.getFillColor() );
+            setLineColors( line, particles[ y ], particles[ i ] );
+            // line->setGradient( particles[ y ]->shape.getFillColor(),
+            //                  particles[ i ]->shape.getFillColor() );
           }
           else
           {
-            line->setGradient( particles[ i ]->shape.getFillColor(),
-                              particles[ y ]->shape.getFillColor() );
+            setLineColors( line, particles[ i ], particles[ y ] );
+            // line->setGradient( particles[ i ]->shape.getFillColor(),
+            //                   particles[ y ]->shape.getFillColor() );
           }
         }
+      }
+    }
+
+  private:
+
+    void setLineColors( GradientLine * line,
+                        const TimedParticle_t * pointA,
+                        const TimedParticle_t * pointB ) const
+    {
+      if ( m_data.useParticleColors )
+      {
+        line->setGradient( pointA->shape.getFillColor(), pointB->shape.getFillColor() );
+      }
+      else
+      {
+        line->setGradient( m_data.lineColor, m_data.otherLineColor );
       }
     }
 

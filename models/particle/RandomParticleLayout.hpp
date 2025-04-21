@@ -19,7 +19,7 @@ public:
   {
     ImGui::Text( "Particles: %d", m_particles.size() );
     ImGui::Separator();
-    if ( ImGui::TreeNode( "Particle Layout " ) )
+    if ( ImGui::TreeNode( "Random Layout " ) )
     {
       ParticleHelper::drawMenu( m_data );
 
