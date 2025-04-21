@@ -186,6 +186,22 @@ namespace nx
           j.value("a", defaultColor.a)
       );
     }
+
+    template < typename TValue >
+    static std::string convertVec2ToJSON( const sf::Vector2< TValue >& vec )
+    {
+      return
+      {
+        { "x", vec.x },
+        { "y", vec.y }
+      };
+    }
+
+    template < typename TValue >
+    static sf::Vector2< TValue > convertVec2FromJSON( const nlohmann::json& j )
+    {
+      return sf::Vector2< TValue > { j.value( "x", 0 ), j.value( "y", 0 ) };
+    }
   };
 
 }

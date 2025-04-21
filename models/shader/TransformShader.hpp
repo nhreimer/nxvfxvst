@@ -30,9 +30,33 @@ namespace nx
     }
 
     [[nodiscard]]
-    nlohmann::json serialize() const override { return {}; }
+    nlohmann::json serialize() const override
+    {
+      return
+      {
+          { "type", SerialHelper::serializeEnum( getType() ) },
+          { "isActive", m_data.isActive },
+          { "rotationDegrees", m_data.rotationDegrees },
+          { "flipX", m_data.flipX },
+          { "flipY", m_data.flipY },
+          { "scale", m_data.scale },
+          { "shift", SerialHelper::convertVectorToJson< float >( m_data.shift ) },
+          { "easing", m_easing.serialize() },
+          { "midiTriggers", m_midiNoteControl.serialize() }
+      };
+    }
 
-    void deserialize(const nlohmann::json &j) override {}
+    void deserialize(const nlohmann::json &j) override
+    {
+      m_data.isActive = j.value("isActive", false);
+      m_data.rotationDegrees = j.value("rotationDegrees", 0.f);
+      m_data.shift = SerialHelper::convertVectorFromJson< float >( "shift" );
+      m_data.flipX = j.value("flipX", false);
+      m_data.flipY = j.value("flipY", false);
+      m_data.scale = j.value("scale", 1.f);
+      m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+      m_easing.deserialize( j[ "easing" ] );
+    }
 
     [[nodiscard]]
     E_ShaderType getType() const override { return E_ShaderType::E_TransformShader; }
@@ -41,7 +65,8 @@ namespace nx
 
     void trigger(const Midi_t &midi) override
     {
-      m_easing.trigger();
+      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
+        m_easing.trigger();
     }
 
     void drawMenu() override
@@ -69,6 +94,8 @@ namespace nx
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();
+
+        m_midiNoteControl.drawMenu();
 
         ImGui::TreePop();
         ImGui::Spacing();
