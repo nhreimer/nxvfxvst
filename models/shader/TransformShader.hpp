@@ -39,7 +39,10 @@ namespace nx
 
     void update(const sf::Time &deltaTime) override {}
 
-    void trigger(const Midi_t &midi) override {}
+    void trigger(const Midi_t &midi) override
+    {
+      m_easing.trigger();
+    }
 
     void drawMenu() override
     {
@@ -63,6 +66,9 @@ namespace nx
         ImGui::Checkbox("Flip X", &m_data.flipX);
         ImGui::SameLine();
         ImGui::Checkbox("Flip Y", &m_data.flipY);
+
+        ImGui::SeparatorText( "Easings" );
+        m_easing.drawMenu();
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -93,10 +99,12 @@ namespace nx
         }
       }
 
+      auto const easing = m_easing.getEasing();
+
       m_shader.setUniform("u_texture", inputTexture.getTexture());
       m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
       m_shader.setUniform("u_offset", sf::Glsl::Vec2( m_data.shift ));
-      m_shader.setUniform("u_scale", m_data.scale);
+      m_shader.setUniform("u_scale", m_data.scale * easing );
 
       m_shader.setUniform("u_rotation", sf::degrees(m_data.rotationDegrees).asRadians());
       m_shader.setUniform("u_flipX", m_data.flipX);

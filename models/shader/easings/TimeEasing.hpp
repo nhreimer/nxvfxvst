@@ -7,8 +7,9 @@ namespace nx
 
   enum class E_TimeEasingType : int8_t
   {
-    E_Fixed,          // fixed number: uses intensity only
-    E_TimeContinuous, // elapsed time
+    E_Disabled,        // bypass completely (always returns 1)
+    E_Fixed,           // fixed number: uses intensity only
+    E_TimeContinuous,  // elapsed time
     E_TimeIntervallic, // time resets
     E_Linear,
     E_Quadratic,
@@ -34,7 +35,7 @@ namespace nx
       float decayRate { 0.1f };
       float intensity { 0.f }; // used for certain ones
 
-      E_TimeEasingType easingType { E_TimeEasingType::E_TimeIntervallic };
+      E_TimeEasingType easingType { E_TimeEasingType::E_Disabled };
     };
 
   public:
@@ -79,6 +80,9 @@ namespace nx
 
       switch ( m_data.easingType )
       {
+        case E_TimeEasingType::E_Disabled:
+          return 1.f;
+
         case E_TimeEasingType::E_Fixed:
           return m_data.intensity;
 
@@ -105,15 +109,18 @@ namespace nx
     {
       ImGui::PushID( this );
 
-      ImGui::SliderFloat( "##DecayRate", &m_data.decayRate, 0.01f, 1.5f, "Decay Rate %0.2f seconds" );
-      if ( m_data.easingType == E_TimeEasingType::E_SparkleFlicker )
-        ImGui::SliderFloat( "##Sparkle Intensity", &m_data.intensity, 0.f, 3.f, "Intensity %0.2f" );
-      else if ( m_data.easingType == E_TimeEasingType::E_Impulse || m_data.easingType == E_TimeEasingType::E_Fixed )
-        ImGui::SliderFloat( "##Impulse Scale", &m_data.intensity, 0.f, 10.f, "Scale %0.2f" );
-
+      if ( m_data.easingType != E_TimeEasingType::E_Disabled )
+      {
+        ImGui::SliderFloat( "##DecayRate", &m_data.decayRate, 0.01f, 1.5f, "Decay Rate %0.2f seconds" );
+        if ( m_data.easingType == E_TimeEasingType::E_SparkleFlicker )
+          ImGui::SliderFloat( "##Sparkle Intensity", &m_data.intensity, 0.f, 3.f, "Intensity %0.2f" );
+        else if ( m_data.easingType == E_TimeEasingType::E_Impulse || m_data.easingType == E_TimeEasingType::E_Fixed )
+          ImGui::SliderFloat( "##Impulse Scale", &m_data.intensity, 0.f, 10.f, "Scale %0.2f" );
+      }
       ImGui::Text( "Time Easing Functions:" );
 
-      if ( drawRadio( "Fixed", E_TimeEasingType::E_Fixed ) ) m_easingFunction = useNone;
+      if ( drawRadio( "Disabled", E_TimeEasingType::E_Disabled ) ) m_easingFunction = useNone;
+      else if ( drawRadio( "Fixed", E_TimeEasingType::E_Fixed ) ) m_easingFunction = useNone;
       else if ( drawRadio( "Time Continuous", E_TimeEasingType::E_TimeContinuous, true ) ) m_easingFunction = useNone;
       else if ( drawRadio( "Time Intervallic", E_TimeEasingType::E_TimeIntervallic, true ) ) m_easingFunction = useNone;
 
@@ -157,8 +164,9 @@ namespace nx
     {
       switch ( easingType )
       {
+        case E_TimeEasingType::E_Disabled:
         case E_TimeEasingType::E_Fixed:
-        case E_TimeEasingType::E_TimeContinuous: m_easingFunction = useNone; break;
+        case E_TimeEasingType::E_TimeContinuous:
         case E_TimeEasingType::E_TimeIntervallic: m_easingFunction = useNone; break;
 
         case E_TimeEasingType::E_Quadratic: m_easingFunction = easeOutQuad; break;
