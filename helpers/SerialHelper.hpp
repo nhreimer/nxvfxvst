@@ -56,6 +56,7 @@ namespace nx
           case E_ShaderType::E_DensityHeatMapShader: return "DensityHeatMapShader";
           case E_ShaderType::E_FeedbackShader: return "FeedbackShader";
           case E_ShaderType::E_DualKawaseBlurShader: return "DualKawaseBlurShader";
+          case E_ShaderType::E_TransformShader: return "TransformShader";
           default: break;
         }
       }
@@ -104,6 +105,7 @@ namespace nx
         if ( typeName == "DensityHeatMapShader" ) return E_ShaderType::E_DensityHeatMapShader;
         if ( typeName == "FeedbackShader" ) return E_ShaderType::E_FeedbackShader;
         if ( typeName == "DualKawaseBlurShader" ) return E_ShaderType::E_DualKawaseBlurShader;
+        if ( typeName == "TransformShader" ) return E_ShaderType::E_TransformShader;
         return E_ShaderType::E_InvalidShader;
       }
       else if constexpr ( std::is_same_v< TEnum, E_ModifierType > )
