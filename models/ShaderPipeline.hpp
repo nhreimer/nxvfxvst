@@ -13,6 +13,7 @@
 #include "models/shader/SmearShader.hpp"
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/TransformShader.hpp"
+#include "models/shader/ColorShader.hpp"
 
 namespace nx
 {
@@ -180,6 +181,10 @@ namespace nx
           shader = deserializeShader< TransformShader >( j );
           break;
 
+        case E_ShaderType::E_ColorShader:
+          shader = deserializeShader< ColorShader >( j );
+          break;
+
         default:
           LOG_ERROR( "Unsupported shader type" );
           break;
@@ -213,6 +218,10 @@ namespace nx
       {
         ImGui::SeparatorText( "Utilities" );
         {
+          if ( ImGui::Button( "Color##1" ) )
+            createShader< ColorShader >();
+
+          ImGui::SameLine();
           if ( ImGui::Button( "Feedback##1" ) )
             createShader< FeedbackShader >();
 
