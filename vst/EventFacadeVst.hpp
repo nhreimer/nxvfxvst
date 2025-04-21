@@ -39,14 +39,14 @@ namespace nx
       ImGuiIO& io = ImGui::GetIO();
 
       // 1. Handle printable unicode characters
-      if (key >= 32 && key < 0x7FFF) // skip control chars
-      {
+      //if (key >= 32 && key < 0x7FFF) // skip control chars
+      //{
         // Convert char16 (UTF-16) to char (UTF-8)
         // char utf8[5] = {};
         // Steinberg::UString(utf8, sizeof(utf8)).fromWide(&key, 1);
         //io.AddInputCharacterUTF8(utf8); // this is what ImGui uses for text inputs
         io.AddInputCharacter( key );
-      }
+      //}
 
       // 2. Handle modifier keys (if needed)
       io.KeyCtrl  = modifiers & Steinberg::KeyModifier::kControlKey;
