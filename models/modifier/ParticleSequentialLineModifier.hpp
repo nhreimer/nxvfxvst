@@ -94,7 +94,7 @@ namespace nx
               m_data.lineSegments ) ) );
 
           line->setWidth( m_data.lineThickness );
-          line->setColor( sf::Color::White );
+          // line->setColor( sf::Color::White );
           // line->setStart( particles[ i - 1 ]->shape.getPosition() );
           // line->setEnd( particles[ i ]->shape.getPosition() );
           // line->setWidth( m_data.lineThickness );
