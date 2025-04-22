@@ -164,7 +164,8 @@ Applies post-processing shaders to the result of the modifier stack.
 
 | Shader Type      | Description |
 |------------------|-------------|
-| Blur             |             |
+| Gaussian Blur    |             |
+| Color            |             |
 | Cosmic-Kaleido   |             |
 | Dual-Kawase Blur |             |
 | Density Heat Map |             |
@@ -175,6 +176,7 @@ Applies post-processing shaders to the result of the modifier stack.
 | Rumble           |             |
 | Smear            |             |
 | Strobe           |             |
+| Transform        |             |
 
 ## GlobalInfo
 
@@ -230,6 +232,7 @@ Available Easing Types
 ```text 
 Name	          Description
 -----------------------------------------------------------------------------------------------
+Disabled          Uses 1.f, i.e., no change
 Fixed             Uses a predetermined value that doesn't change
 Time Continuous   Uses elapsed time without resetting
 Time Intervallic  Uses elapsed time with resetting
