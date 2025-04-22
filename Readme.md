@@ -123,6 +123,7 @@ Manages the particle layout (initial placement & creation) and passes particles 
 | Lissajous Curve |                                                |
 | L-System Curve  |                                                |
 | Fractal Ring    |                                                |
+| Elliptical      |                                                |
 
 ## Particle Behavior Pipeline
 

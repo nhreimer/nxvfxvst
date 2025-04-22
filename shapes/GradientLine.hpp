@@ -3,6 +3,7 @@
 namespace nx
 {
 
+  // DEPRECATED: use CurvedLine
   class GradientLine final : public sf::Drawable
   {
   public:

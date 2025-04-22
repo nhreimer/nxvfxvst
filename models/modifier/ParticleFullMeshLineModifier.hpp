@@ -51,8 +51,8 @@ namespace nx
       {
         ImGui::Checkbox( "Connect##1", &m_data.isActive );
         ImGui::SliderFloat( "Thickness##1", &m_data.lineThickness, 1.f, 100.f, "Thickness %0.2f" );
-
-        // MenuHelper::drawBlendOptions( m_data.blendMode );
+        ImGui::SliderFloat( "Curvature##1", &m_data.curvature, -NX_PI, NX_PI, "Curvature %0.2f" );
+        ImGui::SliderInt( "Segments##1", &m_data.lineSegments, 1, 150, "Segments %d" );
 
         ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
 
@@ -79,30 +79,31 @@ namespace nx
       {
         for ( int y = i + 1; y < particles.size(); ++y )
         {
-          auto * line = dynamic_cast< GradientLine* >( outArtifacts.emplace_back( new GradientLine() ) );
-          line->setStart( particles[ i ]->shape.getPosition() );
-          line->setEnd( particles[ y ]->shape.getPosition() );
+          auto * line = new CurvedLine(
+            particles[ i ]->shape.getPosition(),
+            particles[ y ]->shape.getPosition(),
+            m_data.curvature,
+            m_data.lineSegments );
+
           line->setWidth( m_data.lineThickness );
 
           if ( particles[ y ]->timeLeft > particles[ i ]->timeLeft )
           {
             setLineColors( line, particles[ y ], particles[ i ] );
-            // line->setGradient( particles[ y ]->shape.getFillColor(),
-            //                  particles[ i ]->shape.getFillColor() );
           }
           else
           {
             setLineColors( line, particles[ i ], particles[ y ] );
-            // line->setGradient( particles[ i ]->shape.getFillColor(),
-            //                   particles[ y ]->shape.getFillColor() );
           }
+
+          outArtifacts.push_back( line );
         }
       }
     }
 
   private:
 
-    void setLineColors( GradientLine * line,
+    void setLineColors( CurvedLine * line,
                         const TimedParticle_t * pointA,
                         const TimedParticle_t * pointB ) const
     {
