@@ -8,17 +8,6 @@
 #include "models/ModifierPipeline.hpp"
 #include "models/ShaderPipeline.hpp"
 
-#include "models/particle/EmptyParticleLayout.hpp"
-#include "models/particle/SpiralParticleLayout.hpp"
-#include "models/particle/RandomParticleLayout.hpp"
-
-#include "models/particle/LissajousCurveLayout.hpp"
-#include "models/particle/FractalRingLayout.hpp"
-#include "models/particle/LSystemCurveLayout.hpp"
-#include "models/particle/GoldenSpiralLayout.hpp"
-#include "models/particle/EllipticalLayout.hpp"
-#include "models/particle/TestParticleLayout.hpp"
-
 #include "models/ParticleLayoutManager.hpp"
 
 #include <future>
@@ -32,7 +21,7 @@ namespace nx
 
     explicit ChannelPipeline( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo ),
-        m_particleLayout( std::make_unique< SpiralParticleLayout >( globalInfo ) ),
+        m_particleLayout( globalInfo ),
         m_modifierPipeline( globalInfo ),
         m_shaderPipeline( globalInfo )
     {}
@@ -45,7 +34,7 @@ namespace nx
     nlohmann::json saveChannelPipeline() const
     {
       nlohmann::json j = {};
-      j[ "channel" ][ "particles" ] = m_particleLayout->serialize();
+      j[ "channel" ][ "particles" ] = m_particleLayout.serialize();
       j[ "channel" ][ "modifiers" ] = m_modifierPipeline.saveModifierPipeline();
       j[ "channel" ][ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
       return j;
@@ -57,7 +46,7 @@ namespace nx
       {
         const auto& jchannel = j[ "channel" ];
         if ( jchannel.contains( "particles" ) )
-          m_particleLayout->deserialize( jchannel.at( "particles" ) );
+          m_particleLayout.deserialize( jchannel.at( "particles" ) );
         else
         {
           // a channel particle should always be available
@@ -88,7 +77,7 @@ namespace nx
 
     void processMidiEvent( const Midi_t& midiEvent ) const
     {
-      m_particleLayout->addMidiEvent( midiEvent );
+      m_particleLayout.processMidiEvent( midiEvent );
 
       m_modifierPipeline.processMidiEvent( midiEvent );
 
@@ -104,7 +93,7 @@ namespace nx
 
     void update( const sf::Time& deltaTime ) const
     {
-      m_particleLayout->update( deltaTime );
+      m_particleLayout.update( deltaTime );
       m_modifierPipeline.update( deltaTime );
       m_shaderPipeline.update( deltaTime );
     }
@@ -112,8 +101,8 @@ namespace nx
     void draw( sf::RenderWindow& window )
     {
       const auto& modifierTexture = m_modifierPipeline.applyModifiers(
-        m_particleLayout->getParticleOptions(),
-        m_particleLayout->getParticles() );
+        m_particleLayout.getParticleOptions(),
+        m_particleLayout.getParticles() );
 
       const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
       window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
@@ -121,10 +110,7 @@ namespace nx
 
     void drawMenu()
     {
-      drawParticleMenu();
-
-      ImGui::Separator();
-      m_particleLayout->drawMenu();
+      m_particleLayout.drawMenu();
 
       ImGui::Separator();
       m_modifierPipeline.drawMenu();
@@ -151,81 +137,16 @@ namespace nx
       }
     }
 
-    void drawParticleMenu()
-    {
-      if ( ImGui::TreeNode( "Layouts Available" ) )
-      {
-        ImGui::Text( "Layouts" );
-        {
-          if ( ImGui::RadioButton( "Empty", m_particleLayout->getType() == E_LayoutType::E_EmptyLayout ) )
-            changeLayout< EmptyParticleLayout >();
-
-          ImGui::SameLine();
-          if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_LayoutType::E_RandomLayout ) )
-            changeLayout< RandomParticleLayout >();
-
-          ImGui::SeparatorText( "Curved Layouts" );
-
-          if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_LayoutType::E_SpiralLayout ) )
-            changeLayout< SpiralParticleLayout >();
-
-          ImGui::SameLine();
-          if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LayoutType::E_LissajousCurveLayout ) )
-            changeLayout< LissajousCurveLayout >();
-
-          ImGui::SameLine();
-          if ( ImGui::RadioButton( "Golden Spiral", m_particleLayout->getType() == E_LayoutType::E_GoldenSpiralLayout ) )
-            changeLayout< GoldenSpiralLayout >();
-
-          ImGui::SameLine();
-          if ( ImGui::RadioButton( "Elliptical", m_particleLayout->getType() == E_LayoutType::E_EllipticalLayout ) )
-            changeLayout< EllipticalLayout >();
-
-          ImGui::SeparatorText( "Fractal Layouts" );
-
-          if ( ImGui::RadioButton( "Fractal Ring", m_particleLayout->getType() == E_LayoutType::E_FractalRingLayout ) )
-            changeLayout< FractalRingLayout >();
-
-          ImGui::SameLine();
-          if ( ImGui::RadioButton( "L-System Curve", m_particleLayout->getType() == E_LayoutType::E_LSystemCurveLayout ) )
-            changeLayout< LSystemCurveLayout >();
-
-#ifdef DEBUG
-          if ( ImGui::RadioButton( "Test", m_particleLayout->getType() == E_LayoutType::E_TestLayout ) )
-            changeLayout< TestParticleLayout >();
-#endif
-        }
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
-
-    // save settings between changes to make editing less frustrating
-    template < typename T >
-    void changeLayout()
-    {
-      m_tempSettings[ SerialHelper::serializeEnum( m_particleLayout->getType() ) ] = m_particleLayout->serialize();
-      m_particleLayout.reset( new T( m_globalInfo ) );
-
-      const auto newLayoutName = SerialHelper::serializeEnum( m_particleLayout->getType() );
-      if ( m_tempSettings.contains( newLayoutName ) )
-        m_particleLayout->deserialize( m_tempSettings[ newLayoutName ] );
-    }
-
   private:
 
     const GlobalInfo_t& m_globalInfo;
 
     std::atomic< bool > m_isReady { false };
 
-    nlohmann::json m_tempSettings;
-
     // the blend mode is important in case there are multiple channel pipelines
     sf::BlendMode m_blendMode { sf::BlendAdd };
 
-    //ParticlePipeline m_particlePipeline;
-    std::unique_ptr< IParticleLayout > m_particleLayout;
+    ParticleLayoutManager m_particleLayout;
     ModifierPipeline m_modifierPipeline;
     ShaderPipeline m_shaderPipeline;
 
