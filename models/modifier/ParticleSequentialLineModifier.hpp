@@ -1,6 +1,8 @@
 #pragma once
 
 #include "shapes/GradientLine.hpp"
+#include "shapes/CurvedLine.hpp"
+
 #include "models/data/ParticleLineData_t.hpp"
 
 #include "helpers/CommonHeaders.hpp"
@@ -22,6 +24,8 @@ namespace nx
       {
         ImGui::Checkbox( "Connect##1", &m_data.isActive );
         ImGui::SliderFloat( "Thickness##1", &m_data.lineThickness, 1.f, 100.f, "Thickness %0.2f" );
+        ImGui::SliderFloat( "Curvature##1", &m_data.curvature, -NX_PI, NX_PI, "Curvature %0.2f" );
+        ImGui::SliderInt( "Segments##1", &m_data.lineSegments, 1, 150, "Segments %d" );
 
         ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
 
@@ -83,22 +87,25 @@ namespace nx
       {
         if ( m_data.isActive && i > 0 )
         {
-          auto * line = dynamic_cast< GradientLine* >( outArtifacts.emplace_back( new GradientLine() ) );
-          line->setStart( particles[ i - 1 ]->shape.getPosition() );
-          line->setEnd( particles[ i ]->shape.getPosition() );
+          auto * line = dynamic_cast< CurvedLine* >( outArtifacts.emplace_back(
+            new CurvedLine( particles[ i - 1 ]->shape.getPosition(),
+              particles[ i ]->shape.getPosition(),
+              m_data.curvature,
+              m_data.lineSegments ) ) );
+
           line->setWidth( m_data.lineThickness );
+          line->setColor( sf::Color::White );
+          // line->setStart( particles[ i - 1 ]->shape.getPosition() );
+          // line->setEnd( particles[ i ]->shape.getPosition() );
+          // line->setWidth( m_data.lineThickness );
 
           if ( particles[ i ]->timeLeft > particles[ i - 1 ]->timeLeft )
           {
             setLineColors( line, particles[ i ], particles[ i - 1 ] );
-            // line->setGradient( particles[ i ]->shape.getFillColor(),
-            //                  particles[ i - 1 ]->shape.getFillColor() );
           }
           else
           {
             setLineColors( line, particles[ i - 1 ], particles[ i ] );
-            // line->setGradient( particles[ i - 1 ]->shape.getFillColor(),
-            //                   particles[ i ]->shape.getFillColor() );
           }
         }
       }
@@ -106,7 +113,7 @@ namespace nx
 
   private:
 
-    void setLineColors( GradientLine * line,
+    void setLineColors( CurvedLine * line,
                         const TimedParticle_t * pointA,
                         const TimedParticle_t * pointB ) const
     {

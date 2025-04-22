@@ -30,6 +30,7 @@ namespace nx
         if ( e == E_LayoutType::E_FractalRingLayout ) return "FractalRingLayout";
         if ( e == E_LayoutType::E_LSystemCurveLayout ) return "LSystemCurveLayout";
         if ( e == E_LayoutType::E_GoldenSpiralLayout ) return "GoldenSpiralLayout";
+        if ( e == E_LayoutType::E_EllipticalLayout ) return "EllipticalLayout";
       }
 
       else if constexpr ( std::is_same_v< Enum, E_ModifierType > )
@@ -91,6 +92,7 @@ namespace nx
         if ( typeName == "LissajousCurveLayout" ) return E_LayoutType::E_LissajousCurveLayout;
         if ( typeName == "LSystemCurveLayout" ) return E_LayoutType::E_LSystemCurveLayout;
         if ( typeName == "GoldenSpiralLayout" ) return E_LayoutType::E_GoldenSpiralLayout;
+        if ( typeName == "EllipticalLayout" ) return E_LayoutType::E_EllipticalLayout;
         return E_LayoutType::E_EmptyLayout;
       }
       else if constexpr ( std::is_same_v< TEnum, E_ShaderType > )

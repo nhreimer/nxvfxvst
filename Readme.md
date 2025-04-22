@@ -2,7 +2,11 @@
 
 ## Description
 
-A highly configurable and modular Video Effects Engine for midi events. A VST3 that comes with a standalone test playground application. 
+A highly configurable and modular Video Effects Engine VST3 Plugin for midi events. 
+
+## Goal
+
+Synchronize midi events to crazy, highly customizable visuals.
 
 ## Features
 

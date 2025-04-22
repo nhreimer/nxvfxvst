@@ -29,7 +29,7 @@ namespace nx
     E_FractalRingLayout,
     E_LSystemCurveLayout,
     E_GoldenSpiralLayout,
-
+    E_EllipticalLayout,
     E_TestLayout
   };
 

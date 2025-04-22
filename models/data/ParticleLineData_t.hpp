@@ -11,9 +11,12 @@ namespace nx
     float swellFactor { 1.5f  };
     float easeDownInSeconds { 1.f };
 
-    bool useParticleColors { false };
-    sf::Color lineColor = sf::Color(255, 255, 255, 100);
-    sf::Color otherLineColor = sf::Color(255, 255, 255, 100);
+    bool useParticleColors { true };
+    sf::Color lineColor = sf::Color(255, 255, 255, 255);
+    sf::Color otherLineColor = sf::Color(255, 255, 255, 255);
+
+    float curvature { 0.25f };
+    int32_t lineSegments { 20 };
 
     // TODO: this is probably not in use anymore.
     // TODO: ModifierPipeline has a global modifier blend option that seems

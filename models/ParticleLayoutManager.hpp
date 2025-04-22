@@ -1,0 +1,8 @@
+//
+// Created by burni on 2025-04-22.
+//
+
+#ifndef PARTICLELAYOUTMANAGER_HPP
+#define PARTICLELAYOUTMANAGER_HPP
+
+#endif //PARTICLELAYOUTMANAGER_HPP

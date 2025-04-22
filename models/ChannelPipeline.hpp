@@ -16,8 +16,10 @@
 #include "models/particle/FractalRingLayout.hpp"
 #include "models/particle/LSystemCurveLayout.hpp"
 #include "models/particle/GoldenSpiralLayout.hpp"
-
+#include "models/particle/EllipticalLayout.hpp"
 #include "models/particle/TestParticleLayout.hpp"
+
+#include "models/ParticleLayoutManager.hpp"
 
 #include <future>
 
@@ -174,6 +176,10 @@ namespace nx
           ImGui::SameLine();
           if ( ImGui::RadioButton( "Golden Spiral", m_particleLayout->getType() == E_LayoutType::E_GoldenSpiralLayout ) )
             changeLayout< GoldenSpiralLayout >();
+
+          ImGui::SameLine();
+          if ( ImGui::RadioButton( "Elliptical", m_particleLayout->getType() == E_LayoutType::E_EllipticalLayout ) )
+            changeLayout< EllipticalLayout >();
 
           ImGui::SeparatorText( "Fractal Layouts" );
 
