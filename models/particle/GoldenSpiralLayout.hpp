@@ -85,7 +85,7 @@ namespace nx
       {
         ParticleHelper::drawMenu(*reinterpret_cast< ParticleLayoutData_t * >(&m_data));
 
-        ImGui::Separator();
+        ImGui::SeparatorText( "Spiral Options" );
         ImGui::SliderInt("Particle Count", &m_data.depth, 1, 100);
         ImGui::SliderFloat("Base Radius", &m_data.baseRadius, 0.01f, 10.f);
         ImGui::SliderFloat("Scale Factor", &m_data.scaleFactor, 1.01f, 2.0f);
