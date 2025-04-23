@@ -31,6 +31,30 @@ namespace nx
 
     void addMidiEvent(const Midi_t &midiEvent) override
     {
+      if ( m_data.sequential ) addSequentialParticle( midiEvent );
+      else addParticle( midiEvent );
+    }
+
+    void drawMenu() override
+    {
+      if ( ImGui::TreeNode( "Elliptical Layout" ) )
+      {
+        ImGui::Checkbox( "Sequential", &m_data.sequential );
+        ImGui::SliderFloat("Radius X", &m_data.radiusX, 50.f, 1000.f);
+        ImGui::SliderFloat("Radius Y", &m_data.radiusY, 50.f, 1000.f);
+        ImGui::SliderFloat("Arc Spread (deg)", &m_data.arcSpreadDegrees, 10.f, 360.f);
+        ImGui::SliderFloat("Ellipse Rotation (deg)", &m_data.rotationDegrees, -180.f, 180.f);
+        ImGui::SliderFloat2("Center Offset", &m_data.centerOffset.x, -500.f, 500.f);
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+    }
+
+  private:
+
+    void addSequentialParticle( const Midi_t& midiEvent )
+    {
       const float arcRad = sf::degrees(m_data.arcSpreadDegrees).asRadians();
       const float baseAngle = arcRad * m_angleCursor;
 
@@ -52,20 +76,24 @@ namespace nx
       if (m_angleCursor > 1.f) m_angleCursor -= 1.f;
     }
 
-    void drawMenu() override
+    void addParticle( const Midi_t& midiEvent )
     {
-      if ( ImGui::TreeNode( "Elliptical Layout" ) )
-      {
-        ImGui::Checkbox( "Sequential", &m_data.sequential );
-        ImGui::SliderFloat("Radius X", &m_data.radiusX, 50.f, 1000.f);
-        ImGui::SliderFloat("Radius Y", &m_data.radiusY, 50.f, 1000.f);
-        ImGui::SliderFloat("Arc Spread (deg)", &m_data.arcSpreadDegrees, 10.f, 360.f);
-        ImGui::SliderFloat("Ellipse Rotation (deg)", &m_data.rotationDegrees, -180.f, 180.f);
-        ImGui::SliderFloat2("Center Offset", &m_data.centerOffset.x, -500.f, 500.f);
+      const float angleSlice = midiEvent.pitch * 1.f / 12.f;
+      const float arcRad = sf::degrees(m_data.arcSpreadDegrees).asRadians();
+      const float baseAngle = arcRad * angleSlice;
 
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
+      const float rotRad = sf::degrees(m_data.rotationDegrees).asRadians();
+      const float angle = baseAngle + rotRad;
+
+      const float x = std::cos(angle) * m_data.radiusX;
+      const float y = std::sin(angle) * m_data.radiusY;
+
+      const sf::Vector2f pos = m_globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
+
+      auto * p = m_particles.emplace_back( new TimedParticle_t() );
+      p->shape.setPosition(pos);
+
+      ParticleLayoutBase::initializeParticle( p, midiEvent );
     }
 
   private:
