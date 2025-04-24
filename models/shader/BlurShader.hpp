@@ -17,25 +17,18 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f)
     struct BlurData_t
     {
       bool isActive { true };
-
-      #define X(name, type, defaultVal, minVal, maxVal) type name = defaultVal;
-      BLUR_SHADER_PARAMS(X)
-      #undef X
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(BLUR_SHADER_PARAMS)
     };
 
     enum class E_BlurParam
     {
-      #define X(name, type, defaultVal, minVal, maxVal) name,
-      BLUR_SHADER_PARAMS(X)
-      #undef X
+      EXPAND_SHADER_PARAMS_FOR_ENUM(BLUR_SHADER_PARAMS)
       LastItem
-  };
+    };
 
     static inline const std::array<std::string, static_cast<size_t>(E_BlurParam::LastItem)> BlurParamLabels =
     {
-      #define X(name, type, defaultVal, minVal, maxVal) #name,
-      BLUR_SHADER_PARAMS(X)
-      #undef X
+      EXPAND_SHADER_PARAM_LABELS(BLUR_SHADER_PARAMS)
     };
 
   public:
@@ -62,9 +55,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f)
 
       nlohmann::json j;
 
-      #define X(name, type, defaultVal, minVal, maxVal) j[#name] = m_data.name;
-      BLUR_SHADER_PARAMS(X)
-      #undef X
+      EXPAND_SHADER_PARAMS_TO_JSON(BLUR_SHADER_PARAMS)
 
       j[ "midiTriggers" ] = m_midiNoteControl.serialize();
       j[ "easing" ] = m_easing.serialize();
@@ -75,10 +66,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f)
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        #define X(name, type, defaultVal, minVal, maxVal) \
-        if (j.contains(#name)) j.at(#name).get_to(m_data.name);
-        BLUR_SHADER_PARAMS(X)
-        #undef X
+        EXPAND_SHADER_PARAMS_FROM_JSON(BLUR_SHADER_PARAMS)
 
         m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
         m_easing.deserialize( j[ "easing" ] );
@@ -99,10 +87,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f)
       if ( ImGui::TreeNode( "Image Blur" ) )
       {
         ImGui::Checkbox( "Blur Active##1", &m_data.isActive );
-        #define X(name, type, defaultVal, minVal, maxVal)           \
-          ImGui::SliderFloat(#name, &m_data.name, minVal, maxVal);
-        BLUR_SHADER_PARAMS(X)
-        #undef X
+        EXPAND_SHADER_PARAMS_FOR_IMGUI(BLUR_SHADER_PARAMS)
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();
