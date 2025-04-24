@@ -2,16 +2,11 @@
 
 #include <fstream>
 
+#include "models/IEncoder.hpp"
+
 namespace nx
 {
-
-  struct IEncoder
-  {
-    virtual ~IEncoder() = default;
-    virtual void writeFrame( const sf::RenderWindow& texture ) = 0;
-  };
-
-  class RawEncoder final : public IEncoder
+  class RawRGBAEncoder final : public IEncoder
   {
 
     struct RawEncoderHeader_t
@@ -21,26 +16,26 @@ namespace nx
       uint32_t frameCount { 0 };
     };
 
-
     // ffmpeg -f rawvideo -pix_fmt rgba -s 800x600 -r 60 -i output.rgba -c:v libx264 -pix_fmt yuv420p out.mp4
     // ffmpeg -f rawvideo -pix_fmt rgba -s 800x600 -r 60 -i output.rgba -c:v ffv1 out.mkv
   public:
 
-    explicit RawEncoder( const std::string& filename )
-      : m_filename( filename )
+    explicit RawRGBAEncoder( const EncoderData_t& data )
+      : m_filename( data.outputFilename.data() )
     {
-      m_file.open( filename, std::ios::binary );
+      m_file.open( m_filename, std::ios::binary );
       if ( m_file.fail() )
       {
-        LOG_ERROR( "Failed to open file '{}'", filename );
+        LOG_ERROR( "Failed to open file '{}'", m_filename );
       }
       else
       {
-        LOG_INFO( "Successfully opened file '{}'", filename );
+        m_isRecording = true;
+        LOG_INFO( "Successfully opened file '{}'", m_filename );
       }
     }
 
-    ~RawEncoder() override
+    ~RawRGBAEncoder() override
     {
       if ( m_file.is_open() )
       {
@@ -94,6 +89,8 @@ namespace nx
       ++m_header.frameCount;
     }
 
+    bool isRecording() const override { return m_isRecording; }
+
     private:
 
       std::ofstream m_file;
@@ -101,6 +98,6 @@ namespace nx
       sf::Texture m_texture;
 
       RawEncoderHeader_t m_header;
+      bool m_isRecording { false };
   };
-
 }

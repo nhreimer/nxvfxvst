@@ -41,6 +41,10 @@ if ( BUILD_PLUGIN )
 #  find_package(spdlog CONFIG REQUIRED)
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
+  find_package(FFMPEG REQUIRED)
+#  target_include_directories(main PRIVATE ${FFMPEG_INCLUDE_DIRS})
+#  target_link_directories(main PRIVATE ${FFMPEG_LIBRARY_DIRS})
+#  target_link_libraries(main PRIVATE ${FFMPEG_LIBRARIES})
 
   option(SMTG_ENABLE_VST3_PLUGIN_EXAMPLES "Enable VST 3 Plug-in Examples" OFF)
   option(SMTG_ENABLE_VST3_HOSTING_EXAMPLES "Enable VST 3 Hosting Examples" OFF)
@@ -64,6 +68,8 @@ if ( BUILD_PLUGIN )
 
     # must used the patched version
     C:/Precision/projects/SFML/include
+    ${FFMPEG_INCLUDE_DIRS}
+    ${FFNVCODEC_INCLUDE_DIRS}
   )
 
   if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
@@ -85,6 +91,8 @@ if ( BUILD_PLUGIN )
       ImGui-SFML::ImGui-SFML
       spdlog::spdlog_header_only
       nlohmann_json::nlohmann_json
+
+      ${FFMPEG_LIBRARIES}
     )
 
   else()
@@ -104,6 +112,7 @@ if ( BUILD_PLUGIN )
       #    SFML::Graphics
       ImGui-SFML::ImGui-SFML
 #      spdlog::spdlog_header_only
+      ${FFMPEG_LIBRARIES}
     )
 
   endif()
@@ -146,8 +155,14 @@ else()
   find_package(spdlog CONFIG REQUIRED)
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
+  find_package(FFMPEG REQUIRED)
 
   add_executable(${PROJECT_NAME} main.cpp)
+  target_link_directories( ${PROJECT_NAME}
+    PRIVATE
+    ${FFMPEG_LIBRARY_DIRS}
+  )
+
   target_link_libraries( ${PROJECT_NAME}
     PRIVATE
 
@@ -159,6 +174,7 @@ else()
     ImGui-SFML::ImGui-SFML
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
+    ${FFMPEG_LIBRARIES}
   )
 
 endif()
@@ -167,6 +183,8 @@ target_include_directories( ${PROJECT_NAME}
   PRIVATE
   ${CMAKE_SOURCE_DIR}
   ${vst3sdk_SOURCE_DIR}
+  ${FFMPEG_INCLUDE_DIRS}
+  ${FFNVCODEC_INCLUDE_DIRS}
 )
 
 if( CMAKE_BUILD_TYPE STREQUAL "Debug" )

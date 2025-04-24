@@ -2,7 +2,7 @@
 
 #include "models/ChannelPipeline.hpp"
 #include "shapes/TimedMessage.hpp"
-#include "models/encoder/RawEncoder.hpp"
+#include "models/encoder/EncoderFactory.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
@@ -20,8 +20,7 @@ namespace nx
 
   public:
     explicit MultichannelPipeline( const GlobalInfo_t &globalInfo )
-      : m_globalInfo( globalInfo ),
-        m_filename( {} )
+      : m_globalInfo( globalInfo )
     {
       for ( int i = 0; i < m_channels.size(); ++i )
         m_channels[ i ] = std::make_unique< ChannelPipeline >( globalInfo );
@@ -54,12 +53,20 @@ namespace nx
         m_channels.at( midi.channel )->processMidiEvent( midi );
     }
 
-    void draw( sf::RenderWindow &window ) const
+    void draw( sf::RenderWindow &window )
     {
       for ( const auto& channel: m_channels )
         channel->draw( window );
 
-      if ( m_encoder ) m_encoder->writeFrame( window );
+      if ( m_encoder )
+      {
+        if ( m_encoder->isRecording() ) m_encoder->writeFrame( window );
+        else
+        {
+          m_messageClock.setMessage( "Encoder failed. NOT recording." );
+          m_encoder.reset( nullptr );
+        }
+      }
     }
 
     void update( const sf::Time &deltaTime ) const
@@ -126,23 +133,38 @@ namespace nx
 
       if ( ImGui::TreeNode( "Video Encoder" ) )
       {
-        ImGui::InputText( "Filename ", m_filename.data(), m_filename.size() );
+
+        if ( ImGui::RadioButton( "RawRGBA", m_encoderType == E_Encoder::E_RawRGBA ) )
+        {
+          m_encoderType = E_Encoder::E_RawRGBA;
+        }
+        else if ( ImGui::RadioButton( "MP4", m_encoderType == E_Encoder::E_MP4 ) )
+        {
+          m_encoderType = E_Encoder::E_MP4;
+        }
+
+        if ( m_encoderType != E_Encoder::E_MP4 )
+        {
+          // TODO: set the radio dials for HW-enabled
+        }
+
+        ImGui::InputText( "Filename ",
+                          m_encoderData.outputFilename.data(),
+                          m_encoderData.outputFilename.size() );
 
         if ( m_encoder )
         {
           if ( ImGui::Button( "Stop Recording" ) )
           {
-            const auto * ptr = m_encoder.release();
-            delete ptr;
-
+            m_encoder.reset( nullptr );
             m_messageClock.setMessage( "RECORDING STOPPED!" );
           }
         }
         else if ( ImGui::Button( "Start Recording" ) )
         {
-          m_encoder.reset(
-            new RawEncoder( std::string( m_filename.data() ) ) );
-
+          m_encoderData.size = m_globalInfo.windowSize;
+          m_encoder.reset( nullptr );
+          m_encoder = EncoderFactory::create( m_encoderType, m_encoderData );
           m_messageClock.setMessage( "RECORDING STARTED!" );
         }
 
@@ -170,9 +192,11 @@ namespace nx
 
     int m_selectedChannel { 0 };
 
+    E_Encoder m_encoderType { E_Encoder::E_RawRGBA };
+    EncoderData_t m_encoderData {};
+
     // used for saving to video
     std::unique_ptr< IEncoder > m_encoder;
-    std::array< char, 512 > m_filename;
 
   };
 
