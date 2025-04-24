@@ -33,7 +33,7 @@ namespace nx
       j[ "rotationDegrees" ] = m_data.rotationDegrees;
       j[ "sequential" ] = m_data.sequential;
       j[ "slices" ] = m_data.slices;
-      j[ "centerOffset" ] = SerialHelper::convertVec2ToJSON( m_data.centerOffset );
+      j[ "centerOffset" ] = { { "x", m_data.centerOffset.x }, { "y", m_data.centerOffset.y } };
       return j;
     }
 
@@ -49,7 +49,8 @@ namespace nx
         m_data.sequential = j.value( "sequential", true );
         m_data.slices = j.value( "slices", 12.f );
 
-        m_data.centerOffset = SerialHelper::convertVec2FromJSON< float >( j[ "centerOffset" ] );
+        m_data.centerOffset = sf::Vector2f { j[ "centerOffset" ].value( "x", 0.f ),
+                                               j[ "centerOffset" ].value( "y", 0.f ) };
       }
       if ( j.contains( "behaviors" ) )
         m_behaviorPipeline.loadModifierPipeline( j.at( "behaviors" ) );
