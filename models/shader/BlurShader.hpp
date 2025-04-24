@@ -8,14 +8,34 @@ namespace nx
   class BlurShader final : public IShader
   {
 
+#define BLUR_SHADER_PARAMS(X)                                   \
+X(sigma,         float, 7.f,     0.f,   50.f)                   \
+X(brighten,      float, 1.f,     0.f,   5.f)                    \
+X(blurHorizontal,float, 1.0f,    0.f,   20.f)                   \
+X(blurVertical,  float, 1.0f,    0.f,   20.f)
+
     struct BlurData_t
     {
       bool isActive { true };
 
-      float sigma { 7.f };
-      float brighten { 1.f };
-      float blurHorizontal { 0.1f };
-      float blurVertical { 0.1f };
+      #define X(name, type, defaultVal, minVal, maxVal) type name = defaultVal;
+      BLUR_SHADER_PARAMS(X)
+      #undef X
+    };
+
+    enum class E_BlurParam
+    {
+      #define X(name, type, defaultVal, minVal, maxVal) name,
+      BLUR_SHADER_PARAMS(X)
+      #undef X
+      LastItem
+  };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_BlurParam::LastItem)> BlurParamLabels =
+    {
+      #define X(name, type, defaultVal, minVal, maxVal) #name,
+      BLUR_SHADER_PARAMS(X)
+      #undef X
     };
 
   public:
@@ -23,13 +43,13 @@ namespace nx
     explicit BlurShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      if ( !m_blurShader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
+      if ( !m_blurShader.loadFromMemory(m_fragmentShader, sf::Shader::Type::Fragment) )
       {
-        LOG_ERROR( "Failed to load blur fragment shader" );
+        LOG_ERROR("Failed to load blur fragment shader");
       }
       else
       {
-        LOG_INFO( "loaded blur shader" );
+        LOG_INFO("loaded blur shader");
       }
     }
 
@@ -39,28 +59,27 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-      {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive },
-          { "sigma", m_data.sigma },
-          { "brighten", m_data.brighten },
-          { "blurHorizontal", m_data.blurHorizontal },
-          { "blurVertical", m_data.blurVertical },
-          { "midiTriggers", m_midiNoteControl.serialize() },
-          { "easing", m_easing.serialize() }
-      };
+
+      nlohmann::json j;
+
+      #define X(name, type, defaultVal, minVal, maxVal) j[#name] = m_data.name;
+      BLUR_SHADER_PARAMS(X)
+      #undef X
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize( const nlohmann::json& j ) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.sigma = j.value("sigma", 7.f);
-        m_data.brighten = j.value("brighten", 1.f);
-        m_data.blurHorizontal = j.value("blurHorizontal", 0.f);
-        m_data.blurVertical = j.value("blurVertical", 0.f);
+        #define X(name, type, defaultVal, minVal, maxVal) \
+        if (j.contains(#name)) j.at(#name).get_to(m_data.name);
+        BLUR_SHADER_PARAMS(X)
+        #undef X
+
         m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
         m_easing.deserialize( j[ "easing" ] );
       }
@@ -80,16 +99,15 @@ namespace nx
       if ( ImGui::TreeNode( "Image Blur" ) )
       {
         ImGui::Checkbox( "Blur Active##1", &m_data.isActive );
-        ImGui::SliderFloat( "Smoothing##1", &m_data.sigma, 0.f, 50.f );
-        ImGui::SliderFloat( "Brighten##1", &m_data.brighten, 0.0f, 5.f );
-        ImGui::SliderFloat( "Horizontal##1", &m_data.blurHorizontal, 0.f, 20.f );
-        ImGui::SliderFloat( "Vertical##1", &m_data.blurVertical, 0.f, 20.f );
+        #define X(name, type, defaultVal, minVal, maxVal)           \
+          ImGui::SliderFloat(#name, &m_data.name, minVal, maxVal);
+        BLUR_SHADER_PARAMS(X)
+        #undef X
 
-        ImGui::Separator();
-
+        ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();
 
-        ImGui::Separator();
+        ImGui::SeparatorText( "Midi Triggers" );
         m_midiNoteControl.drawMenu();
 
         ImGui::TreePop();

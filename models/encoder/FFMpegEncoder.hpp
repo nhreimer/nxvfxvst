@@ -6,7 +6,6 @@ extern "C"
   #include <libavformat/avformat.h>
   #include <libswscale/swscale.h>
   #include <libavutil/imgutils.h>
-  #include <ffnvcodec/dynlink_cuda.h>
 }
 
 #include "models/IEncoder.hpp"

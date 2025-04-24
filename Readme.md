@@ -6,7 +6,7 @@ A highly configurable and modular Video Effects Engine VST3 Plugin for midi even
 
 ## Goal
 
-Synchronize midi events to crazy, highly customizable visuals.
+Synchronize midi events to highly customizable visuals.
 
 ## Features
 
@@ -25,7 +25,7 @@ Synchronize midi events to crazy, highly customizable visuals.
   * Particle modifiers
   * Easings (for time decays)
   * Triggers at multiple stages of a pipeline (for time synchronization)
-* Real-time video encoder (uses raw encoding format at the moment)
+* Real-time video encoder (Raw RGBA and MP4)
 
 ---
 
@@ -57,7 +57,7 @@ Synchronize midi events to crazy, highly customizable visuals.
           │
           ▼
 +---------------------+      +--------------------+
-|  ParticlePipeline 1 | ---> |  Behavior Pipeline | 
+|  ParticlePipeline   | ---> |  Behavior Pipeline | 
 |         1           |      |        0..n        |
 +---------------------+      +--------------------+
           │
@@ -80,13 +80,11 @@ Synchronize midi events to crazy, highly customizable visuals.
           │
           ▼
 +------------------+
-|   Video Encoder  |  Raw encoding available
+|   Video Encoder  |
 +------------------+
 
 
 ```
-
-🔁 = manages multiple instances of a type, e.g., ShaderPipeline manages multiple shaders
 
 ## EventFacadeVST
 
@@ -183,6 +181,20 @@ Applies post-processing shaders to the result of the modifier stack.
 | Strobe           |             |
 | Transform        |             |
 
+## Video Encoder
+
+There are two video encoders:
+1. RawRGBA, which saves an image of every frame (MASSIVE file sizes). it will produce a json meta file too.
+You can use ffmpeg on the command line to convert it, e.g.,
+
+```bash
+  ffmpeg.exe -f rawvideo -pix_fmt rgba -s 1280x768 -r 60 -i video_in.rbga -c:v libx264 -pix_fmt yuv420p video_out.mp4
+````
+
+Be sure to look at the JSON metadata file for the actual width and height.
+
+2. MP4 using the ffmpeg library. It will run through a few options to find an encoder in case of failure.  
+
 ## GlobalInfo
 
 A shared read-only context passed throughout all components that help:
@@ -270,6 +282,7 @@ Additionally, there is a Cumulative Easing, that can combine multiple easings, b
 * nlohmann json (serialization and state management)
 * spdlog (logging)
 * VST3 SDK
+* FFmpeg (mp4 video encoding)
 
 The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 
