@@ -34,29 +34,70 @@ namespace nx
 
     ~EventFacadeVst() = default;
 
-    void onKeyDown( Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers )
+    void onKeyDown(Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers)
     {
       ImGuiIO& io = ImGui::GetIO();
 
-      // 1. Handle printable unicode characters
-      //if (key >= 32 && key < 0x7FFF) // skip control chars
-      //{
-        // Convert char16 (UTF-16) to char (UTF-8)
-        // char utf8[5] = {};
-        // Steinberg::UString(utf8, sizeof(utf8)).fromWide(&key, 1);
-        //io.AddInputCharacterUTF8(utf8); // this is what ImGui uses for text inputs
-        io.AddInputCharacter( key );
-      //}
+      // Add printable characters only
+      if (key >= 32 && key != 127)  // skip control characters like DEL
+        io.AddInputCharacter(key);
 
-      // 2. Handle modifier keys (if needed)
+      // Map modifiers
       io.KeyCtrl  = modifiers & Steinberg::KeyModifier::kControlKey;
       io.KeyShift = modifiers & Steinberg::KeyModifier::kShiftKey;
       io.KeyAlt   = modifiers & Steinberg::KeyModifier::kAlternateKey;
       io.KeySuper = modifiers & Steinberg::KeyModifier::kCommandKey;
+
+      // Map special keys
+      switch (keyCode)
+      {
+        case Steinberg::VirtualKeyCodes::KEY_BACK:
+          io.AddKeyEvent( ImGuiKey_Backspace, true );
+          break;
+        case Steinberg::VirtualKeyCodes::KEY_DELETE:
+          io.AddKeyEvent( ImGuiKey_Delete, true );
+          break;
+        case Steinberg::VirtualKeyCodes::KEY_LEFT:
+          io.AddKeyEvent( ImGuiKey_LeftArrow, true );
+          break;
+        case Steinberg::VirtualKeyCodes::KEY_RIGHT:
+          io.AddKeyEvent( ImGuiKey_RightArrow, true );
+          break;
+        default:
+          break;
+      }
     }
 
+
     void onKeyUp( Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers )
-    {}
+    {
+      ImGuiIO& io = ImGui::GetIO();
+
+      // Map modifiers
+      io.KeyCtrl  = modifiers & Steinberg::KeyModifier::kControlKey;
+      io.KeyShift = modifiers & Steinberg::KeyModifier::kShiftKey;
+      io.KeyAlt   = modifiers & Steinberg::KeyModifier::kAlternateKey;
+      io.KeySuper = modifiers & Steinberg::KeyModifier::kCommandKey;
+
+      // Map special keys
+      switch (keyCode)
+      {
+        case Steinberg::VirtualKeyCodes::KEY_BACK:
+          io.AddKeyEvent( ImGuiKey_Backspace, false );
+          break;
+        case Steinberg::VirtualKeyCodes::KEY_DELETE:
+          io.AddKeyEvent( ImGuiKey_Delete, false );
+          break;
+        case Steinberg::VirtualKeyCodes::KEY_LEFT:
+          io.AddKeyEvent( ImGuiKey_LeftArrow, false );
+          break;
+        case Steinberg::VirtualKeyCodes::KEY_RIGHT:
+          io.AddKeyEvent( ImGuiKey_RightArrow, false );
+          break;
+        default:
+          break;
+      }
+    }
 
     void saveState( nlohmann::json &j ) const
     {

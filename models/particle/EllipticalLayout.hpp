@@ -23,9 +23,37 @@ namespace nx
     {}
 
     [[nodiscard]]
-    nlohmann::json serialize() const override { return {}; }
+    nlohmann::json serialize() const override
+    {
+      auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+      j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
+      j[ "radiusX" ] = m_data.radiusX;
+      j[ "radiusY" ] = m_data.radiusY;
+      j[ "arcSpreadDegrees" ] = m_data.arcSpreadDegrees;
+      j[ "rotationDegrees" ] = m_data.rotationDegrees;
+      j[ "sequential" ] = m_data.sequential;
+      j[ "slices" ] = m_data.slices;
+      j[ "centerOffset" ] = SerialHelper::convertVec2ToJSON( m_data.centerOffset );
+      return j;
+    }
 
-    void deserialize(const nlohmann::json &j) override {}
+    void deserialize(const nlohmann::json &j) override
+    {
+      if ( SerialHelper::isTypeGood( j, getType() ) )
+      {
+        ParticleHelper::deserialize( m_data, j );
+        m_data.radiusX = j.value( "radiusX", 300.f );
+        m_data.radiusY = j.value( "radiusY", 200.f );
+        m_data.arcSpreadDegrees = j.value( "arcSpreadDegrees", 360.f );
+        m_data.rotationDegrees = j.value( "rotationDegrees", 0.f );
+        m_data.sequential = j.value( "sequential", true );
+        m_data.slices = j.value( "slices", 12.f );
+
+        m_data.centerOffset = SerialHelper::convertVec2FromJSON< float >( j[ "centerOffset" ] );
+      }
+      if ( j.contains( "behaviors" ) )
+        m_behaviorPipeline.loadModifierPipeline( j.at( "behaviors" ) );
+    }
 
     [[nodiscard]]
     E_LayoutType getType() const override { return E_LayoutType::E_EllipticalLayout; }
