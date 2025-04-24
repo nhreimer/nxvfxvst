@@ -8,11 +8,11 @@ namespace nx
   class BlurShader final : public IShader
   {
 
-#define BLUR_SHADER_PARAMS(X)                                   \
-X(sigma,         float, 7.f,     0.f,   50.f)                   \
-X(brighten,      float, 1.f,     0.f,   5.f)                    \
-X(blurHorizontal,float, 1.0f,    0.f,   20.f)                   \
-X(blurVertical,  float, 1.0f,    0.f,   20.f)
+#define BLUR_SHADER_PARAMS(X)                        \
+X(sigma,         float, 7.f,     0.f,   50.f , "")   \
+X(brighten,      float, 1.f,     0.f,   5.f  , "")   \
+X(blurHorizontal,float, 1.0f,    0.f,   20.f , "")   \
+X(blurVertical,  float, 1.0f,    0.f,   20.f , "")
 
     struct BlurData_t
     {
@@ -26,7 +26,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f)
       LastItem
     };
 
-    static inline const std::array<std::string, static_cast<size_t>(E_BlurParam::LastItem)> BlurParamLabels =
+    static inline const std::array<std::string, static_cast<size_t>(E_BlurParam::LastItem)> m_paramLabels =
     {
       EXPAND_SHADER_PARAM_LABELS(BLUR_SHADER_PARAMS)
     };
@@ -52,9 +52,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f)
 
     nlohmann::json serialize() const override
     {
-
       nlohmann::json j;
-
       EXPAND_SHADER_PARAMS_TO_JSON(BLUR_SHADER_PARAMS)
 
       j[ "midiTriggers" ] = m_midiNoteControl.serialize();
@@ -87,7 +85,10 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f)
       if ( ImGui::TreeNode( "Image Blur" ) )
       {
         ImGui::Checkbox( "Blur Active##1", &m_data.isActive );
-        EXPAND_SHADER_PARAMS_FOR_IMGUI(BLUR_SHADER_PARAMS)
+        // EXPAND_SHADER_PARAMS_FOR_IMGUI(BLUR_SHADER_PARAMS)
+
+        auto& STRUCT_REF = m_data;
+        BLUR_SHADER_PARAMS(X_SHADER_IMGUI);
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();

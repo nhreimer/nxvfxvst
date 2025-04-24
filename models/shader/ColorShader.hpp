@@ -1,20 +1,35 @@
 #pragma once
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 
   class ColorShader final : public IShader
   {
 
+#define COLOR_SHADER_PARAMS(X)                                                               \
+X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness")             \
+X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors")                  \
+X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation")              \
+X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians")                    \
+X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB")
+
     struct ColorData_t
     {
       bool isActive { true };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(COLOR_SHADER_PARAMS)
+    };
 
-      float brightness { 1.0f };                      // 1.0 = normal
-      float saturation { 1.0f };                      // 1.0 = normal
-      sf::Glsl::Vec3 colorGain { 1.f, 1.f, 1.f }; // RGB gain
-      float contrast { 1.0f };                        // 1.0 = normal
-      float hueShift { 0.0f };                        // in radians
+    enum class E_ColorParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(COLOR_SHADER_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_ColorParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(COLOR_SHADER_PARAMS)
     };
 
   public:
@@ -35,28 +50,27 @@ namespace nx
     [[nodiscard]]
     nlohmann::json serialize() const override
     {
-      return
-      {
-        { "type", SerialHelper::serializeEnum( getType() ) },
-        { "isActive", m_data.isActive },
-        { "brightness", m_data.brightness },
-        { "saturation", m_data.saturation },
-        { "hueShift", m_data.hueShift },
-        { "easing", m_easing.serialize() },
-        { "midiTriggers", m_midiNoteControl.serialize() }
-      };
+      nlohmann::json j;
+      EXPAND_SHADER_PARAMS_TO_JSON(COLOR_SHADER_PARAMS)
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize(const nlohmann::json &j) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.brightness = j.value("brightness", 1.0f);
-      m_data.saturation = j.value("saturation", 1.0f);
-      m_data.contrast = j.value("contrast", 1.0f);
-      m_data.hueShift = j.value("hueShift", 0.0f);
-      // TODO: add color gain
-      m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
-      m_easing.deserialize( j[ "easing" ] );
+      if ( SerialHelper::isTypeGood( j, getType() ) )
+      {
+        EXPAND_SHADER_PARAMS_FROM_JSON(COLOR_SHADER_PARAMS)
+
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     [[nodiscard]]
@@ -74,15 +88,8 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Color" ) )
       {
-        ImGui::SliderFloat( "Brightness", &m_data.brightness, 0.f, 2.f );
-        ImGui::SliderFloat( "Saturation", &m_data.saturation, 0.f, 2.f );
-        ImGui::SliderFloat( "Contrast", &m_data.contrast, 0.f, 2.f );
-        ImGui::SliderFloat( "Hue", &m_data.hueShift, -NX_PI, NX_PI );
-
-        ImGui::SeparatorText( "Color Gain" );
-        ImGui::SliderFloat( "Gain Red", &m_data.colorGain.x, 0.f, 10.f );
-        ImGui::SliderFloat( "Gain Green", &m_data.colorGain.y, 0.f, 10.f );
-        ImGui::SliderFloat( "Gain Blue", &m_data.colorGain.z, 0.f, 10.f );
+        auto& STRUCT_REF = m_data;
+        COLOR_SHADER_PARAMS(X_SHADER_IMGUI);
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();

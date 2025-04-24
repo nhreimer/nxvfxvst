@@ -2,7 +2,53 @@
 
 #include <nlohmann/json.hpp>
 
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/Glsl.hpp>
+
 #include "models/InterfaceTypes.hpp"
+
+namespace nlohmann
+{
+  // sf::Glsl::Vec3 (alias for sf::Vector3<float>)
+  inline void to_json(nlohmann::json& j, const sf::Glsl::Vec3& v)
+  {
+    j = nlohmann::json::array({ v.x, v.y, v.z });
+  }
+
+  inline void from_json(const nlohmann::json& j, sf::Glsl::Vec3& v)
+  {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+    j.at(2).get_to(v.z);
+  }
+
+  // sf::Vector2f
+  inline void to_json(nlohmann::json& j, const sf::Vector2f& v)
+  {
+    j = nlohmann::json::array({ v.x, v.y });
+  }
+
+  inline void from_json(const nlohmann::json& j, sf::Vector2f& v)
+  {
+    j.at(0).get_to(v.x);
+    j.at(1).get_to(v.y);
+  }
+
+  // sf::Color
+  inline void to_json(nlohmann::json& j, const sf::Color& c)
+  {
+    j = nlohmann::json::array({ c.r, c.g, c.b, c.a });
+  }
+
+  inline void from_json(const nlohmann::json& j, sf::Color& c)
+  {
+    c.r = j.at(0).get<uint8_t>();
+    c.g = j.at(1).get<uint8_t>();
+    c.b = j.at(2).get<uint8_t>();
+    c.a = j.at(3).get<uint8_t>();
+  }
+}
 
 namespace nx
 {
