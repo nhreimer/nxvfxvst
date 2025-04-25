@@ -68,14 +68,14 @@ DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip)
 
 
 // FOR STRUCTS
-#define GEN_STRUCT_FIELD(name, type, defaultVal, minVal, maxVal) type name = defaultVal;
+#define GEN_STRUCT_FIELD(name, type, defaultVal, minVal, maxVal, tooltip) type name = defaultVal;
 #define EXPAND_SHADER_PARAMS_FOR_STRUCT(PARAM_MACRO)     \
 PARAM_MACRO(GEN_STRUCT_FIELD)                            \
 /* optionally undef here if you care */                  \
 /**/
 
 // FOR ENUM
-#define GEN_ENUM_FIELD(name, type, defaultVal, minVal, maxVal) name,
+#define GEN_ENUM_FIELD(name, type, defaultVal, minVal, maxVal, tooltip) name,
 #define EXPAND_SHADER_PARAMS_FOR_ENUM(PARAM_MACRO)       \
 PARAM_MACRO(GEN_ENUM_FIELD)
 
@@ -91,11 +91,11 @@ j[#name] = m_data.name;
 #define EXPAND_SHADER_PARAMS_TO_JSON(PARAM_MACRO) \
 PARAM_MACRO(GEN_TO_JSON)
 
-#define GEN_FROM_JSON(name, type, defaultVal, minVal, maxVal) \
+#define GEN_FROM_JSON(name, type, defaultVal, minVal, maxVal, tooltip) \
 if (j.contains(#name)) j.at(#name).get_to(m_data.name);
 #define EXPAND_SHADER_PARAMS_FROM_JSON(PARAM_MACRO) \
 PARAM_MACRO(GEN_FROM_JSON)
 
-#define GEN_LABEL_STRING(name, type, defaultVal, minVal, maxVal) #name,
+#define GEN_LABEL_STRING(name, type, defaultVal, minVal, maxVal, tooltip) #name,
 #define EXPAND_SHADER_PARAM_LABELS(PARAM_MACRO) \
 PARAM_MACRO(GEN_LABEL_STRING)

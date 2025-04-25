@@ -2,7 +2,6 @@
 
 #include "models/shader/BlurShader.hpp"
 #include "models/shader/KaleidoscopeShader.hpp"
-// #include "models/shader/GlitchShader.hpp"
 #include "models/shader/DensityHeatMapShader.hpp"
 #include "models/shader/DualKawaseBlurShader.hpp"
 #include "models/shader/FeedbackShader.hpp"

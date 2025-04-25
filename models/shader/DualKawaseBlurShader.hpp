@@ -86,8 +86,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
     {
       if ( ImGui::TreeNode( "Dual-Kawase Blur" ) )
       {
-        ImGui::Checkbox( "DK Blur Active##1", &m_data.isActive );
-
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;
         DUALKAWASE_SHADER_PARAMS(X_SHADER_IMGUI);
 

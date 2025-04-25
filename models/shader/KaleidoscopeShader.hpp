@@ -8,28 +8,36 @@ namespace nx
   class KaleidoscopeShader final : public IShader
   {
 
+// easings
+// slices, angleSteps, and swirlStrength
+
+#define KALEIDOSCOPE_SHADER_PARAMS(X)                                                           \
+X(masterGain,     float, 0.1f,  0.f,  5.f,   "Overall kaleido intensity multiplier")           \
+X(slices,         float, 6.f,   3.f,  24.f,  "Number of kaleidoscope slices")                  \
+X(swirlStrength,  float, 1.f,   0.f,  5.f,   "Amount of swirl distortion per slice")           \
+X(swirlDensity,   float, 1.f,   0.f,  10.f,  "Swirl frequency (tightness of rotation)")        \
+X(pulseStrength,  float, 0.2f,  0.f,  5.f,   "Strength of pulsing wave distortions")           \
+X(pulseFrequency, float, 10.f,  0.f,  50.f,  "How often pulses occur (Hz)")                    \
+X(pulseSpeed,     float, 5.f,   0.f,  50.f,  "How quickly pulses move through the shape")      \
+X(angleSteps,     float, 32.f,  3.f,  128.f, "How many radial segments are processed")         \
+X(radialStretch,  float, 1.f,   0.1f, 3.f,   "Stretch factor on the radial axis")              \
+X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion overlay")
+
     struct KaleidoscopeData_t
     {
       bool isActive { true };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(KALEIDOSCOPE_SHADER_PARAMS)
+    };
 
-      // Slices | Vibe
-      //--------|--------------------------
-      // 3–4    | Triangular shard symmetry
-      // 6–8    | Mandala snowflake bloom
-      // 12+    | Fractal kaleido insanity
+    enum class E_KaleidoParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(KALEIDOSCOPE_SHADER_PARAMS)
+      LastItem
+    };
 
-      float masterGain { 0.1f };
-      float slices { 6.f };
-      float swirlStrength { 1.f };
-      float swirlDensity { 1.f };
-
-      float pulseStrength { 0.2f };
-      float pulseFrequency { 10.f };
-      float pulseSpeed { 5.f };
-
-      float angleSteps { 32.f };
-      float radialStretch { 1.f };
-      float noiseStrength { 0.5f };
+    static inline const std::array<std::string, static_cast<size_t>(E_KaleidoParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(KALEIDOSCOPE_SHADER_PARAMS)
     };
 
   public:
@@ -52,42 +60,22 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-   {
-        { "type", SerialHelper::serializeEnum( getType() ) },
-        { "isActive", m_data.isActive },
-        { "slices", m_data.slices },
-           { "masterGain", m_data.masterGain },
-     { "swirlStrength", m_data.swirlStrength },
-     { "swirlDensity", m_data.swirlDensity },
-      { "pulseStrength", m_data.pulseStrength },
-      { "pulseFrequency", m_data.pulseFrequency },
-      { "pulseSpeed", m_data.pulseSpeed },
-     { "angleSteps", m_data.angleSteps },
-      { "radialStretch", m_data.radialStretch },
-      { "noiseStrength", m_data.noiseStrength }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum(getType());
+      EXPAND_SHADER_PARAMS_TO_JSON(KALEIDOSCOPE_SHADER_PARAMS)
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize( const nlohmann::json& j ) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", true);
+        EXPAND_SHADER_PARAMS_FROM_JSON(KALEIDOSCOPE_SHADER_PARAMS)
 
-        m_data.slices = j.value("slices", 6.f);
-        m_data.masterGain = j.value("masterGain", 0.1f);
-
-        m_data.angleSteps  = j.value("angleSteps", 32);
-        m_data.noiseStrength = j.value("noiseStrength", 0.5f);
-        m_data.radialStretch = j.value("radialStretch", 1.f);
-
-        m_data.pulseFrequency = j.value("pulseFrequency", 10.f);
-        m_data.pulseSpeed  = j.value("pulseSpeed", 50.f);
-        m_data.pulseStrength = j.value("pulseStrength", 1.f);
-
-        m_data.swirlDensity = j.value("swirlDensity", 1.f);
-        m_data.swirlStrength = j.value("swirlStrength", 0.5f);
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -108,22 +96,12 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Cosmic-Kaleidoscope" ) )
       {
-        ImGui::Checkbox( "Cosmis-Kaleido Active##1", &m_data.isActive );
-
-        ImGui::SeparatorText("Cosmis-Kaleido Shader");
-        ImGui::SliderFloat("Master Gain", &m_data.masterGain, 0.f, 1.f);
-        ImGui::SliderFloat("Slices", &m_data.slices, 1.f, 32.f);
-        ImGui::SliderFloat("Swirl Strength", &m_data.swirlStrength, 0.f, 2.f);
-        ImGui::SliderFloat("Swirl Density", &m_data.swirlDensity, 1.f, 50.f);
-        ImGui::SliderFloat("Pulse Freq", &m_data.pulseFrequency, 1.f, 50.f);
-        ImGui::SliderFloat("Pulse Speed", &m_data.pulseSpeed, 0.1f, 10.f);
-        ImGui::SliderFloat("Pulse Strength", &m_data.pulseStrength, 0.f, 1.f);
-        ImGui::SliderFloat("Angle Steps", &m_data.angleSteps, 1.f, 64.f);
-        ImGui::SliderFloat("Radial Stretch", &m_data.radialStretch, 0.2f, 2.0f);
-        ImGui::SliderFloat("Noise Strength", &m_data.noiseStrength, 0.f, 1.0f);
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
+        auto& STRUCT_REF = m_data;
+        KALEIDOSCOPE_SHADER_PARAMS(X_SHADER_IMGUI);
 
         ImGui::SeparatorText( "Easings" );
-        m_easings.drawMenu();
+        m_easing.drawMenu();
         ImGui::SeparatorText( "Midi Triggers" );
         m_midiNoteControl.drawMenu();
 
@@ -139,7 +117,7 @@ namespace nx
     {
       if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
       {
-        m_easings.trigger();
+        m_easing.trigger();
       }
     }
 
@@ -158,7 +136,7 @@ namespace nx
         }
       }
 
-      m_shader.setUniform( "u_time", m_easings.getEasing() );
+      m_shader.setUniform( "u_time", m_easing.getEasing() );
 
       m_shader.setUniform("u_texture", inputTexture.getTexture());
       m_shader.setUniform("u_intensity", m_data.masterGain);
@@ -190,7 +168,7 @@ namespace nx
     sf::RenderTexture m_outputTexture;
 
     KaleidoscopeData_t m_data;
-    TimeEasing m_easings;
+    TimeEasing m_easing;
     MidiNoteControl m_midiNoteControl;
 
     TimedCursorPosition m_timedCursor;

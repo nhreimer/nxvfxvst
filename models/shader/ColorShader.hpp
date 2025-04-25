@@ -88,6 +88,7 @@ X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipli
     {
       if ( ImGui::TreeNode( "Color Transform" ) )
       {
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;
         COLOR_SHADER_PARAMS(X_SHADER_IMGUI);
 
