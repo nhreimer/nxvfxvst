@@ -84,7 +84,7 @@ X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center")
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode("Rumble" ) )
+      if ( ImGui::TreeNode("Rumble Options" ) )
       {
         ImGui::Checkbox("Active", &m_data.isActive);
         auto& STRUCT_REF = m_data;

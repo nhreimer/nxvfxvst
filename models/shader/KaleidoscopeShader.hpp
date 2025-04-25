@@ -94,7 +94,7 @@ X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion o
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Cosmic-Kaleidoscope" ) )
+      if ( ImGui::TreeNode( "Cosmic-Kaleidoscope Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;

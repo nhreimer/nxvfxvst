@@ -49,17 +49,27 @@ namespace nlohmann
     c.a = j.at(3).get<uint8_t>();
   }
 
-  // inline void to_json(nlohmann::json& j, const sf::BlendMode& mode)
-  // {
-  //   if ( mode == sf::BlendAdd ) return "BlendAdd";
-  //   if ( mode == sf::BlendAlpha ) return "BlendAlpha";
-  //   if ( mode == sf::BlendMax ) return "BlendMax";
-  //   if ( mode == sf::BlendMin ) return "BlendMin";
-  //   if ( mode == sf::BlendMax ) return "BlendMax";
-  //   if ( mode == sf::BlendMultiply ) return "BlendMultiply";
-  //   if ( mode == sf::BlendNone ) return "BlendNone";
-  //   return  "BlendAdd";
-  // }
+  inline void to_json(json& j, const sf::BlendMode& mode)
+  {
+    j = json{
+              {"colorSrcFactor", mode.colorSrcFactor},
+              {"colorDstFactor", mode.colorDstFactor},
+              {"colorEquation",  mode.colorEquation},
+              {"alphaSrcFactor", mode.alphaSrcFactor},
+              {"alphaDstFactor", mode.alphaDstFactor},
+              {"alphaEquation",  mode.alphaEquation}
+    };
+  }
+
+  inline void from_json(const json& j, sf::BlendMode& mode)
+  {
+    j.at("colorSrcFactor").get_to(mode.colorSrcFactor);
+    j.at("colorDstFactor").get_to(mode.colorDstFactor);
+    j.at("colorEquation").get_to(mode.colorEquation);
+    j.at("alphaSrcFactor").get_to(mode.alphaSrcFactor);
+    j.at("alphaDstFactor").get_to(mode.alphaDstFactor);
+    j.at("alphaEquation").get_to(mode.alphaEquation);
+  }
 
 }
 

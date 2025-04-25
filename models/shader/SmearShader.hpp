@@ -5,27 +5,37 @@ namespace nx
 
   class SmearShader final : public IShader
   {
+#define SMEAR_SHADER_PARAMS(X)                                                                       \
+X(directionAngleInRadians, float, 0.f,  -NX_PI, NX_PI,  "Angle of smear direction (in radians)")     \
+X(length,                 float, 0.2f,  0.f,  1.f,     "Length of smear trail (0 = off, 1 = full)")  \
+X(intensity,              float, 0.5f,  0.f,  1.f,     "Blend amount with previous frame")           \
+X(tint,                   sf::Color, sf::Color(255,255,255), 0.f, 0.f, "Optional color overlay")     \
+X(sampleCount,            int,   32,    1,   128,      "Number of smear samples (quality vs speed)") \
+X(jitterAmount,           float, 0.f,   0.f,  1.f,     "Randomness in smear direction per sample")   \
+X(brightnessBoost,        float, 1.f,   0.f,  10.f,    "Overall brightness multiplier")              \
+X(brightnessPulse,        float, 1.f,   0.f,  5.f,     "Brightness wave amount during pulses")       \
+X(falloffPower,           float, 1.f,   0.1f, 10.f,    "Exponential falloff on smear fade")          \
+X(wiggleAmplitude,        float, 0.f,   0.f,  NX_PI,   "Wiggle amount (radians) per sample")         \
+X(wiggleFrequency,        float, 0.f,   0.f,  50.f,    "Wiggle speed (Hz)")                          \
+X(feedbackFade,           float, 0.05f, 0.f,  1.f,     "Fadeout amount for feedback trail")          \
+X(feedbackBlendMode,      sf::BlendMode, sf::BlendAdd, 0, 0, "Blend mode used for feedback drawing") \
+X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added to feedback frame")
+
     struct SmearData_t
     {
       bool isActive { true };
-      float directionAngleInRadians { 0.f };
-      float length { 0.2f };                             // 0.0–1.0
-      float intensity { 0.5f };                          // blend amount
-      sf::Color tint { 255, 255, 255 };   // optional colorization
-      int sampleCount { 32 };                            // more = smoother, but slower
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(SMEAR_SHADER_PARAMS)
+    };
 
-      float jitterAmount { 0.0f };
-      float brightnessBoost{ 1.0f };
-      float brightnessPulse{ 1.f };
-      float falloffPower { 1.0f };
+    enum class E_SmearParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(SMEAR_SHADER_PARAMS)
+      LastItem
+    };
 
-      float wiggleAmplitude { 0.0f };    // in radians
-      float wiggleFrequency { 0.0f };    // Hz
-
-      float feedbackFade = 0.05f; // 0 = no fade, 1 = instant clear
-      sf::BlendMode feedbackBlendMode { sf::BlendAdd };
-
-      float feedbackRotation = 0.f;  // degrees
+    static inline const std::array<std::string, static_cast<size_t>(E_SmearParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(SMEAR_SHADER_PARAMS)
     };
 
   public:
@@ -44,42 +54,23 @@ namespace nx
     [[nodiscard]]
     nlohmann::json serialize() const override
     {
-      return
-      {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive },
-          { "directionAngleInRadians", m_data.directionAngleInRadians },
-          { "length", m_data.length },
-          { "tint", SerialHelper::convertColorToJson( m_data.tint )  },
-          { "sampleCount", m_data.sampleCount },
-          { "jitterAmount", m_data.jitterAmount },
-          { "brightnessBoost", m_data.brightnessBoost },
-          { "brightnessPulse", m_data.brightnessPulse },
-          { "falloffPower", m_data.falloffPower },
-          { "wiggleAmplitude", m_data.wiggleAmplitude },
-          { "wiggleFrequency", m_data.wiggleFrequency },
-          { "feedbackFade", m_data.feedbackFade },
-          { "feedbackBlend", SerialHelper::convertBlendModeToString( m_data.feedbackBlendMode ) },
-          { "easing", m_easing.serialize() },
-          { "midiTriggers", m_midiNoteControl.serialize() }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum( getType() );
+      EXPAND_SHADER_PARAMS_TO_JSON(SMEAR_SHADER_PARAMS)
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
+
     void deserialize(const nlohmann::json &j) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.at( "isActive" ).get<bool>();
-        m_data.intensity = j.at( "intensity" ).get<float>();
-        m_data.length = j.at( "length" ).get<float>();
-        m_data.tint = SerialHelper::convertColorFromJson( j.at( "tint" ), sf::Color::White );
-        m_data.sampleCount = j.at( "sampleCount" ).get<int>();
-        m_data.jitterAmount = j.at( "jitterAmount" ).get<float>();
-        m_data.brightnessBoost = j.at( "brightnessBoost" ).get<float>();
-        m_data.brightnessPulse = j.at( "brightnessPulse" ).get<float>();
-        m_data.wiggleAmplitude = j.at( "wiggleAmplitude" ).get<float>();
-        m_data.wiggleFrequency = j.at( "wiggleFrequency" ).get<float>();
-        m_data.directionAngleInRadians = j.at( "directionAngleInRadians" ).get<float>();
-        m_data.falloffPower = j.at( "falloffPower" ).get<float>();
+        EXPAND_SHADER_PARAMS_FROM_JSON(SMEAR_SHADER_PARAMS)
+
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -102,33 +93,11 @@ namespace nx
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Smear" ) )
+      if ( ImGui::TreeNode( "Smear Options" ) )
       {
-        ImGui::Checkbox("Active", &m_data.isActive);
-        ImGui::SliderFloat("Smear Length", &m_data.length, 0.f, 1.f);
-        ImGui::SliderFloat("Smear Intensity", &m_data.intensity, 0.f, 2.f);
-        ImGui::SliderInt("Samples", &m_data.sampleCount, 1, 128);
-
-        ImGui::SliderAngle("Smear Direction", &m_data.directionAngleInRadians, -180.f, 180.f);
-        ImGui::SliderFloat("Wiggle Amplitude", &m_data.wiggleAmplitude, 0.f, 2.0f); // radians
-        ImGui::SliderFloat("Wiggle Frequency", &m_data.wiggleFrequency, 0.f, 20.0f); // Hz
-
-        ImGui::SliderFloat("Brightness Boost", &m_data.brightnessBoost, 1.f, 10.f);
-
-        // after .5 - .7, there's a rolloff that occurs
-        ImGui::SliderFloat("Jitter Amount", &m_data.jitterAmount, 0.f, 0.8f);
-        ImGui::SliderFloat("Falloff Power", &m_data.falloffPower, 0.5f, 4.f);
-
-        ImGui::SliderFloat("Feedback Fade", &m_data.feedbackFade, 0.0f, 1.0f);
-
-        ImVec4 color = m_data.tint;
-        if ( ImGui::ColorPicker4( "Particle Fill##1",
-                                  reinterpret_cast< float * >( &color ),
-                                  ImGuiColorEditFlags_AlphaBar,
-                                  nullptr ) )
-        {
-          m_data.tint = color;
-        }
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
+        auto& STRUCT_REF = m_data;
+        SMEAR_SHADER_PARAMS(X_SHADER_IMGUI);
 
         ImGui::Separator();
         MenuHelper::drawBlendOptions( m_data.feedbackBlendMode );

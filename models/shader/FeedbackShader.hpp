@@ -70,7 +70,7 @@ X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trai
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Feedback" ) )
+      if ( ImGui::TreeNode( "Feedback Options" ) )
       {
         auto& STRUCT_REF = m_data;
         FEEDBACK_SHADER_PARAMS(X_SHADER_IMGUI);

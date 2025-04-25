@@ -79,7 +79,7 @@ X(speed,         float, 0.f,   0.f, 50.f,"Wave movement speed over time")
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Ripple" ) )
+      if ( ImGui::TreeNode( "Ripple Options" ) )
       {
         ImGui::Checkbox( "Ripple Active##1", &m_data.isActive );
 

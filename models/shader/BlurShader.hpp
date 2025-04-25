@@ -83,7 +83,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f , "")
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Gaussian Blur" ) )
+      if ( ImGui::TreeNode( "Gaussian Blur Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;

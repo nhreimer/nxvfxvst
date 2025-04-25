@@ -84,7 +84,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Dual-Kawase Blur" ) )
+      if ( ImGui::TreeNode( "Dual-Kawase Blur Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;

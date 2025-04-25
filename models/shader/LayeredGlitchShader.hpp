@@ -92,7 +92,7 @@ X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Glitch" ) )
+      if ( ImGui::TreeNode( "Glitch Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;
