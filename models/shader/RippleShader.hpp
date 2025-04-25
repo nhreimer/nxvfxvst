@@ -6,16 +6,30 @@ namespace nx
 {
   class RippleShader final : public IShader
   {
+
+#define RIPPLE_SHADER_PARAMS(X)                                                                   \
+X(rippleCenterX, float, 0.5f, 0.f, 1.f,  "Horizontal origin of ripple (0.0 = left, 1.0 = right)") \
+X(rippleCenterY, float, 0.5f, 0.f, 1.f,  "Vertical origin of ripple (0.0 = top, 1.0 = bottom)")   \
+X(amplitude,     float, 0.05f, 0.f, 1.f, "[CALC] Ripple strength, typically eased")               \
+X(frequency,     float, 10.f,  1.f, 100.f,"Wave density across the screen")                       \
+X(speed,         float, 0.f,   0.f, 50.f,"Wave movement speed over time")
+
+
     struct RippleData_t
     {
       bool isActive { true };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(RIPPLE_SHADER_PARAMS)
+    };
 
-      float rippleCenterX { 0.5f };
-      float rippleCenterY { 0.5f };
+    enum class E_RippleParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(RIPPLE_SHADER_PARAMS)
+      LastItem
+    };
 
-      float amplitude { 0.05f };    // calculated for us
-      float frequency { 10.0f };
-      float speed { 0.f };
+    static inline const std::array<std::string, static_cast<size_t>(E_RippleParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(RIPPLE_SHADER_PARAMS)
     };
 
   public:
@@ -37,30 +51,23 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-      {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive },
-          { "rippleCenterX", m_data.rippleCenterX },
-          { "rippleCenterY", m_data.rippleCenterY },
-          // { "amplitude", m_data.amplitude },
-          { "frequency", m_data.frequency },
-          { "speed", m_data.speed },
-             { "midiTriggers", m_midiNoteControl.serialize() }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum( getType() );
+      EXPAND_SHADER_PARAMS_TO_JSON(RIPPLE_SHADER_PARAMS)
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize(const nlohmann::json& j) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.rippleCenterX = j.value("rippleCenterX", 0.5f);
-        m_data.rippleCenterY = j.value("rippleCenterY", 0.5f);
-        // m_data.amplitude = j.value("amplitude", 0.05f);
-        m_data.frequency = j.value("frequency", 10.0f);
-        m_data.speed = j.value("speed", 0.f);
-        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+        EXPAND_SHADER_PARAMS_FROM_JSON(RIPPLE_SHADER_PARAMS)
+
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -76,29 +83,19 @@ namespace nx
       {
         ImGui::Checkbox( "Ripple Active##1", &m_data.isActive );
 
-        if ( ImGui::SliderFloat( "Ripple Center x##1", &m_data.rippleCenterX, 0.f, 1.f ) ||
-             ImGui::SliderFloat( "Ripple Center y##1", &m_data.rippleCenterY, 0.f, 1.f ) )
+        const float oldCenterX = m_data.rippleCenterX;
+        const float oldCenterY = m_data.rippleCenterY;
+
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
+        auto& STRUCT_REF = m_data;
+        RIPPLE_SHADER_PARAMS(X_SHADER_IMGUI);
+
+        if ( oldCenterX != m_data.rippleCenterX || oldCenterY != m_data.rippleCenterY )
         {
-          const sf::Vector2f calibrated { m_data.rippleCenterX * ( float )m_globalInfo.windowSize.x,
-                                          m_data.rippleCenterY * ( float )m_globalInfo.windowSize.y };
+          const sf::Vector2f calibrated { m_data.rippleCenterX * static_cast< float >(m_globalInfo.windowSize.x),
+                                          m_data.rippleCenterY * static_cast< float >(m_globalInfo.windowSize.y) };
           m_timedCursor.setPosition( calibrated );
         }
-
-        ImGui::SliderFloat( "Ripple Frequency##1", &m_data.frequency, 0.f, 50.f );
-        ImGui::SliderFloat( "Ripple Speed##1", &m_data.speed, 0.f, 10.f );
-
-        // TODO: these are inverted, i think because lower = slower for m_data.speed
-        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 8.f );
-        // ImGui::SameLine();
-        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 4.f );
-        // ImGui::SameLine();
-        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm * 2.f );
-        // ImGui::SameLine();
-        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm / 2.f );
-        // ImGui::SameLine();
-        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm / 4.f );
-        // ImGui::SameLine();
-        // ImGui::Text( "%0.2f", 60.f / m_globalInfo.bpm / 8.f );
 
         ImGui::Separator();
         m_easing.drawMenu();

@@ -12,6 +12,8 @@ namespace nx
   class LayeredGlitchShader final : public IShader
   {
 
+// easings:    glitchBaseStrength, glitchAmount, and pixelJumpAmount
+
 #define GLITCH_SHADER_PARAMS(X)                                                               \
 X(applyOnlyOnEvents, bool,  false, 0, 0,  "Pause rendering between glitches until retrigger") \
 X(glitchBaseStrength, float, 0.1f, 0.f, 5.f, "Base glitch strength when idle")                \

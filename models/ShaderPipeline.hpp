@@ -6,7 +6,6 @@
 #include "models/shader/DualKawaseBlurShader.hpp"
 #include "models/shader/FeedbackShader.hpp"
 #include "models/shader/LayeredGlitchShader.hpp"
-#include "models/shader/PulseShader.hpp"
 #include "models/shader/RippleShader.hpp"
 #include "models/shader/RumbleShader.hpp"
 #include "models/shader/SmearShader.hpp"
@@ -136,10 +135,6 @@ namespace nx
             shader = deserializeShader< LayeredGlitchShader >( j );
           break;
 
-        case E_ShaderType::E_PulseShader:
-          shader = deserializeShader< PulseShader >( j );
-          break;
-
         case E_ShaderType::E_KaleidoscopeShader:
           shader = deserializeShader< KaleidoscopeShader >( j );
           break;
@@ -243,10 +238,6 @@ namespace nx
         {
           if ( ImGui::Button( "Glitch##1" ) )
             createShader< LayeredGlitchShader >();
-
-          ImGui::SameLine();
-          if ( ImGui::Button( "Pulse##1" ) )
-            createShader< PulseShader >();
 
           ImGui::SameLine();
           if ( ImGui::Button( "Rumble##1" ) )

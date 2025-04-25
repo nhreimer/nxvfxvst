@@ -107,7 +107,6 @@ namespace nx
         {
           case E_ShaderType::E_GlitchShader: return "GlitchShader";
           case E_ShaderType::E_BlurShader: return "BlurShader";
-          case E_ShaderType::E_PulseShader: return "PulseShader";
           case E_ShaderType::E_RippleShader: return "RippleShader";
           case E_ShaderType::E_StrobeShader: return "StrobeShader";
           case E_ShaderType::E_RumbleShader: return "RumbleShader";
@@ -157,7 +156,6 @@ namespace nx
       else if constexpr ( std::is_same_v< TEnum, E_ShaderType > )
       {
         if ( typeName == "GlitchShader" ) return E_ShaderType::E_GlitchShader;
-        if ( typeName == "PulseShader" ) return E_ShaderType::E_PulseShader;
         if ( typeName == "BlurShader" ) return E_ShaderType::E_BlurShader;
         if ( typeName == "StrobeShader" ) return E_ShaderType::E_StrobeShader;
         if ( typeName == "RippleShader" ) return E_ShaderType::E_RippleShader;

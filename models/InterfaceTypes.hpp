@@ -7,7 +7,6 @@ namespace nx
     E_InvalidShader,
     E_GlitchShader,
     E_BlurShader,
-    E_PulseShader,
     E_RippleShader,
     E_StrobeShader,
     E_KaleidoscopeShader,
