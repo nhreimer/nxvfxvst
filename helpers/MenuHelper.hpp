@@ -9,6 +9,8 @@ namespace nx
 
     static void drawBlendOptions( sf::BlendMode& blendMode )
     {
+      ImGui::PushID( &blendMode );
+
       blendMode = addBlendOption( "none", blendMode, sf::BlendNone );
       ImGui::SameLine();
       blendMode = addBlendOption( "add", blendMode, sf::BlendAdd );
@@ -21,6 +23,8 @@ namespace nx
       ImGui::SameLine();
       blendMode = addBlendOption( "max", blendMode, sf::BlendMax );
       ImGui::SameLine();
+
+      ImGui::PopID();
     }
 
     static sf::BlendMode addBlendOption(

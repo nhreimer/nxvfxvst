@@ -1,5 +1,6 @@
 #pragma once
 #include "models/IShader.hpp"
+#include "models/shader/BlenderShader.hpp"
 
 namespace nx
 {
@@ -7,15 +8,18 @@ namespace nx
   class ShockBloomShader final : public IShader
   {
 
-#define SHOCK_BLOOM_SHADER_PARAMS(X)                                                                \
-X(center,          sf::Vector2f, sf::Vector2f(0.5f, 0.5f), 0.f, 0.f, "Center of the ring (UV)")     \
-X(color,           sf::Glsl::Vec3, sf::Glsl::Vec3(1.f, 1.f, 1.f), 0.f, 0.f, "Shock ring RGB color") \
-X(maxRadius,       float, 0.6f,   0.1f, 1.5f,  "Maximum radius of the ring")                        \
-X(thickness,       float, 0.05f,  0.01f, 0.2f, "Ring thickness (falloff)")                          \
-X(intensity,       float, 2.0f,   0.0f, 5.0f,  "Glow strength of the ring")                         \
-X(easingMultiplier,float, 1.0f,   0.0f, 5.0f,  "How strongly the easing drives visibility")         \
-X(useAdditive,     bool, false, 0, 0,        "Enable additive blend mode for the ring")             \
-X(innerTransparency, float, 1.0f, 0.f, 1.f, "Transparency multiplier for the center of the ring")
+#define SHOCK_BLOOM_SHADER_PARAMS(X)                                                                  \
+X(center,            sf::Vector2f, sf::Vector2f(0.5f, 0.5f), 0.f, 0.f, "Center of the ring (UV)")     \
+X(color,             sf::Glsl::Vec3, sf::Glsl::Vec3(1.f, 1.f, 1.f), 0.f, 0.f, "Shock ring RGB color") \
+X(maxRadius,         float, 0.6f,   0.1f, 1.5f,  "Maximum radius of the ring")                        \
+X(thickness,         float, 0.05f,  0.01f, 0.2f, "Ring thickness (falloff)")                          \
+X(intensity,         float, 2.0f,   0.0f, 5.0f,  "Glow strength of the ring")                         \
+X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, "Blends the effect over the input" )      \
+X(easingMultiplier,  float, 1.0f,   0.0f, 5.0f,  "How strongly the easing drives visibility")         \
+X(innerTransparency, float, 1.0f, 0.f, 1.f, "Transparency multiplier for the center of the ring")     \
+X(mixFactor,         float, 1.0f, 0.f, 1.f, "Mix between original and effects result")                \
+X(BlendMix,          sf::BlendMode, sf::BlendAdd, 0.f, 0.f, "Blends the mixed effect" )
+
 
     struct ShockBloomData_t
     {
@@ -154,9 +158,7 @@ X(innerTransparency, float, 1.0f, 0.f, 1.f, "Transparency multiplier for the cen
       // Draw with optional blend mode
       sf::RenderStates states;
       states.shader = &m_shader;
-      states.blendMode = m_data.useAdditive
-        ? sf::BlendAdd
-        : sf::BlendAlpha;
+      states.blendMode = m_data.BlendInput;
 
       // Fullscreen quad
       sf::RectangleShape fullscreen(sf::Vector2f(inputTexture.getSize()));
@@ -166,7 +168,7 @@ X(innerTransparency, float, 1.0f, 0.f, 1.f, "Transparency multiplier for the cen
       m_outputTexture.draw(fullscreen, states);
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor, m_data.BlendMix );
     }
 
   private:
@@ -176,6 +178,8 @@ X(innerTransparency, float, 1.0f, 0.f, 1.f, "Transparency multiplier for the cen
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+
+    BlenderShader m_blender;
 
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
