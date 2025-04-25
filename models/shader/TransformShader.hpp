@@ -4,14 +4,28 @@ namespace nx
 {
   class TransformShader final : public IShader
   {
+#define TRANSFORM_SHADER_PARAMS(X)                                                             \
+X(rotationDegrees, float, 0.f,   -360.f, 360.f, "Rotation applied to the screen")            \
+X(shift,           sf::Vector2f, sf::Vector2f(0.f, 0.f), 0.f, 0.f, "Screen offset (X, Y)")    \
+X(flipX,           bool, false, 0, 0, "Horizontal flip toggle")                              \
+X(flipY,           bool, false, 0, 0, "Vertical flip toggle")                                \
+X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or shrink")
+
     struct TransformData_t
     {
       bool isActive { true };
-      float rotationDegrees { 0.f };
-      sf::Vector2f shift { 0.f, 0.f };
-      bool flipX { false };
-      bool flipY { false };
-      float scale { 1.0f };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(TRANSFORM_SHADER_PARAMS)
+    };
+
+    enum class E_TransformParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(TRANSFORM_SHADER_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_TransformParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(TRANSFORM_SHADER_PARAMS)
     };
 
   public:
@@ -32,30 +46,28 @@ namespace nx
     [[nodiscard]]
     nlohmann::json serialize() const override
     {
-      return
-      {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive },
-          { "rotationDegrees", m_data.rotationDegrees },
-          { "flipX", m_data.flipX },
-          { "flipY", m_data.flipY },
-          { "scale", m_data.scale },
-          { "shift", SerialHelper::convertVectorToJson< float >( m_data.shift ) },
-          { "easing", m_easing.serialize() },
-          { "midiTriggers", m_midiNoteControl.serialize() }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum( getType() );
+      EXPAND_SHADER_PARAMS_TO_JSON(TRANSFORM_SHADER_PARAMS)
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize(const nlohmann::json &j) override
     {
-      m_data.isActive = j.value("isActive", false);
-      m_data.rotationDegrees = j.value("rotationDegrees", 0.f);
-      m_data.shift = SerialHelper::convertVectorFromJson< float >( "shift" );
-      m_data.flipX = j.value("flipX", false);
-      m_data.flipY = j.value("flipY", false);
-      m_data.scale = j.value("scale", 1.f);
-      m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
-      m_easing.deserialize( j[ "easing" ] );
+      if ( SerialHelper::isTypeGood( j, getType() ) )
+      {
+        EXPAND_SHADER_PARAMS_FROM_JSON(TRANSFORM_SHADER_PARAMS)
+
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
+      }
+      else
+      {
+        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      }
     }
 
     [[nodiscard]]
@@ -71,10 +83,16 @@ namespace nx
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode("Transform") )
+      if ( ImGui::TreeNode("Transform Options") )
       {
-        if ( ImGui::SliderFloat( "Offset X", &m_data.shift.x, -1.f, 1.f ) ||
-             ImGui::SliderFloat( "Offset Y", &m_data.shift.y, -1.f, 1.f ) )
+
+        const float offsetX = m_data.shift.x;
+        const float offsetY = m_data.shift.y;
+
+        auto& STRUCT_REF = m_data;
+        TRANSFORM_SHADER_PARAMS(X_SHADER_IMGUI);
+
+        if ( offsetX != m_data.shift.x || offsetY != m_data.shift.y )
         {
           const sf::Vector2f calibrated
           {
@@ -84,13 +102,6 @@ namespace nx
 
           m_timedCursorShift.setPosition( calibrated );
         }
-
-        ImGui::SliderFloat("Rotation (deg)", &m_data.rotationDegrees, -180.f, 180.f);
-        ImGui::SliderFloat("Scale", &m_data.scale, 0.1f, 2.0f);
-
-        ImGui::Checkbox("Flip X", &m_data.flipX);
-        ImGui::SameLine();
-        ImGui::Checkbox("Flip Y", &m_data.flipY);
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();

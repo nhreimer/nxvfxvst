@@ -54,6 +54,11 @@ namespace nx
 
     E_TimeEasingType getEasingType() const { return m_data.easingType; }
 
+    void setEasingType( const E_TimeEasingType easingType )
+    {
+      m_data.easingType = easingType;
+    }
+
     float getDecayRate() const { return m_data.decayRate; }
 
     void trigger()

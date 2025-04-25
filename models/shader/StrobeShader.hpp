@@ -8,11 +8,25 @@ namespace nx
   class StrobeShader final : public IShader
   {
 
+#define STROBE_SHADER_PARAMS(X)                                                                \
+X(flashAmount,  float, 20.f, 1.f, 100.f, "Speed of strobe pulses (Hz)")                        \
+X(flashColor, sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during strobe")
+
     struct StrobeData_t
     {
       bool isActive { true };
-      float pulseSpeed { 20.f };
-      sf::Color targetColor { sf::Color::White };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(STROBE_SHADER_PARAMS)
+    };
+
+    enum class E_StrobeParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(STROBE_SHADER_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_StrobeParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(STROBE_SHADER_PARAMS)
     };
 
   public:
@@ -22,6 +36,14 @@ namespace nx
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
         LOG_ERROR( "Failed to load strobe fragment shader" );
+      }
+      else
+      {
+        LOG_INFO( "Strobe shader loaded successfully" );
+
+        // set this to not be disabled by default because it's frustrating
+        // to not have it do anything without having to change an option first.
+        m_easing.setEasingType( E_TimeEasingType::E_Linear );
       }
     }
 
@@ -33,24 +55,23 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-      {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive },
-          { "midiTriggers", m_midiNoteControl.serialize() },
-          { "pulseSpeed", m_data.pulseSpeed },
-          { "easing", m_easing.serialize() }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum( getType() );
+      EXPAND_SHADER_PARAMS_TO_JSON(STROBE_SHADER_PARAMS)
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
-    void deserialize(const nlohmann::json& j) override
+    void deserialize( const nlohmann::json& j ) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.pulseSpeed = j.value( "pulseSpeed", 0.f );
-        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
-        m_easing.deserialize( j.at( "easing" ) );
+        EXPAND_SHADER_PARAMS_FROM_JSON(STROBE_SHADER_PARAMS)
+
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -62,9 +83,11 @@ namespace nx
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Strobe" ) )
+      if ( ImGui::TreeNode( "Strobe Options" ) )
       {
         ImGui::Checkbox( "Strobe Active##1", &m_data.isActive );
+        auto& STRUCT_REF = m_data;
+        STROBE_SHADER_PARAMS(X_SHADER_IMGUI);
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -97,17 +120,16 @@ namespace nx
         {
           LOG_ERROR( "failed to resize strobe texture" );
         }
+        else
+        {
+          LOG_INFO( "resized strobe texture" );
+        }
       }
 
-      const float intensity = m_easing.getEasing();
-
       m_shader.setUniform( "texture", inputTexture.getTexture() );
-      m_shader.setUniform( "intensity", intensity );
-      //m_shader.setUniform( "pulseSpeed", m_data.pulseSpeed );
-      // m_shader.setUniform( "time", m_clock.getElapsedTime().asSeconds() / m_easing.getDecayRate() );
+      m_shader.setUniform("flashAmount", m_data.flashAmount * m_easing.getEasing()); // or assigned easing
+      m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor));
 
-      // const auto targetColor = sf::Glsl::Vec3( m_data.flashColor.r, m_data.flashColor.g, m_data.flashColor.b );
-      // m_shader.setUniform( "flashColor", sf::Glsl::Vec4( m_data.targetColor ) );
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -128,25 +150,18 @@ namespace nx
     sf::Clock m_clock;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
-uniform float intensity;    // decays or pulses
-//uniform float time;         //
-//uniform float pulseSpeed;
-//uniform vec3 flashColor; // The target color for strobing/fade
+uniform float flashAmount;     // 0.0 = normal scene, 1.0 = full flash
+uniform vec4 flashColor;       // user-defined color
 
-void main() {
+void main()
+{
     vec2 uv = gl_FragCoord.xy / vec2(textureSize(texture, 0));
     vec4 base = texture2D(texture, uv);
 
-    float flash = intensity;
+    // Blend ENTIRE scene toward flashColor based on flashAmount
+    vec3 finalColor = mix(base.rgb, flashColor.rgb, flashAmount);
 
-    // Rhythmic pulsing like a heartbeat (triggered + decaying pulse)
-    //flash *= sin(time * pulseSpeed) * intensity; //exp(-4.0 * intensity); // change 20.0 for pulse speed
-
-    base.rgb = mix(base.rgb, vec3(1.0), flash); // fade-to-white instead of just adding
-    //base.rgb += flash;
-    //base.rgb = mix(base.rgb, flashColor.rgb, flash);
-
-    gl_FragColor = base;
+    gl_FragColor = vec4(finalColor, flashColor.a);
 })";
   };
 }
