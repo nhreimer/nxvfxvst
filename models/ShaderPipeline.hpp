@@ -12,6 +12,7 @@
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/TransformShader.hpp"
 #include "models/shader/ColorShader.hpp"
+#include "models/shader/ShockBloomShader.hpp"
 
 namespace nx
 {
@@ -179,6 +180,10 @@ namespace nx
           shader = deserializeShader< ColorShader >( j );
           break;
 
+        case E_ShaderType::E_ShockBloomShader:
+          shader = deserializeShader< ShockBloomShader >( j );
+          break;
+
         default:
           LOG_ERROR( "Unsupported shader type" );
           break;
@@ -226,7 +231,7 @@ namespace nx
 
         ImGui::SeparatorText( "Blur" );
         {
-          if ( ImGui::Button( "Blur##1" ) )
+          if ( ImGui::Button( "Gauss Blur##1" ) )
             createShader< BlurShader >();
 
           ImGui::SameLine();
@@ -246,6 +251,10 @@ namespace nx
           ImGui::SameLine();
           if ( ImGui::Button( "Strobe##1" ) )
             createShader< StrobeShader >();
+
+          ImGui::SameLine();
+          if ( ImGui::Button( "Shock Bloom##1" ) )
+            createShader< ShockBloomShader >();
         }
 
         ImGui::SeparatorText( "Warping" );

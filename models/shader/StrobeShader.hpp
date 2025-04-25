@@ -85,7 +85,7 @@ X(flashColor, sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during
     {
       if ( ImGui::TreeNode( "Strobe Options" ) )
       {
-        ImGui::Checkbox( "Strobe Active##1", &m_data.isActive );
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;
         STROBE_SHADER_PARAMS(X_SHADER_IMGUI);
 
@@ -147,7 +147,6 @@ X(flashColor, sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during
 
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
-    sf::Clock m_clock;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;
 uniform float flashAmount;     // 0.0 = normal scene, 1.0 = full flash

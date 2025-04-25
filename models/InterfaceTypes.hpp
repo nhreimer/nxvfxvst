@@ -16,7 +16,8 @@ namespace nx
     E_FeedbackShader,
     E_DualKawaseBlurShader,
     E_TransformShader,
-    E_ColorShader
+    E_ColorShader,
+    E_ShockBloomShader
   };
 
   enum class E_LayoutType : int8_t

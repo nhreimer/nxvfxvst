@@ -9,10 +9,10 @@ namespace nx
   {
 
 #define BLUR_SHADER_PARAMS(X)                        \
-X(sigma,         float, 7.f,     0.f,   50.f , "")   \
-X(brighten,      float, 1.f,     0.f,   5.f  , "")   \
-X(blurHorizontal,float, 1.0f,    0.f,   20.f , "")   \
-X(blurVertical,  float, 1.0f,    0.f,   20.f , "")
+X(sigma,         float, 7.f,     0.f,   50.f , "Amount of blurring")   \
+X(brighten,      float, 1.f,     0.f,   5.f  , "Brightens the blurred areas")   \
+X(blurHorizontal,float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction")   \
+X(blurVertical,  float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction")
 
     struct BlurData_t
     {
