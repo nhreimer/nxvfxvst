@@ -51,8 +51,8 @@ X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipli
     nlohmann::json serialize() const override
     {
       nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum(getType());
       EXPAND_SHADER_PARAMS_TO_JSON(COLOR_SHADER_PARAMS)
-
       j[ "midiTriggers" ] = m_midiNoteControl.serialize();
       j[ "easing" ] = m_easing.serialize();
       return j;
@@ -86,7 +86,7 @@ X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipli
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Color" ) )
+      if ( ImGui::TreeNode( "Color Transform" ) )
       {
         auto& STRUCT_REF = m_data;
         COLOR_SHADER_PARAMS(X_SHADER_IMGUI);

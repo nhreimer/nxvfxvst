@@ -48,6 +48,19 @@ namespace nlohmann
     c.b = j.at(2).get<uint8_t>();
     c.a = j.at(3).get<uint8_t>();
   }
+
+  // inline void to_json(nlohmann::json& j, const sf::BlendMode& mode)
+  // {
+  //   if ( mode == sf::BlendAdd ) return "BlendAdd";
+  //   if ( mode == sf::BlendAlpha ) return "BlendAlpha";
+  //   if ( mode == sf::BlendMax ) return "BlendMax";
+  //   if ( mode == sf::BlendMin ) return "BlendMin";
+  //   if ( mode == sf::BlendMax ) return "BlendMax";
+  //   if ( mode == sf::BlendMultiply ) return "BlendMultiply";
+  //   if ( mode == sf::BlendNone ) return "BlendNone";
+  //   return  "BlendAdd";
+  // }
+
 }
 
 namespace nx

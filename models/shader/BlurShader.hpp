@@ -53,6 +53,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f , "")
     nlohmann::json serialize() const override
     {
       nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum( getType() );
       EXPAND_SHADER_PARAMS_TO_JSON(BLUR_SHADER_PARAMS)
 
       j[ "midiTriggers" ] = m_midiNoteControl.serialize();
@@ -85,7 +86,6 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f , "")
       if ( ImGui::TreeNode( "Image Blur" ) )
       {
         ImGui::Checkbox( "Blur Active##1", &m_data.isActive );
-        // EXPAND_SHADER_PARAMS_FOR_IMGUI(BLUR_SHADER_PARAMS)
 
         auto& STRUCT_REF = m_data;
         BLUR_SHADER_PARAMS(X_SHADER_IMGUI);

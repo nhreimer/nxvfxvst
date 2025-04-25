@@ -31,11 +31,6 @@ namespace nx
 
       sf::Color colorMaxStart { 255, 255, 0 };
       sf::Color colorMaxEnd { 255, 0, 0 };
-
-      // if (t < 0.25) return mix(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), t / 0.25);
-      // if (t < 0.5)  return mix(vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 1.0), (t - 0.25) / 0.25);
-      // if (t < 0.75) return mix(vec3(0.0, 1.0, 1.0), vec3(1.0, 1.0, 0.0), (t - 0.5) / 0.25);
-      // return mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0), (t - 0.75) / 0.25);
     };
 
   public:

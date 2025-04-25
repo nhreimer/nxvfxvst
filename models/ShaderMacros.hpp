@@ -33,6 +33,22 @@ namespace nx
   }
 }
 
+#define GEN_STRUCT_FIELD_6(name, type, defaultVal, minVal, maxVal, tooltip) \
+type name = defaultVal;
+
+#define GEN_ENUM_FIELD_6(name, type, defaultVal, minVal, maxVal, tooltip) \
+name,
+
+#define GEN_LABEL_STRING_6(name, type, defaultVal, minVal, maxVal, tooltip) \
+#name,
+
+#define GEN_TO_JSON_6(name, type, defaultVal, minVal, maxVal, tooltip) \
+j[#name] = d.name;
+
+#define GEN_FROM_JSON_6(name, type, defaultVal, minVal, maxVal, tooltip) \
+if (j.contains(#name)) j.at(#name).get_to(d.name);
+
+
 // =========================================
 // Dispatcher Macro (must be called after binding STRUCT_REF)
 // =========================================

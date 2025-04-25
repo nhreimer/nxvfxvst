@@ -8,26 +8,28 @@ namespace nx
   class DualKawaseBlurShader final : public IShader
   {
 
+#define DUALKAWASE_SHADER_PARAMS(X)                                                           \
+X(passes,      int,   4,     1,    10,    "Number of downsample/upsample passes")             \
+X(offset,      float, 1.0f,  0.0f, 10.f,  "Kernel offset per pass")                           \
+X(bloomGain,   float, 1.0f,  0.0f, 10.f,  "Gain applied to bloom texture before blending")    \
+X(brightness,  float, 1.0f,  0.0f, 3.f,   "Brightness boost for final output")                \
+X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred result")
+
     struct DKBlurData_t
     {
-      bool isActive { true };
-      int passes = 4; // user-adjustable
-      float offset = 1.0f;
+      bool isActive = true;
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(DUALKAWASE_SHADER_PARAMS)
+    };
 
-      // 1.0	Subtle dreaminess
-      // 2.0+	Cinematic glow
-      // 3.0+	Pulse with the beat!
-      float bloomGain = 1.0f;
+    enum class E_DualKawaseParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(DUALKAWASE_SHADER_PARAMS)
+      LastItem
+    };
 
-      // 1.0	Natural balance
-      // 1.5+	Lift post-blur darkening
-      // 2.0+	Glowing nebula core vibes
-      float brightness = 1.0f;
-
-      // u_mixFactor = 0.0 → No bloom
-      // u_mixFactor = 1.0 → Full bloom overlay
-      // u_mixFactor > 1.0 → Overdriven glow
-      float mixFactor = 1.0f;
+    static inline const std::array<std::string, static_cast<size_t>(E_DualKawaseParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(DUALKAWASE_SHADER_PARAMS)
     };
 
   public:
@@ -52,30 +54,20 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-     {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "passes", m_data.passes },
-          { "offset", m_data.offset },
-          { "bloomGain", m_data.bloomGain },
-          { "brightness", m_data.brightness },
-          { "mixFactor", m_data.mixFactor },
-          { "isActive", m_data.isActive },
-          { "easing", m_easing.serialize() },
-          { "midiTriggers", m_midiNoteControl.serialize() }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum(getType());
+      EXPAND_SHADER_PARAMS_TO_JSON(DUALKAWASE_SHADER_PARAMS)
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize( const nlohmann::json& j ) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.passes = j.value("passes", 4);
-        m_data.offset = j.value("offset", 0.0f);
-        m_data.bloomGain = j.value("bloomGain", 1.0f);
-        m_data.brightness = j.value("brightness", 1.0f);
-        m_data.mixFactor = j.value("mixFactor", 1.0f);
+        EXPAND_SHADER_PARAMS_FROM_JSON(DUALKAWASE_SHADER_PARAMS)
+
         m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
         m_easing.deserialize( j[ "easing" ] );
       }
@@ -86,7 +78,7 @@ namespace nx
     }
 
     // identify type for easier loading
-    E_ShaderType getType() const override { return E_ShaderType::E_BlurShader; }
+    E_ShaderType getType() const override { return E_ShaderType::E_DualKawaseBlurShader; }
 
     void update( const sf::Time& deltaTime ) override {}
 
@@ -96,11 +88,14 @@ namespace nx
       {
         ImGui::Checkbox( "DK Blur Active##1", &m_data.isActive );
 
-        ImGui::SliderInt("Blur Passes", &m_data.passes, 1, 10);
-        ImGui::SliderFloat("Blur Offset", &m_data.offset, 0.5f, 4.0f);
-        ImGui::SliderFloat("Bloom Gain", &m_data.bloomGain, 0.1f, 5.0f);
-        ImGui::SliderFloat("Blur Brightness", &m_data.brightness, 0.1f, 3.0f);
-        ImGui::SliderFloat("Mix Factor", &m_data.mixFactor, 0.0f, 2.0f);
+        auto& STRUCT_REF = m_data;
+        DUALKAWASE_SHADER_PARAMS(X_SHADER_IMGUI);
+
+        // ImGui::SliderInt("Blur Passes", &m_data.passes, 1, 10);
+        // ImGui::SliderFloat("Blur Offset", &m_data.offset, 0.5f, 4.0f);
+        // ImGui::SliderFloat("Bloom Gain", &m_data.bloomGain, 0.1f, 5.0f);
+        // ImGui::SliderFloat("Blur Brightness", &m_data.brightness, 0.1f, 3.0f);
+        // ImGui::SliderFloat("Mix Factor", &m_data.mixFactor, 0.0f, 2.0f);
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -123,7 +118,7 @@ namespace nx
     bool isShaderActive() const override { return m_data.isActive; }
 
     [[nodiscard]]
-    sf::RenderTexture& applyShader(const sf::RenderTexture& inputTexture)
+    sf::RenderTexture& applyShader(const sf::RenderTexture& inputTexture) override
     {
       if ( m_pingTexture.getSize() != inputTexture.getSize() )
       {
