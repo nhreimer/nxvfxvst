@@ -7,23 +7,34 @@ namespace nx
 
   class RumbleShader final : public IShader
   {
+
+#define RUMBLE_SHADER_PARAMS(X)                                                                 \
+X(rumbleStrength, float, 20.f, 0.f, 100.f,  "Max pixel offset during shake")                    \
+X(frequency,       float, 40.f, 1.f, 200.f, "Shake frequency in Hz")                            \
+X(pulseDecay,      float, -5.f, -50.f, 0.f, "Decay rate for shake pulses")                      \
+X(direction, sf::Vector2f, sf::Vector2f(1.f, 1.f), 0.f, 0.f, "Shake axis direction (x, y)")     \
+X(useNoise,        bool, false, 0, 0,      "Enable procedural noise mode instead of sine wave") \
+X(modAmplitude,    float, 0.5f, 0.f, 2.f,  "Amount of wobble modulation over time")             \
+X(modFrequency,    float, 10.f, 0.f, 50.f, "Speed of wobble modulation")                        \
+X(colorDesync,     float, 1.0f, 0.f, 5.f,  "RGB offset multiplier (screen tearing)")            \
+X(baseColorDesync, float, 0.25f, 0.f, 2.f, "Base chroma offset before modulation")              \
+X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center")
+
     struct RumbleData_t
     {
       bool isActive { true };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(RUMBLE_SHADER_PARAMS)
+    };
 
-      float rumbleStrength { 20.f };      // max px offset
-      float frequency { 40.f };           // wiggle speed
-      float pulseDecay { -5.f };          // how fast the shake fades
-      sf::Vector2f direction { 1.f, 1.f }; // shake X, Y
-      bool useNoise { false };            // toggle for noise mode
+    enum class E_RumbleParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(RUMBLE_SHADER_PARAMS)
+      LastItem
+    };
 
-      float modAmplitude { 0.5f };   //  0.0–1.0 wobble amount
-      float modFrequency { 10.f };   //  0.0–50.0 wobble speed
-      float colorDesync { 1.0f };    //  RGB shift multiplier
-
-      // adjust how much the colors come detach from the center of the particle
-      float baseColorDesync { 0.25f };
-      float maxColorDesync { 0.25f };
+    static inline const std::array<std::string, static_cast<size_t>(E_RumbleParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(RUMBLE_SHADER_PARAMS)
     };
 
   public:
@@ -44,39 +55,23 @@ namespace nx
     [[nodiscard]]
     nlohmann::json serialize() const override
     {
-      return
-   {
-        { "type", SerialHelper::serializeEnum( getType() ) },
-        { "isActive", m_data.isActive },
-        { "rumbleStrength", m_data.rumbleStrength },
-        { "frequency", m_data.frequency },
-        { "pulseDecay", m_data.pulseDecay },
-        { "direction", { m_data.direction.x, m_data.direction.y } },
-          { "useNoise", m_data.useNoise },
-          { "modAmplitude", m_data.modAmplitude },
-          { "modFrequency", m_data.modFrequency },
-          { "baseColorDesync", m_data.baseColorDesync },
-            { "maxColorDesync", m_data.maxColorDesync },
-        { "easing", m_easing.serialize() },
-          { "midiTriggers", m_midiNoteControl.serialize() }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum( getType() );
+      EXPAND_SHADER_PARAMS_TO_JSON(RUMBLE_SHADER_PARAMS)
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
+
     void deserialize( const nlohmann::json &j ) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.rumbleStrength = j.value("rumbleStrength", 20.f);
-        m_data.frequency = j.value("frequency", 40.f);
-        m_data.pulseDecay = j.value("pulseDecay", -5.f);
-        m_data.direction = SerialHelper::convertVectorFromJson< float >( j.at( "direction" ), sf::Vector2f{ 1.f, 1.f } );
-        m_data.useNoise = j.value("useNoise", false);
-        m_data.modAmplitude = j.value("modAmplitude", 0.5f);
-        m_data.modFrequency = j.value("modFrequency", 10.f);
-        m_data.baseColorDesync = j.value("baseColorDesync", 0.25f);
-        m_data.maxColorDesync = j.value("maxColorDesync", 0.25f);
-        m_easing.deserialize( j.at( "easing" ) );
-        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+        EXPAND_SHADER_PARAMS_FROM_JSON(RUMBLE_SHADER_PARAMS)
+
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_easing.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -92,22 +87,8 @@ namespace nx
       if ( ImGui::TreeNode("Rumble" ) )
       {
         ImGui::Checkbox("Active", &m_data.isActive);
-        ImGui::Checkbox("Use Noise Shake", &m_data.useNoise);
-
-        ImGui::Separator();
-        ImGui::SliderFloat("Strength", &m_data.rumbleStrength, 0.f, 100.f);
-        ImGui::SliderFloat("Frequency", &m_data.frequency, 0.f, 100.f);
-        ImGui::SliderFloat("Pulse Decay", &m_data.pulseDecay, -20.f, -0.1f);
-        ImGui::SliderFloat("Direction X", &m_data.direction.x, 0.f, 1.f);
-        ImGui::SliderFloat("Direction Y", &m_data.direction.y, 0.f, 1.f);
-
-        ImGui::Separator();
-        ImGui::SliderFloat("Modulation Amplitude", &m_data.modAmplitude, 0.f, 2.0f);
-        ImGui::SliderFloat("Modulation Frequency", &m_data.modFrequency, 0.f, 50.f);
-        ImGui::SliderFloat("Color Desync", &m_data.colorDesync, 0.f, 5.0f);
-
-        ImGui::SliderFloat("Base Color Desync", &m_data.baseColorDesync, 0.f, 2.0f);
-        ImGui::SliderFloat("Max Color Desync", &m_data.maxColorDesync, 0.f, 1.5f );
+        auto& STRUCT_REF = m_data;
+        RUMBLE_SHADER_PARAMS(X_SHADER_IMGUI);
 
         ImGui::Separator();
         m_easing.drawMenu();
