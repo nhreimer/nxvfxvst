@@ -11,13 +11,26 @@ namespace nx
   class FeedbackShader final : public IShader
   {
 
+#define FEEDBACK_SHADER_PARAMS(X)                                                             \
+X(trailFadeAlpha, int, 8,   0,   255,  "Alpha value subtracted from each trail frame")        \
+X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trail fading")
+
+
     struct FeedbackData_t
     {
       bool isActive { true };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(FEEDBACK_SHADER_PARAMS)
+    };
 
-      // 0 -> trail never fades (fully persistent)
-      int32_t trailFadeAlpha { 8 };
-      sf::Color fadeColor { sf::Color::Black };
+    enum class E_FeedbackParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(FEEDBACK_SHADER_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_FeedbackParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(FEEDBACK_SHADER_PARAMS)
     };
 
   public:
@@ -33,22 +46,19 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-      {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive },
-           { "trailFadeAlpha", m_data.trailFadeAlpha },
-        { "fadeColor", SerialHelper::convertColorToJson( m_data.fadeColor ) }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum(getType());
+      EXPAND_SHADER_PARAMS_TO_JSON(FEEDBACK_SHADER_PARAMS)
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize(const nlohmann::json& j) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.trailFadeAlpha = j.value("trailFadeAlpha", 0);
-        m_data.fadeColor = SerialHelper::convertColorFromJson( j.at( "fadeColor" ), sf::Color::Black );
+        EXPAND_SHADER_PARAMS_FROM_JSON(FEEDBACK_SHADER_PARAMS)
+        m_easing.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -62,9 +72,8 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Feedback" ) )
       {
-        ImGui::Checkbox( "Feedback Active##1", &m_data.isActive );
-        ImGui::SliderInt("Fade Factor (Feedback)", &m_data.trailFadeAlpha, 0, 255);
-        ColorHelper::drawImGuiColorEdit3( "Fade Color", m_data.fadeColor );
+        auto& STRUCT_REF = m_data;
+        FEEDBACK_SHADER_PARAMS(X_SHADER_IMGUI);
 
         if ( ImGui::SmallButton( "Clear" ) )
           m_outputTexture.clear( sf::Color::Transparent );
@@ -120,6 +129,9 @@ namespace nx
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+
+    // TODO: not added yet
+    TimeEasing m_easing;
 
   };
 }

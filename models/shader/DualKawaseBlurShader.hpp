@@ -91,12 +91,6 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
         auto& STRUCT_REF = m_data;
         DUALKAWASE_SHADER_PARAMS(X_SHADER_IMGUI);
 
-        // ImGui::SliderInt("Blur Passes", &m_data.passes, 1, 10);
-        // ImGui::SliderFloat("Blur Offset", &m_data.offset, 0.5f, 4.0f);
-        // ImGui::SliderFloat("Bloom Gain", &m_data.bloomGain, 0.1f, 5.0f);
-        // ImGui::SliderFloat("Blur Brightness", &m_data.brightness, 0.1f, 3.0f);
-        // ImGui::SliderFloat("Mix Factor", &m_data.mixFactor, 0.0f, 2.0f);
-
         ImGui::Separator();
         m_easing.drawMenu();
 
