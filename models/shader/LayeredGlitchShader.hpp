@@ -9,30 +9,36 @@
 namespace nx
 {
 
-  struct LayeredGlitchData_t
-  {
-    bool isActive { true };
-
-    // whenever this is true then the screen glitches, i.e., pauses, until the next event
-    // whenever it's disabled then there's always a response regardless of event status
-    bool applyOnlyOnEvents { false };
-
-    float glitchBaseStrength { 0.1f };   // this is adjustable
-    float glitchStrength { 1.f };       // [CALCULATED] How intense glitches are (0.0 to 1.0+)
-    float glitchAmount { 0.1f };        // How frequent glitches are (0.0 to 1.0)
-    // float scanlineIntensity { 0.02f };  // Scanline brightness
-    float chromaFlickerAmount { 0.4f };  // 0.0 = off, 1.0 = frequent flickers
-    // float strobeAmount { 0.0f };         // 0.0 = no strobe, 1.0 = frequent
-    float pixelJumpAmount { 0.1f };      // 0.0 = off, 1.0 = chaos
-
-    float glitchPulseDecay { -0.5f };
-    float glitchPulseBoost { 1.f };
-
-    float bandCount { 20.f };            // smaller value = bigger chunks
-  };
-
   class LayeredGlitchShader final : public IShader
   {
+
+#define GLITCH_SHADER_PARAMS(X)                                                               \
+X(applyOnlyOnEvents, bool,  false, 0, 0,  "Pause rendering between glitches until retrigger") \
+X(glitchBaseStrength, float, 0.1f, 0.f, 5.f, "Base glitch strength when idle")                \
+X(glitchStrength, float,     1.f,   0.f, 5.f, "[CALC] Final glitch strength from pulse")      \
+X(glitchAmount, float,       0.1f,  0.f, 1.f, "Glitch frequency (0 = off, 1 = constant)")     \
+X(chromaFlickerAmount, float, 0.4f, 0.f, 1.f, "Chance of heavy RGB flicker per frame")        \
+X(pixelJumpAmount, float,    0.1f,  0.f, 1.f, "Chance of randomized blocky pixel jumps")      \
+X(glitchPulseDecay, float,  -0.5f, -10.f, 0.0f, "Rate at which glitch bursts decay")          \
+X(glitchPulseBoost, float,   1.f,   0.f, 5.f, "How much glitch intensity is added per burst") \
+X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (low = big)")
+
+    struct LayeredGlitchData_t
+    {
+      bool isActive { true };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(GLITCH_SHADER_PARAMS)
+    };
+
+    enum class E_GlitchParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(GLITCH_SHADER_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_GlitchParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(GLITCH_SHADER_PARAMS)
+    };
 
   public:
     explicit LayeredGlitchShader( const GlobalInfo_t& winfo )
@@ -52,40 +58,23 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-   {
-        { "type", SerialHelper::serializeEnum( getType() ) },
-        { "isActive", m_data.isActive },
-           { "applyOnlyOnEvents", m_data.applyOnlyOnEvents },
-        { "glitchBaseStrength", m_data.glitchBaseStrength },
-        { "glitchAmount", m_data.glitchAmount },
-        // { "scanlineIntensity", m_data.scanlineIntensity },
-        { "chromaFlickerAmount", m_data.chromaFlickerAmount },
-        { "pixelJumpAmount", m_data.pixelJumpAmount },
-        { "glitchPulseDecay", m_data.glitchPulseDecay },
-        { "glitchPulseBoost", m_data.glitchPulseBoost },
-        { "bandCount", m_data.bandCount },
-           { "easing", m_burstManager.serialize() },
-        { "midiTriggers", m_midiNoteControl.serialize() }
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum( getType() );
+      EXPAND_SHADER_PARAMS_TO_JSON(GLITCH_SHADER_PARAMS)
+
+      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
+      j[ "easing" ] = m_burstManager.serialize();
+      return j;
     }
 
     void deserialize( const nlohmann::json& j ) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.applyOnlyOnEvents = j.value("applyOnlyOnEvents", false);
-        m_data.glitchBaseStrength = j.value("glitchBaseStrength", 1.0f);
-        m_data.glitchAmount = j.value("glitchAmount", 0.4f);
-        // m_data.scanlineIntensity = j.value("scanlineIntensity", 0.02f);
-        m_data.chromaFlickerAmount = j.value("chromaFlickerAmount", 0.4f);
-        m_data.pixelJumpAmount = j.value("pixelJumpAmount", 0.5f);
-        m_data.glitchPulseDecay = j.value("glitchPulseDecay", -0.5f);
-        m_data.glitchPulseBoost = j.value("glitchPulseBoost", 2.0f);
-        m_data.bandCount = j.value("bandCount", 20.0f);
-        m_burstManager.deserialize( j.at( "easing" ) );
-        m_midiNoteControl.deserialize( j.at( "midiTriggers" ) );
+        EXPAND_SHADER_PARAMS_FROM_JSON(GLITCH_SHADER_PARAMS)
+
+        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
+        m_burstManager.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -103,20 +92,9 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Glitch" ) )
       {
-        ImGui::Checkbox( "Glitch Active##1", &m_data.isActive );
-        ImGui::Checkbox( "Glitch on Events Only##1", &m_data.applyOnlyOnEvents );
-        ImGui::SliderFloat( "Glitch Band Count##1", &m_data.bandCount, 0.f, 50.f );
-        ImGui::SliderFloat( "Glitch Base Strength##1", &m_data.glitchBaseStrength, 0.f, 2.0f );
-        ImGui::SliderFloat( "Glitch Amount##1", &m_data.glitchAmount, 0.f, 1.0f );
-        // ImGui::SliderFloat( "Scanline Strength##1", &m_data.scanlineIntensity, 0.f, 1.0f );
-
-        ImGui::SliderFloat( "Chroma Flicker##1", &m_data.chromaFlickerAmount, 0.f, 1.0f );
-        ImGui::SliderFloat( "Pixel Jumps##1", &m_data.pixelJumpAmount, 0.f, 1.0f );
-
-        ImGui::Separator();
-        ImGui::SliderFloat( "Glitch Burst Boost##1", &m_data.glitchPulseBoost, 0.f, 5.0f );
-        ImGui::SliderFloat( "Glitch Burst Decay##1", &m_data.glitchPulseDecay, -10.f, 0.f );
-        ImGui::Text( "Glitch Strength %0.2f", m_data.glitchStrength );
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
+        auto& STRUCT_REF = m_data;
+        GLITCH_SHADER_PARAMS(X_SHADER_IMGUI);
 
         ImGui::Separator();
         m_burstManager.drawMenu();
