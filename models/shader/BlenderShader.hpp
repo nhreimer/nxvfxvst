@@ -25,8 +25,7 @@ namespace nx
     [[nodiscard]]
     sf::RenderTexture& applyShader(const sf::RenderTexture& originalTexture,
                                   const sf::RenderTexture& effectTexture,
-                                  const float mixFactor,
-                                  const sf::BlendMode& blendMode )
+                                  const float mixFactor )
     {
       if ( m_outputTexture.getSize() != originalTexture.getSize() )
       {
@@ -44,17 +43,12 @@ namespace nx
       m_shader.setUniform("effectTex", effectTexture.getTexture());
       m_shader.setUniform("mixFactor", mixFactor);
 
-      sf::RenderStates states;
-      states.shader = &m_shader;
-      states.blendMode = blendMode;
-
       m_outputTexture.clear();
-      m_outputTexture.draw(sf::Sprite(originalTexture.getTexture()), states);
+      m_outputTexture.draw(sf::Sprite(originalTexture.getTexture()), &m_shader);
       m_outputTexture.display();
 
       return m_outputTexture;
     }
-
 
   private:
 

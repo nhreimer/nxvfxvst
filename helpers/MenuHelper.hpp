@@ -10,20 +10,19 @@ namespace nx
     static void drawBlendOptions( sf::BlendMode& blendMode )
     {
       ImGui::PushID( &blendMode );
-
-      blendMode = addBlendOption( "none", blendMode, sf::BlendNone );
-      ImGui::SameLine();
-      blendMode = addBlendOption( "add", blendMode, sf::BlendAdd );
-      ImGui::SameLine();
-      blendMode = addBlendOption( "alpha", blendMode, sf::BlendAlpha );
-      ImGui::SameLine();
-      blendMode = addBlendOption( "multiply", blendMode, sf::BlendMultiply );
-      ImGui::SameLine();
-      blendMode = addBlendOption( "min", blendMode, sf::BlendMin );
-      ImGui::SameLine();
-      blendMode = addBlendOption( "max", blendMode, sf::BlendMax );
-      ImGui::SameLine();
-
+      {
+        blendMode = addBlendOption( "none", blendMode, sf::BlendNone );
+        ImGui::SameLine();
+        blendMode = addBlendOption( "add", blendMode, sf::BlendAdd );
+        ImGui::SameLine();
+        blendMode = addBlendOption( "alpha", blendMode, sf::BlendAlpha );
+        ImGui::SameLine();
+        blendMode = addBlendOption( "multiply", blendMode, sf::BlendMultiply );
+        ImGui::SameLine();
+        blendMode = addBlendOption( "min", blendMode, sf::BlendMin );
+        ImGui::SameLine();
+        blendMode = addBlendOption( "max", blendMode, sf::BlendMax );
+      }
       ImGui::PopID();
     }
 

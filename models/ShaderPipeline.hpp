@@ -1,5 +1,6 @@
 #pragma once
 
+#include "models/shader/BlenderShader.hpp"
 #include "models/shader/BlurShader.hpp"
 #include "models/shader/KaleidoscopeShader.hpp"
 #include "models/shader/DensityHeatMapShader.hpp"

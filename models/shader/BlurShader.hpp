@@ -9,10 +9,12 @@ namespace nx
   {
 
 #define BLUR_SHADER_PARAMS(X)                        \
-X(sigma,         float, 7.f,     0.f,   50.f , "Amount of blurring")   \
-X(brighten,      float, 1.f,     0.f,   5.f  , "Brightens the blurred areas")   \
-X(blurHorizontal,float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction")   \
-X(blurVertical,  float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction")
+X(sigma,             float, 7.f,     0.f,   50.f , "Amount of blurring")                    \
+X(brighten,          float, 1.f,     0.f,   5.f  , "Brightens the blurred areas")           \
+X(blurHorizontal,    float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction")     \
+X(blurVertical,      float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction")       \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result") \
+X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
 
     struct BlurData_t
     {
@@ -36,7 +38,7 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction"
     explicit BlurShader( const GlobalInfo_t& globalInfo )
       : m_globalInfo( globalInfo )
     {
-      if ( !m_blurShader.loadFromMemory(m_fragmentShader, sf::Shader::Type::Fragment) )
+      if ( !m_shader.loadFromMemory(m_fragmentShader, sf::Shader::Type::Fragment) )
       {
         LOG_ERROR("Failed to load blur fragment shader");
       }
@@ -127,42 +129,52 @@ X(blurVertical,  float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction"
       const sf::Sprite sprite( inputTexture.getTexture() );
 
       // Apply horizontal blur
-      m_blurShader.setUniform( "texture", inputTexture.getTexture() );
-      m_blurShader.setUniform( "direction", sf::Glsl::Vec2( 1.f, 0.f ) ); // Horizontal
-      m_blurShader.setUniform( "blurRadiusX", m_data.blurHorizontal );
-      m_blurShader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
-      m_blurShader.setUniform( "sigma", m_data.sigma );
-      m_blurShader.setUniform( "brighten", m_data.brighten );
+      m_shader.setUniform( "texture", inputTexture.getTexture() );
+      m_shader.setUniform( "direction", sf::Glsl::Vec2( 1.f, 0.f ) ); // Horizontal
+      m_shader.setUniform( "blurRadiusX", m_data.blurHorizontal );
+      m_shader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
+      m_shader.setUniform( "sigma", m_data.sigma );
+      m_shader.setUniform( "brighten", m_data.brighten );
 
-      m_blurShader.setUniform( "intensity", easing );
+      m_shader.setUniform( "intensity", easing );
 
       m_intermediary.clear(sf::Color::Transparent);
-      m_intermediary.draw(sprite, &m_blurShader);
+      m_intermediary.draw(sprite, &m_shader);
       m_intermediary.display();
 
       // Apply vertical blur
-      m_blurShader.setUniform("texture", m_intermediary.getTexture());
-      m_blurShader.setUniform("direction", sf::Glsl::Vec2(0.f, 1.f)); // Vertical
-      m_blurShader.setUniform("blurRadiusX", 0.f); // No horizontal blur in this pass
-      m_blurShader.setUniform("blurRadiusY", m_data.blurVertical);
-      m_blurShader.setUniform( "sigma", m_data.sigma );
-      m_blurShader.setUniform( "brighten", m_data.brighten );
-      m_blurShader.setUniform( "intensity",easing );
+      m_shader.setUniform("texture", m_intermediary.getTexture());
+      m_shader.setUniform("direction", sf::Glsl::Vec2(0.f, 1.f)); // Vertical
+      m_shader.setUniform("blurRadiusX", 0.f); // No horizontal blur in this pass
+      m_shader.setUniform("blurRadiusY", m_data.blurVertical);
+      m_shader.setUniform( "sigma", m_data.sigma );
+      m_shader.setUniform( "brighten", m_data.brighten );
+      m_shader.setUniform( "intensity",easing );
+
+      // Draw with optional blend mode
+      sf::RenderStates states;
+      states.shader = &m_shader;
+      states.blendMode = m_data.BlendInput;
 
       m_outputTexture.clear(sf::Color::Transparent);
-      m_outputTexture.draw(sprite, &m_blurShader);
+      m_outputTexture.draw(sprite, states);
       m_outputTexture.display();
 
-      return m_outputTexture;
+      //return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                                    m_outputTexture,
+                                    m_data.mixFactor );
     }
 
   private:
 
     const GlobalInfo_t& m_globalInfo;
 
-    sf::Shader m_blurShader;
+    sf::Shader m_shader;
     sf::RenderTexture m_intermediary;
     sf::RenderTexture m_outputTexture;
+
+    BlenderShader m_blender;
 
     BlurData_t m_data;
 
