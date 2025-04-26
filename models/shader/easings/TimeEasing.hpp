@@ -35,7 +35,7 @@ namespace nx
       float decayRate { 0.1f };
       float intensity { 0.f }; // used for certain ones
 
-      E_TimeEasingType easingType { E_TimeEasingType::E_Disabled };
+      E_TimeEasingType easingType { E_TimeEasingType::E_Linear };
     };
 
   public:
@@ -307,9 +307,10 @@ namespace nx
 
     NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
     {
+      { E_TimeEasingType::E_Disabled, "Disabled" },
       { E_TimeEasingType::E_Fixed, "Fixed" },
-      { E_TimeEasingType::E_TimeContinuous, "None" },
-      { E_TimeEasingType::E_TimeIntervallic, "None" },
+      { E_TimeEasingType::E_TimeContinuous, "TimeContinuous" },
+      { E_TimeEasingType::E_TimeIntervallic, "TimeIntervallic" },
       { E_TimeEasingType::E_Linear, "Linear" },
       { E_TimeEasingType::E_Quadratic, "Quadratic" },
       { E_TimeEasingType::E_Cubic, "Cubic" },

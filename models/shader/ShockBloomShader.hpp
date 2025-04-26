@@ -47,8 +47,6 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       else
       {
         LOG_INFO( "Shock bloom shader loaded successfully" );
-
-        m_easing.setEasingType( E_TimeEasingType::E_Linear );
       }
     }
 
@@ -152,17 +150,12 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       m_shader.setUniform("intensity", m_data.intensity * alpha);
       m_shader.setUniform("innerTransparency", m_data.innerTransparency);
 
-      // Draw with optional blend mode
-      sf::RenderStates states;
-      states.shader = &m_shader;
-      states.blendMode = m_data.BlendInput;
-
       // Fullscreen quad
       sf::RectangleShape fullscreen(sf::Vector2f(inputTexture.getSize()));
       fullscreen.setFillColor(sf::Color::White);
 
       m_outputTexture.clear(sf::Color::Transparent);
-      m_outputTexture.draw(fullscreen, states);
+      m_outputTexture.draw(fullscreen, &m_shader);
       m_outputTexture.display();
 
       return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor );

@@ -23,7 +23,8 @@ X(chromaFlickerAmount, float, 0.4f, 0.f, 1.f, "Chance of heavy RGB flicker per f
 X(pixelJumpAmount, float,    0.1f,  0.f, 1.f, "Chance of randomized blocky pixel jumps")      \
 X(glitchPulseDecay, float,  -0.5f, -10.f, 0.0f, "Rate at which glitch bursts decay")          \
 X(glitchPulseBoost, float,   1.f,   0.f, 5.f, "How much glitch intensity is added per burst") \
-X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (low = big)")
+X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (low = big)")  \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct LayeredGlitchData_t
     {
@@ -169,7 +170,9 @@ X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (
       m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                              m_outputTexture,
+                              m_data.mixFactor );
     }
 
   private:
@@ -181,8 +184,8 @@ X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
+    BlenderShader m_blender;
     MidiNoteControl m_midiNoteControl;
-
     CumulativeEasing m_burstManager;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D texture;

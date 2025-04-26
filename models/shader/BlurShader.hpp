@@ -13,8 +13,7 @@ X(sigma,             float, 7.f,     0.f,   50.f , "Amount of blurring")        
 X(brighten,          float, 1.f,     0.f,   5.f  , "Brightens the blurred areas")           \
 X(blurHorizontal,    float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction")     \
 X(blurVertical,      float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction")       \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result") \
-X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct BlurData_t
     {
@@ -151,16 +150,10 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       m_shader.setUniform( "brighten", m_data.brighten );
       m_shader.setUniform( "intensity",easing );
 
-      // Draw with optional blend mode
-      sf::RenderStates states;
-      states.shader = &m_shader;
-      states.blendMode = m_data.BlendInput;
-
       m_outputTexture.clear(sf::Color::Transparent);
-      m_outputTexture.draw(sprite, states);
+      m_outputTexture.draw(sprite, &m_shader);
       m_outputTexture.display();
 
-      //return m_outputTexture;
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
                                     m_data.mixFactor );
@@ -174,10 +167,9 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
     sf::RenderTexture m_intermediary;
     sf::RenderTexture m_outputTexture;
 
-    BlenderShader m_blender;
-
     BlurData_t m_data;
 
+    BlenderShader m_blender;
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
 

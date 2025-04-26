@@ -4,12 +4,13 @@ namespace nx
 {
   class TransformShader final : public IShader
   {
-#define TRANSFORM_SHADER_PARAMS(X)                                                             \
+#define TRANSFORM_SHADER_PARAMS(X)                                                           \
 X(rotationDegrees, float, 0.f,   -360.f, 360.f, "Rotation applied to the screen")            \
-X(shift,           sf::Vector2f, sf::Vector2f(0.f, 0.f), 0.f, 0.f, "Screen offset (X, Y)")    \
-X(flipX,           bool, false, 0, 0, "Horizontal flip toggle")                              \
-X(flipY,           bool, false, 0, 0, "Vertical flip toggle")                                \
-X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or shrink")
+X(shift,           sf::Vector2f, sf::Vector2f(0.f, 0.f), 0.f, 0.f, "Screen offset (X, Y)")   \
+X(flipX,           bool, false,  0, 0, "Horizontal flip toggle")                             \
+X(flipY,           bool, false,  0, 0, "Vertical flip toggle")                               \
+X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or shrink")       \
+X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects result")
 
     struct TransformData_t
     {
@@ -115,8 +116,8 @@ X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or sh
       if ( !m_timedCursorShift.hasExpired() )
         m_timedCursorShift.drawPosition();
 
-      if ( !m_timedCursorStretch.hasExpired() )
-        m_timedCursorStretch.drawPosition();
+      // if ( !m_timedCursorStretch.hasExpired() )
+      //   m_timedCursorStretch.drawPosition();
     }
 
     [[nodiscard]]
@@ -152,7 +153,9 @@ X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or sh
       m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                              m_outputTexture,
+                              m_data.mixFactor );
     }
 
   private:
@@ -163,11 +166,12 @@ X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or sh
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
+    BlenderShader m_blender;
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
 
     TimedCursorPosition m_timedCursorShift;
-    TimedCursorPosition m_timedCursorStretch;
+    // TimedCursorPosition m_timedCursorStretch;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D u_texture;
 uniform vec2 u_resolution;

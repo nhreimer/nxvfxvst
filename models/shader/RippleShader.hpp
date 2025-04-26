@@ -7,12 +7,13 @@ namespace nx
   class RippleShader final : public IShader
   {
 
-#define RIPPLE_SHADER_PARAMS(X)                                                                   \
-X(rippleCenterX, float, 0.5f, 0.f, 1.f,  "Horizontal origin of ripple (0.0 = left, 1.0 = right)") \
-X(rippleCenterY, float, 0.5f, 0.f, 1.f,  "Vertical origin of ripple (0.0 = top, 1.0 = bottom)")   \
-X(amplitude,     float, 0.05f, 0.f, 1.f, "[CALC] Ripple strength, typically eased")               \
-X(frequency,     float, 10.f,  1.f, 100.f,"Wave density across the screen")                       \
-X(speed,         float, 0.f,   0.f, 50.f,"Wave movement speed over time")
+#define RIPPLE_SHADER_PARAMS(X)                                                                     \
+X(rippleCenterX, float, 0.5f,  0.f, 1.f,   "Horizontal origin of ripple (0.0 = left, 1.0 = right)") \
+X(rippleCenterY, float, 0.5f,  0.f, 1.f,   "Vertical origin of ripple (0.0 = top, 1.0 = bottom)")   \
+X(amplitude,     float, 0.05f, 0.f, 1.f,   "[CALC] Ripple strength, typically eased")               \
+X(frequency,     float, 10.f,  1.f, 100.f, "Wave density across the screen")                        \
+X(speed,         float, 0.f,   0.f, 50.f,  "Wave movement speed over time")                         \
+X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects result")
 
 
     struct RippleData_t
@@ -40,6 +41,11 @@ X(speed,         float, 0.f,   0.f, 50.f,"Wave movement speed over time")
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
         LOG_ERROR( "Failed to load ripple fragment shader" );
+      }
+      else
+      {
+        LOG_INFO( "Ripple fragment shader loaded" );
+        m_easing.setEasingType( E_TimeEasingType::E_Linear );
       }
     }
 
@@ -152,7 +158,9 @@ X(speed,         float, 0.f,   0.f, 50.f,"Wave movement speed over time")
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                              m_outputTexture,
+                              m_data.mixFactor );
     }
 
   private:
@@ -164,6 +172,7 @@ X(speed,         float, 0.f,   0.f, 50.f,"Wave movement speed over time")
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
+    BlenderShader m_blender;
     TimedCursorPosition m_timedCursor;
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;

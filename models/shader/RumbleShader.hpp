@@ -18,7 +18,8 @@ X(modAmplitude,    float, 0.5f, 0.f, 2.f,  "Amount of wobble modulation over tim
 X(modFrequency,    float, 10.f, 0.f, 50.f, "Speed of wobble modulation")                        \
 X(colorDesync,     float, 1.0f, 0.f, 5.f,  "RGB offset multiplier (screen tearing)")            \
 X(baseColorDesync, float, 0.25f, 0.f, 2.f, "Base chroma offset before modulation")              \
-X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center")
+X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center")                     \
+X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct RumbleData_t
     {
@@ -145,7 +146,9 @@ X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center")
       m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                                    m_outputTexture,
+                                    m_data.mixFactor );
     }
 
   private:
@@ -156,6 +159,8 @@ X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center")
     sf::Clock m_clock;
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+
+    BlenderShader m_blender;
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
 

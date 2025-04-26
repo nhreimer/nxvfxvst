@@ -13,8 +13,8 @@ namespace nx
 
 #define FEEDBACK_SHADER_PARAMS(X)                                                             \
 X(trailFadeAlpha, int, 8,   0,   255,  "Alpha value subtracted from each trail frame")        \
-X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trail fading")
-
+X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trail fading")    \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct FeedbackData_t
     {
@@ -118,7 +118,10 @@ X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trai
       m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), sf::BlendAdd);
 
       m_outputTexture.display();
-      return m_outputTexture;
+
+      return m_blender.applyShader( inputTexture,
+                                    m_outputTexture,
+                                    m_data.mixFactor );
     }
 
   private:
@@ -129,6 +132,8 @@ X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trai
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+
+    BlenderShader m_blender;
 
     // TODO: not added yet
     TimeEasing m_easing;

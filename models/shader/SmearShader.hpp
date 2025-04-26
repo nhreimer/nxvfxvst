@@ -19,7 +19,8 @@ X(wiggleAmplitude,        float, 0.f,   0.f,  NX_PI,   "Wiggle amount (radians) 
 X(wiggleFrequency,        float, 0.f,   0.f,  50.f,    "Wiggle speed (Hz)")                          \
 X(feedbackFade,           float, 0.05f, 0.f,  1.f,     "Fadeout amount for feedback trail")          \
 X(feedbackBlendMode,      sf::BlendMode, sf::BlendAdd, 0, 0, "Blend mode used for feedback drawing") \
-X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added to feedback frame")
+X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added to feedback frame")  \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct SmearData_t
     {
@@ -185,7 +186,10 @@ X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added 
       m_feedbackTexture.display();
 
       // 6. Output the feedback as final result
-      return m_feedbackTexture;
+      //return m_feedbackTexture;
+      return m_blender.applyShader( inputTexture,
+                              m_feedbackTexture,
+                                    m_data.mixFactor );
     }
 
   private:
@@ -199,6 +203,7 @@ X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added 
     sf::RenderTexture m_outputTexture;
     sf::RenderTexture m_feedbackTexture;
 
+    BlenderShader m_blender;
     TimeEasing m_easing;
     MidiNoteControl m_midiNoteControl;
 

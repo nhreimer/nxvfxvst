@@ -10,7 +10,8 @@ namespace nx
 
 #define STROBE_SHADER_PARAMS(X)                                                                \
 X(flashAmount,  float, 20.f, 1.f, 100.f, "Speed of strobe pulses (Hz)")                        \
-X(flashColor, sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during strobe")
+X(flashColor,   sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during strobe")    \
+X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct StrobeData_t
     {
@@ -40,10 +41,6 @@ X(flashColor, sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during
       else
       {
         LOG_INFO( "Strobe shader loaded successfully" );
-
-        // set this to not be disabled by default because it's frustrating
-        // to not have it do anything without having to change an option first.
-        m_easing.setEasingType( E_TimeEasingType::E_Linear );
       }
     }
 
@@ -130,12 +127,13 @@ X(flashColor, sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during
       m_shader.setUniform("flashAmount", m_data.flashAmount * m_easing.getEasing()); // or assigned easing
       m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor));
 
-
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                              m_outputTexture,
+                              m_data.mixFactor );
     }
 
   private:
@@ -145,6 +143,7 @@ X(flashColor, sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
+    BlenderShader m_blender;
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
 

@@ -38,6 +38,11 @@ namespace nx
   }
 }
 
+// ========== ImGui Menu Drawing ==========
+#define DRAW_FIELD(name, type, defaultVal, minVal, maxVal, tooltip) \
+nx::drawShaderParamImGui<type>(#name, m_data.name, minVal, maxVal, tooltip);
+#define DRAW_FIELDS_IMGUI(PARAMS) PARAMS(DRAW_FIELD)
+
 // =========================================
 // Dispatcher Macro (must be called after binding STRUCT_REF)
 // =========================================

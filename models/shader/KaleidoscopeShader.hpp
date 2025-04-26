@@ -11,7 +11,7 @@ namespace nx
 // easings
 // slices, angleSteps, and swirlStrength
 
-#define KALEIDOSCOPE_SHADER_PARAMS(X)                                                           \
+#define KALEIDOSCOPE_SHADER_PARAMS(X)                                                          \
 X(masterGain,     float, 0.1f,  0.f,  5.f,   "Overall kaleido intensity multiplier")           \
 X(slices,         float, 6.f,   3.f,  24.f,  "Number of kaleidoscope slices")                  \
 X(swirlStrength,  float, 1.f,   0.f,  5.f,   "Amount of swirl distortion per slice")           \
@@ -21,7 +21,8 @@ X(pulseFrequency, float, 10.f,  0.f,  50.f,  "How often pulses occur (Hz)")     
 X(pulseSpeed,     float, 5.f,   0.f,  50.f,  "How quickly pulses move through the shape")      \
 X(angleSteps,     float, 32.f,  3.f,  128.f, "How many radial segments are processed")         \
 X(radialStretch,  float, 1.f,   0.1f, 3.f,   "Stretch factor on the radial axis")              \
-X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion overlay")
+X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion overlay")       \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct KaleidoscopeData_t
     {
@@ -157,7 +158,11 @@ X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion o
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
       m_outputTexture.display();
 
-      return m_outputTexture;
+      // return m_outputTexture;
+      //return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                                    m_outputTexture,
+                                    m_data.mixFactor );
     }
 
   private:
@@ -168,6 +173,8 @@ X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion o
     sf::RenderTexture m_outputTexture;
 
     KaleidoscopeData_t m_data;
+
+    BlenderShader m_blender;
     TimeEasing m_easing;
     MidiNoteControl m_midiNoteControl;
 

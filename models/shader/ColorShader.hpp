@@ -8,12 +8,14 @@ namespace nx
   class ColorShader final : public IShader
   {
 
-#define COLOR_SHADER_PARAMS(X)                                                               \
-X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness")             \
-X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors")                  \
-X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation")              \
-X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians")                    \
-X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB")
+#define COLOR_SHADER_PARAMS(X)                                                                \
+X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness")              \
+X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors")                   \
+X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation")               \
+X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians")                     \
+X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB") \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")   \
+X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
 
     struct ColorData_t
     {
@@ -130,11 +132,19 @@ X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipli
       m_shader.setUniform( "u_hueShift", m_data.hueShift );
       m_shader.setUniform( "u_gain", m_data.colorGain );
 
-      m_outputTexture.clear();
-      m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
+      // Draw with optional blend mode
+      sf::RenderStates states;
+      states.shader = &m_shader;
+      states.blendMode = m_data.BlendInput;
+
+      m_outputTexture.clear(sf::Color::Transparent);
+      m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), states);
       m_outputTexture.display();
 
-      return m_outputTexture;
+      //return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                                    m_outputTexture,
+                                    m_data.mixFactor );
     }
 
   private:
@@ -144,6 +154,7 @@ X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipli
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
 
+    BlenderShader m_blender;
     MidiNoteControl m_midiNoteControl;
     TimeEasing m_easing;
 

@@ -8,6 +8,7 @@ namespace nx
   class DualKawaseBlurShader final : public IShader
   {
 
+    // The BlenderShader for this one is already built in. it was the prototype example.
 #define DUALKAWASE_SHADER_PARAMS(X)                                                           \
 X(passes,      int,   4,     1,    10,    "Number of downsample/upsample passes")             \
 X(offset,      float, 1.0f,  0.0f, 10.f,  "Kernel offset per pass")                           \
