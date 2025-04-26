@@ -22,7 +22,7 @@ X(pulseSpeed,     float, 5.f,   0.f,  50.f,  "How quickly pulses move through th
 X(angleSteps,     float, 32.f,  3.f,  128.f, "How many radial segments are processed")         \
 X(radialStretch,  float, 1.f,   0.1f, 3.f,   "Stretch factor on the radial axis")              \
 X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion overlay")       \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
 
     struct KaleidoscopeData_t
     {

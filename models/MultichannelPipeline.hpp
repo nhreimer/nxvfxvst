@@ -3,6 +3,7 @@
 #include "models/ChannelPipeline.hpp"
 #include "shapes/TimedMessage.hpp"
 #include "models/encoder/EncoderFactory.hpp"
+#include "models/EventRecorder.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
@@ -51,6 +52,8 @@ namespace nx
     {
       if ( midi.channel < m_channels.size() )
         m_channels.at( midi.channel )->processMidiEvent( midi );
+
+      if ( m_encoder ) m_encoder->addMidiEvent( midi );
     }
 
     void draw( sf::RenderWindow &window )

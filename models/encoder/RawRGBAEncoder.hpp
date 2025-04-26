@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "models/EventRecorder.hpp"
 #include "models/IEncoder.hpp"
 
 namespace nx
@@ -13,7 +14,7 @@ namespace nx
     {
       uint32_t width { 0 };
       uint32_t height { 0 };
-      uint32_t frameCount { 0 };
+      int64_t frameCount { 0 };
     };
 
     // ffmpeg -f rawvideo -pix_fmt rgba -s 800x600 -r 60 -i output.rgba -c:v libx264 -pix_fmt yuv420p out.mp4
@@ -33,6 +34,10 @@ namespace nx
         m_isRecording = true;
         LOG_INFO( "Successfully opened file '{}'", m_filename );
       }
+
+      m_metadataFilename = std::string( data.outputFilename.data() );
+      m_metadataFilename.append( ".events.json" );
+      m_clock.restart();
     }
 
     ~RawRGBAEncoder() override
@@ -60,8 +65,16 @@ namespace nx
           << "\theight: " << m_header.height << ", \n"
           << "\tframeCount: " << m_header.frameCount << "\n"
           << "}" << std::endl;
+
         headerFileStream.close();
       }
+
+      m_recorder.saveToFile( m_metadataFilename );
+    }
+
+    void addMidiEvent( const Midi_t& midiEvent ) override
+    {
+      m_recorder.addEvent( m_header.frameCount, midiEvent, m_clock.getElapsedTime().asSeconds() );
     }
 
     void writeFrame( const sf::RenderWindow& window ) override
@@ -95,9 +108,13 @@ namespace nx
 
       std::ofstream m_file;
       std::string m_filename;
+      std::string m_metadataFilename;
       sf::Texture m_texture;
 
       RawEncoderHeader_t m_header;
       bool m_isRecording { false };
+
+      sf::Clock m_clock;
+      EventRecorder m_recorder;
   };
 }

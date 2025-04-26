@@ -13,7 +13,7 @@ namespace nx
     // Presets:
     //    p1 = fastest, lowest quality
     //    p7 = slowest, best quality (still blazing fast on your GPUs)
-    std::string mp4PresetOption { "p4" };
+    std::string mp4PresetOption { "p7" }; // p4 is the "normal"
 
     // Tunes:
     //    hq = high quality
@@ -27,6 +27,10 @@ namespace nx
     virtual ~IEncoder() = default;
     virtual void writeFrame( const sf::RenderWindow& texture ) = 0;
     virtual bool isRecording() const = 0;
+
+    // this is used for synchronizing the video and midi events
+    // it'll create a map and then dump the map out for you along with other metadata
+    virtual void addMidiEvent( const Midi_t& midiEvent ) = 0;
   };
 
 }

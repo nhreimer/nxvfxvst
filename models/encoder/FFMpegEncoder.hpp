@@ -6,6 +6,7 @@ extern "C"
   #include <libavformat/avformat.h>
   #include <libswscale/swscale.h>
   #include <libavutil/imgutils.h>
+  #include <libavutil/opt.h>
 }
 
 #include "models/IEncoder.hpp"
@@ -52,7 +53,7 @@ namespace nx
         return;
       }
       m_stream = avformat_new_stream(m_formatCtx, codec);
-      m_stream->id = m_formatCtx->nb_streams - 1;
+      m_stream->id = static_cast< int >(m_formatCtx->nb_streams - 1 );
 
       m_codecCtx = avcodec_alloc_context3(codec);
 
@@ -72,6 +73,10 @@ namespace nx
       m_codecCtx->gop_size = 12;
       m_codecCtx->max_b_frames = 2;
       m_codecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+
+      // set the options
+      av_opt_set( m_codecCtx->priv_data, "preset", data.mp4PresetOption.c_str(), 0 );
+      av_opt_set( m_codecCtx->priv_data, "tune", data.mp4TuningOption.c_str(), 0 );
 
       // av_opt_set(m_codecCtx->priv_data, "preset", "p4", 0); // p1 to p7 (fast to slow)
       // av_opt_set(m_codecCtx->priv_data, "tune", "hq", 0);   // latency / hq / ull
@@ -110,7 +115,16 @@ namespace nx
                                 data.size.x, data.size.y, AV_PIX_FMT_YUV420P,
                                 SWS_BICUBIC, nullptr, nullptr, nullptr);
 
+
       m_isRecording = true;
+      m_metadataFilename = std::string( data.outputFilename.data() );
+      m_metadataFilename.append( ".events.json" );
+      m_clock.restart();
+    }
+
+    void addMidiEvent( const Midi_t& midiEvent ) override
+    {
+      m_recorder.addEvent( m_frameCount, midiEvent, m_clock.getElapsedTime().asSeconds() );
     }
 
     bool isRecording() const override { return m_isRecording; }
@@ -172,6 +186,7 @@ namespace nx
       avio_closep(&m_formatCtx->pb);
       avformat_free_context(m_formatCtx);
 
+      m_recorder.saveToFile( m_metadataFilename );
       LOG_INFO( "Encoder shutdown successful" );
     }
 
@@ -241,6 +256,11 @@ namespace nx
     SwsContext* m_swsCtx = nullptr;
     sf::Texture m_texture;
 
+    std::string m_metadataFilename;
+
     bool m_isRecording = false;
+
+    sf::Clock m_clock;
+    EventRecorder m_recorder;
   };
 }
