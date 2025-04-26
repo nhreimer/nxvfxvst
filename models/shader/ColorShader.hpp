@@ -2,20 +2,21 @@
 
 #include "helpers/SerialHelper.hpp"
 
+#include "vst/params/VSTParamBindingManager.hpp"
+
 namespace nx
 {
 
   class ColorShader final : public IShader
   {
 
-#define COLOR_SHADER_PARAMS(X)                                                                \
-X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness")              \
-X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors")                   \
-X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation")               \
-X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians")                     \
-X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB") \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")   \
-X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
+#define COLOR_SHADER_PARAMS(X)                                                                       \
+X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness", true)               \
+X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors", true)                    \
+X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation", true)                \
+X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians", true)                      \
+X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB", false) \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct ColorData_t
     {
@@ -47,6 +48,11 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       {
         LOG_DEBUG( "Color fragment shader loaded successfully" );
       }
+    }
+
+    void registerShaderControls( VSTParamBindingManager& bindingManager ) override
+    {
+      COLOR_SHADER_PARAMS(GEN_VST_BINDING)
     }
 
     [[nodiscard]]
@@ -133,13 +139,8 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       m_shader.setUniform( "u_hueShift", m_data.hueShift );
       m_shader.setUniform( "u_gain", m_data.colorGain );
 
-      // Draw with optional blend mode
-      sf::RenderStates states;
-      states.shader = &m_shader;
-      states.blendMode = m_data.BlendInput;
-
       m_outputTexture.clear(sf::Color::Transparent);
-      m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), states);
+      m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), &m_shader);
       m_outputTexture.display();
 
       //return m_outputTexture;

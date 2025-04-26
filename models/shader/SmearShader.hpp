@@ -6,21 +6,21 @@ namespace nx
   class SmearShader final : public IShader
   {
 #define SMEAR_SHADER_PARAMS(X)                                                                       \
-X(directionAngleInRadians, float, 0.f,  -NX_PI, NX_PI,  "Angle of smear direction (in radians)")     \
-X(length,                 float, 0.2f,  0.f,  1.f,     "Length of smear trail (0 = off, 1 = full)")  \
-X(intensity,              float, 0.5f,  0.f,  1.f,     "Blend amount with previous frame")           \
-X(tint,                   sf::Color, sf::Color(255,255,255), 0.f, 0.f, "Optional color overlay")     \
-X(sampleCount,            int,   32,    1,   128,      "Number of smear samples (quality vs speed)") \
-X(jitterAmount,           float, 0.f,   0.f,  1.f,     "Randomness in smear direction per sample")   \
-X(brightnessBoost,        float, 1.f,   0.f,  10.f,    "Overall brightness multiplier")              \
-X(brightnessPulse,        float, 1.f,   0.f,  5.f,     "Brightness wave amount during pulses")       \
-X(falloffPower,           float, 1.f,   0.1f, 10.f,    "Exponential falloff on smear fade")          \
-X(wiggleAmplitude,        float, 0.f,   0.f,  NX_PI,   "Wiggle amount (radians) per sample")         \
-X(wiggleFrequency,        float, 0.f,   0.f,  50.f,    "Wiggle speed (Hz)")                          \
-X(feedbackFade,           float, 0.05f, 0.f,  1.f,     "Fadeout amount for feedback trail")          \
-X(feedbackBlendMode,      sf::BlendMode, sf::BlendAdd, 0, 0, "Blend mode used for feedback drawing") \
-X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added to feedback frame")  \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+X(directionAngleInRadians, float, 0.f,  -NX_PI, NX_PI,  "Angle of smear direction (in radians)", true)     \
+X(length,                 float, 0.2f,  0.f,  1.f,     "Length of smear trail (0 = off, 1 = full)", true)  \
+X(intensity,              float, 0.5f,  0.f,  1.f,     "Blend amount with previous frame", true)           \
+X(tint,                   sf::Color, sf::Color(255,255,255), 0.f, 0.f, "Optional color overlay", false)     \
+X(sampleCount,            int,   32,    1,   128,      "Number of smear samples (quality vs speed)", true) \
+X(jitterAmount,           float, 0.f,   0.f,  1.f,     "Randomness in smear direction per sample", true)   \
+X(brightnessBoost,        float, 1.f,   0.f,  10.f,    "Overall brightness multiplier", true)              \
+X(brightnessPulse,        float, 1.f,   0.f,  5.f,     "Brightness wave amount during pulses", true)       \
+X(falloffPower,           float, 1.f,   0.1f, 10.f,    "Exponential falloff on smear fade", true)          \
+X(wiggleAmplitude,        float, 0.f,   0.f,  NX_PI,   "Wiggle amount (radians) per sample", true)         \
+X(wiggleFrequency,        float, 0.f,   0.f,  50.f,    "Wiggle speed (Hz)", true)                          \
+X(feedbackFade,           float, 0.05f, 0.f,  1.f,     "Fadeout amount for feedback trail", true)          \
+X(feedbackBlendMode,      sf::BlendMode, sf::BlendAdd, 0, 0, "Blend mode used for feedback drawing", false) \
+X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added to feedback frame", true)  \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct SmearData_t
     {
@@ -99,9 +99,6 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         auto& STRUCT_REF = m_data;
         SMEAR_SHADER_PARAMS(X_SHADER_IMGUI);
-
-        ImGui::Separator();
-        MenuHelper::drawBlendOptions( m_data.feedbackBlendMode );
 
         ImGui::Separator();
         m_easing.drawMenu();

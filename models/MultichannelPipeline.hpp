@@ -168,7 +168,10 @@ namespace nx
           m_encoderData.size = m_globalInfo.windowSize;
           m_encoder.reset( nullptr );
           m_encoder = EncoderFactory::create( m_encoderType, m_encoderData );
-          m_messageClock.setMessage( "RECORDING STARTED!" );
+          if ( m_encoder && m_encoder->isRecording() )
+          {
+            m_messageClock.setMessage( "RECORDING STARTED!" );
+          }
         }
 
         ImGui::TreePop();

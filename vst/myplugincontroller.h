@@ -8,6 +8,8 @@
 
 #include "vst/views/ViewFactory.hpp"
 
+#include "vst/params/VSTParamBindingManager.hpp"
+
 namespace nx {
 
 //------------------------------------------------------------------------
@@ -40,6 +42,24 @@ public:
 	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) SMTG_OVERRIDE;
 	Steinberg::tresult PLUGIN_API setState (Steinberg::IBStream* state) SMTG_OVERRIDE;
 	Steinberg::tresult PLUGIN_API getState (Steinberg::IBStream* state) SMTG_OVERRIDE;
+  Steinberg::tresult PLUGIN_API setParamNormalized(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) SMTG_OVERRIDE
+  {
+    m_stateContext.paramBindingManager->setParamNormalized(id, value);
+    return Steinberg::kResultTrue;
+  }
+
+  Steinberg::Vst::ParamValue PLUGIN_API getParamNormalized(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
+  {
+    for (const auto& control : m_stateContext.paramBindingManager->getBindings())
+    {
+      if (control.vstParamID == tag)
+      {
+        // We'll need to track the *current normalized value* internally
+        return control.lastValue;
+      }
+    }
+    return 0.0; // fallback
+  }
 
  	//---Interface---------
 	DEFINE_INTERFACES
@@ -60,6 +80,14 @@ private:
 
   // used between closing and opening the window
   nlohmann::json m_state;
+
+  VSTParamBindingManager m_paramBindingManager;
+
+  VSTStateContext m_stateContext
+  {
+    .paramBindingManager = &m_paramBindingManager,
+    .state = &m_state
+  };
 };
 
 //------------------------------------------------------------------------

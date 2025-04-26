@@ -6,6 +6,8 @@
 namespace nx
 {
 
+  class VSTParamBindingManager;
+
   struct IShader : public ISerializable< E_ShaderType >
   {
     ~IShader() override = default;
@@ -22,6 +24,8 @@ namespace nx
     [[nodiscard]]
     virtual sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) = 0;
+
+    virtual void registerShaderControls(VSTParamBindingManager& bindingManager) = 0;
   };
 
 }

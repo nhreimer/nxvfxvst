@@ -4,6 +4,7 @@
 
 #include "myplugincontroller.h"
 #include "myplugincids.h"
+#include "pluginterfaces/base/ustring.h"
 
 #include "vst/views/ViewFactory.hpp"
 
@@ -87,8 +88,13 @@ tresult PLUGIN_API nxvfxvstController::initialize (FUnknown* context)
 		return result;
 	}
 
-	// Here you could register some parameters
-
+	// Register a bunch of dummy parameters
+  for (int i = 0; i < 128; ++i)
+  {
+    std::string paramName( "Param_" + std::to_string(i) );
+    const auto param = new Vst::RangeParameter(USTRING( paramName.c_str() ), i, nullptr, 0.f, 1.f, 0.f);
+    parameters.addParameter(param);
+  }
 	return result;
 }
 
@@ -138,6 +144,7 @@ IPlugView* PLUGIN_API nxvfxvstController::createView (FIDString name)
 
 	  // save state whenever the view closes
 	  m_ptrView = ViewFactory::createView(
+	    m_stateContext,
 	    [&] ( IVSTView* view )
 	    {
 	      view->saveState( m_state );

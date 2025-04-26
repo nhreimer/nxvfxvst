@@ -17,8 +17,8 @@
 
 #include "log/Logger.hpp"
 
-//#include "pluginterfaces/base/ustring.h"
 #include "pluginterfaces/base/keycodes.h"
+#include "vst/VSTStateContext.hpp"
 
 namespace nx
 {
@@ -28,8 +28,9 @@ namespace nx
   {
   public:
 
-    EventFacadeVst()
-      : m_pipelines( m_globalInfo )
+    explicit EventFacadeVst( VSTStateContext& stateContext )
+      : m_stateContext( stateContext ),
+        m_pipelines( m_globalInfo )
     {}
 
     ~EventFacadeVst() = default;
@@ -235,6 +236,7 @@ namespace nx
 
   private:
 
+    VSTStateContext& m_stateContext;
     GlobalInfo_t m_globalInfo;
     MultichannelPipeline m_pipelines;
 

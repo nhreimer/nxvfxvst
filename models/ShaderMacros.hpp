@@ -93,3 +93,44 @@ PARAM_MACRO(GEN_FROM_JSON)
 #define GEN_LABEL_STRING(name, type, defaultVal, minVal, maxVal, tooltip) #name,
 #define EXPAND_SHADER_PARAM_LABELS(PARAM_MACRO) \
 PARAM_MACRO(GEN_LABEL_STRING)
+
+namespace nx
+{
+  template <typename T>
+  void registerParamControl(const char* label, T& value, const float min, const float max)
+  {
+    if constexpr (std::is_same_v<T, float>)
+    {
+      value = std::lerp( min, max, value );
+    }
+    else if constexpr (std::is_same_v<T, bool>)
+    {
+      value = !value;
+    }
+    else if constexpr (std::is_same_v<T, sf::Vector2f>)
+    {
+    }
+    else if constexpr (std::is_same_v<T, sf::Glsl::Vec3>)
+    {
+    }
+    else if constexpr (std::is_same_v<T, sf::Color>)
+    {
+    }
+    else if constexpr (std::is_same_v<T, sf::BlendMode>)
+    {
+    }
+  }
+}
+
+// generates our VST Parameter bindings
+#define GEN_VST_BINDING(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
+if constexpr (allowVSTBinding)                                                            \
+{                                                                                         \
+    bindingManager.registerBindableControl(                                               \
+        #name,                                                                            \
+        [this](float normalizedValue) {                                                   \
+            nx::registerParamControl<type>(#name, m_data.name, minVal, maxVal);           \
+        });                                                                               \
+}
+
+
