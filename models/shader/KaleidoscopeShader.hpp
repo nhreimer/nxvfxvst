@@ -50,6 +50,10 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
       {
         LOG_ERROR( "Failed to load kaleidoscope fragment shader" );
       }
+      else
+      {
+        LOG_INFO( "Kaleidoscope fragment shader loaded" );
+      }
     }
 
     ~KaleidoscopeShader() override = default;
@@ -87,11 +91,7 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
 
     E_ShaderType getType() const override { return E_ShaderType::E_KaleidoscopeShader; }
 
-    void update( const sf::Time& deltaTime ) override
-    {
-      // if ( m_data.automateTime )
-      //   m_data.time = static_cast< float >( ::clock() ) / CLOCKS_PER_SEC;
-    }
+    void update( const sf::Time& deltaTime ) override {}
 
     void drawMenu() override
     {
@@ -135,6 +135,10 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
         {
           LOG_ERROR( "failed to resize kaleidoscope texture" );
         }
+        else
+        {
+          LOG_INFO( "kaleidoscope texture resized" );
+        }
       }
 
       m_shader.setUniform( "u_time", m_easing.getEasing() );
@@ -158,8 +162,6 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
       m_outputTexture.display();
 
-      // return m_outputTexture;
-      //return m_outputTexture;
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
                                     m_data.mixFactor );

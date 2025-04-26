@@ -121,7 +121,9 @@ namespace nx
     void update( const sf::Time &deltaTime ) override {}
 
     void trigger( const Midi_t &midi ) override
-    {}
+    {
+      m_easing.trigger();
+    }
 
     [[nodiscard]]
     bool isShaderActive() const override { return m_data.isActive; }
@@ -141,7 +143,7 @@ namespace nx
 
       m_shader.setUniform("u_densityTexture", inputTexture.getTexture());
       m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
-      m_shader.setUniform("u_falloff", m_data.falloff);
+      m_shader.setUniform("u_falloff", m_data.falloff * m_easing.getEasing() );
 
       m_outputTexture.clear( sf::Color::Transparent );
 
@@ -169,6 +171,8 @@ namespace nx
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+
+    TimeEasing m_easing;
 
     const static inline std::string m_fragmentShader = R"(uniform sampler2D u_densityTexture;
 uniform vec2 u_resolution;

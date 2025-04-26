@@ -147,7 +147,6 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
         m_shader.setUniform("u_bloomGain", m_data.bloomGain * easing);     // user/MIDI-driven
         m_shader.setUniform("u_brightness", m_data.brightness * easing);   // compensate blur
 
-
         dst->draw(sf::Sprite(src->getTexture()), &m_shader);
         dst->display();
 

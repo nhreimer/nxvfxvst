@@ -120,6 +120,7 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
         else
         {
           LOG_INFO( "color transform texture" );
+          m_easing.setEasingType( E_TimeEasingType::E_Disabled );
         }
       }
 

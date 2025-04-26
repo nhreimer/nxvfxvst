@@ -2,6 +2,7 @@
 
 namespace nx
 {
+  // UNUSED: earmarked for multithreaded rendering
   struct ScopedRenderContext
   {
     sf::RenderTexture& texture;

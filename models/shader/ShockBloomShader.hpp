@@ -182,7 +182,7 @@ uniform float radius;
 uniform float thickness;
 uniform vec3 color;
 uniform float intensity;
-uniform float innerTransparency; // new!
+uniform float innerTransparency;
 
 void main()
 {
