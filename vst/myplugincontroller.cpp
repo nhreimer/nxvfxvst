@@ -92,9 +92,13 @@ tresult PLUGIN_API nxvfxvstController::initialize (FUnknown* context)
   for (int32_t i = 0; i < 128; ++i)
   {
     std::string paramName( "Param_" + std::to_string(i) );
-    const auto param = new Vst::RangeParameter(USTRING( paramName.c_str() ), i, nullptr, 0.f, 1.f, 0.f);
+
+    // hands off ownership
+    auto * param = new Vst::RangeParameter(USTRING( paramName.c_str() ), i, nullptr, 0.f, 1.f, 0.f);
     parameters.addParameter(param);
   }
+
+  LOG_INFO( "initialized controller with 128 parameters" );
 	return result;
 }
 

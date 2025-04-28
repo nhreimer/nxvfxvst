@@ -56,7 +56,10 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       EXPAND_SHADER_VST_BINDINGS(SMEAR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
-    ~SmearShader() override = default;
+    ~SmearShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override

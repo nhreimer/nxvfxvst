@@ -4,8 +4,14 @@
 
 namespace nx
 {
+
   template <typename T>
-  void drawShaderParamImGui(const char* label, T& value, float min, float max, const char* tooltip, bool allowVSTBinding)
+  void drawShaderParamImGui(const char* label,
+                            T& value,
+                            const float min,
+                            const float max,
+                            const char* tooltip,
+                            bool allowVSTBinding)
   {
     if constexpr (std::is_same_v<T, float>)
     {
@@ -61,7 +67,6 @@ nx::drawShaderParamImGui<type>(#name, STRUCT_REF.name, minVal, maxVal, tooltip, 
 #define X_SHADER_IMGUI(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
 DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip, allowVSTBinding)
 
-
 // FOR STRUCTS
 #define GEN_STRUCT_FIELD(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) type name = defaultVal;
 #define EXPAND_SHADER_PARAMS_FOR_STRUCT(PARAM_MACRO)     \
@@ -98,15 +103,18 @@ PARAM_MACRO(GEN_LABEL_STRING)
 namespace nx
 {
   template <typename T>
-  void registerParamControl(const char* label, T& value, const float min, const float max)
+  void updateParamValue(const float normalizedValue, T& value, const float min, const float max)
   {
     if constexpr (std::is_same_v<T, float>)
     {
-      value = std::lerp( min, max, value );
+      value = normalizedValue * ( max - min ) + min;
     }
     else if constexpr (std::is_same_v<T, bool>)
     {
-      value = !value;
+      if ( normalizedValue == 0.f )
+        value = false;
+      else
+        value = true;
     }
     else if constexpr (std::is_same_v<T, sf::Vector2f>)
     {
@@ -123,6 +131,7 @@ namespace nx
     else if constexpr (std::is_same_v<T, sf::BlendMode>)
     {
       // NOT SUPPORTED
+
     }
   }
 }
@@ -132,10 +141,11 @@ namespace nx
 if constexpr (allowVSTBinding)                                                            \
 {                                                                                         \
     bindingManagerRef.registerBindableControl(                                            \
+        this,                                                                             \
         #name,                                                                            \
         [this](float normalizedValue) {                                                   \
-            nx::registerParamControl<type>(#name, m_data.name, minVal, maxVal);           \
-        });                                                                               \
+            nx::updateParamValue<type>(normalizedValue, m_data.name, minVal, maxVal);     \
+       });                                                                                \
 }
 
 #define EXPAND_SHADER_VST_BINDINGS(PARAM_MACRO, bindingManager) \

@@ -51,6 +51,11 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       EXPAND_SHADER_VST_BINDINGS(DUALKAWASE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
+    ~DualKawaseBlurShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
+
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
     ///////////////////////////////////////////////////////

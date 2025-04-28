@@ -1,4 +1,6 @@
 #pragma once
+
+#include "models/data/PipelineContext.hpp"
 #include "models/IShader.hpp"
 
 namespace nx
@@ -50,6 +52,11 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
       }
 
       EXPAND_SHADER_VST_BINDINGS(SHOCK_BLOOM_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
+
+    ~ShockBloomShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
     }
 
     [[nodiscard]]

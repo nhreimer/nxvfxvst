@@ -58,8 +58,10 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
       EXPAND_SHADER_VST_BINDINGS(KALEIDOSCOPE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
-    ~KaleidoscopeShader() override = default;
-
+    ~KaleidoscopeShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
 
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE

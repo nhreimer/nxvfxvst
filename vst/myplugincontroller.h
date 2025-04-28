@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "pluginterfaces/base/ustring.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
 
 #include "vst/views/ViewFactory.hpp"
@@ -18,7 +19,7 @@ namespace nx {
 class nxvfxvstController : public Steinberg::Vst::EditControllerEx1
 {
 public:
-//------------------------------------------------------------------------
+  //------------------------------------------------------------------------
 	nxvfxvstController() { m_state = nlohmann::json::object(); }
 	~nxvfxvstController () SMTG_OVERRIDE = default;
 
@@ -50,16 +51,26 @@ public:
 
   Steinberg::Vst::ParamValue PLUGIN_API getParamNormalized(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
   {
-    for (const auto& control :
-         m_stateContext.paramBindingManager.getBindings())
-    {
-      if (control.vstParamID == tag)
-      {
-        // We'll need to track the *current normalized value* internally
-        return control.lastValue;
-      }
-    }
-    return 0.0; // fallback
+    auto& binding = m_paramBindingManager.getBindingById( tag );
+    return binding.lastValue;
+  }
+
+
+  Steinberg::tresult PLUGIN_API getParamStringByValue(Steinberg::Vst::ParamID tag,
+                                           Steinberg::Vst::ParamValue valueNormalized,
+                                           Steinberg::Vst::String128 string) SMTG_OVERRIDE
+  {
+
+    // TODO: not satisfied with this conversion!
+    auto& binding = m_paramBindingManager.getBindingById( tag );
+    std::string str( binding.shaderControlName );
+    str.append( " [" );
+    str.append( std::to_string( binding.lastValue ) );
+    str.append( "]" );
+
+    Steinberg::UString128 ustr( str.c_str() );
+    ustr.copyTo( string, 128 );
+    return Steinberg::kResultTrue;
   }
 
  	//---Interface---------

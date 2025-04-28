@@ -13,6 +13,7 @@ public:
   {
     auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    return j;
   }
 
   void deserialize(const nlohmann::json &j) override

@@ -92,11 +92,6 @@ namespace nx
           ImGui::SameLine();
           if ( ImGui::RadioButton( "L-System Curve", m_particleLayout->getType() == E_LayoutType::E_LSystemCurveLayout ) )
             changeLayout< LSystemCurveLayout >();
-
-#ifdef DEBUG
-          if ( ImGui::RadioButton( "Test", m_particleLayout->getType() == E_LayoutType::E_TestLayout ) )
-            changeLayout< TestParticleLayout >();
-#endif
         }
 
         ImGui::TreePop();
