@@ -1,9 +1,9 @@
 #pragma once
 
-#include "helpers/MenuHelper.hpp"
-#include "models/data/ParticleLineData_t.hpp"
-#include "shapes/GradientLine.hpp"
 #include "helpers/CommonHeaders.hpp"
+#include "models/data/ParticleLineData_t.hpp"
+#include "shapes/CurvedLine.hpp"
+#include "helpers/ColorHelper.hpp"
 
 namespace nx
 {
@@ -12,8 +12,8 @@ namespace nx
   {
   public:
 
-    explicit ParticleFullMeshLineModifier( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit ParticleFullMeshLineModifier( PipelineContext& context )
+      : m_ctx( context )
     {}
 
     nlohmann::json serialize() const override
@@ -119,7 +119,7 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     bool m_isActive { true };
     ParticleLineData_t m_data;

@@ -15,16 +15,16 @@ namespace nx
 // easings:    glitchBaseStrength, glitchAmount, and pixelJumpAmount
 
 #define GLITCH_SHADER_PARAMS(X)                                                               \
-X(applyOnlyOnEvents, bool,  false, 0, 0,  "Pause rendering between glitches until retrigger") \
-X(glitchBaseStrength, float, 0.1f, 0.f, 5.f, "Base glitch strength when idle")                \
-X(glitchStrength, float,     1.f,   0.f, 5.f, "[CALC] Final glitch strength from pulse")      \
-X(glitchAmount, float,       0.1f,  0.f, 1.f, "Glitch frequency (0 = off, 1 = constant)")     \
-X(chromaFlickerAmount, float, 0.4f, 0.f, 1.f, "Chance of heavy RGB flicker per frame")        \
-X(pixelJumpAmount, float,    0.1f,  0.f, 1.f, "Chance of randomized blocky pixel jumps")      \
-X(glitchPulseDecay, float,  -0.5f, -10.f, 0.0f, "Rate at which glitch bursts decay")          \
-X(glitchPulseBoost, float,   1.f,   0.f, 5.f, "How much glitch intensity is added per burst") \
-X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (low = big)")  \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+X(applyOnlyOnEvents, bool,  false, 0, 0,  "Pause rendering between glitches until retrigger", true) \
+X(glitchBaseStrength, float, 0.1f, 0.f, 5.f, "Base glitch strength when idle", true)                \
+X(glitchStrength, float,     1.f,   0.f, 5.f, "[CALC] Final glitch strength from pulse", true)      \
+X(glitchAmount, float,       0.1f,  0.f, 1.f, "Glitch frequency (0 = off, 1 = constant)", true)     \
+X(chromaFlickerAmount, float, 0.4f, 0.f, 1.f, "Chance of heavy RGB flicker per frame", true)        \
+X(pixelJumpAmount, float,    0.1f,  0.f, 1.f, "Chance of randomized blocky pixel jumps", true)      \
+X(glitchPulseDecay, float,  -0.5f, -10.f, 0.0f, "Rate at which glitch bursts decay", true)          \
+X(glitchPulseBoost, float,   1.f,   0.f, 5.f, "How much glitch intensity is added per burst", true) \
+X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (low = big)", true)  \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct LayeredGlitchData_t
     {
@@ -44,13 +44,19 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     };
 
   public:
-    explicit LayeredGlitchShader( const GlobalInfo_t& winfo )
-      : m_winfo( winfo )
+    explicit LayeredGlitchShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
         LOG_ERROR( "Failed to load glitch fragment shader" );
       }
+      else
+      {
+        LOG_INFO( "Loaded glitch fragment shader" );
+      }
+
+      EXPAND_SHADER_VST_BINDINGS(GLITCH_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     ~LayeredGlitchShader() override = default;
@@ -134,9 +140,9 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     [[nodiscard]]
     sf::RenderTexture& applyShader( const sf::RenderTexture &inputTexture ) override
     {
-      if (m_outputTexture.getSize() != m_winfo.windowSize)
+      if (m_outputTexture.getSize() != inputTexture.getSize())
       {
-        if (!m_outputTexture.resize(m_winfo.windowSize))
+        if (!m_outputTexture.resize(inputTexture.getSize()))
         {
           LOG_ERROR("failed to resize glitch texture");
         }
@@ -176,7 +182,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     }
 
   private:
-    const GlobalInfo_t& m_winfo;
+    PipelineContext& m_ctx;
 
     LayeredGlitchData_t m_data;
 

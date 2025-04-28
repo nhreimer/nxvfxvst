@@ -1,6 +1,5 @@
 #pragma once
 
-#include "shapes/GradientLine.hpp"
 #include "shapes/CurvedLine.hpp"
 
 #include "models/data/ParticleLineData_t.hpp"
@@ -14,8 +13,8 @@ namespace nx
   class ParticleSequentialLineModifier final : public IParticleModifier
   {
   public:
-    explicit ParticleSequentialLineModifier( const GlobalInfo_t& globablInfo )
-      : m_globalInfo( globablInfo )
+    explicit ParticleSequentialLineModifier( PipelineContext& context )
+      : m_ctx( context )
     {}
 
     void drawMenu() override
@@ -125,7 +124,7 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     bool m_isActive { true };
 

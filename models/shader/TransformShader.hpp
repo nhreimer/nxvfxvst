@@ -4,13 +4,13 @@ namespace nx
 {
   class TransformShader final : public IShader
   {
-#define TRANSFORM_SHADER_PARAMS(X)                                                           \
-X(rotationDegrees, float, 0.f,   -360.f, 360.f, "Rotation applied to the screen")            \
-X(shift,           sf::Vector2f, sf::Vector2f(0.f, 0.f), 0.f, 0.f, "Screen offset (X, Y)")   \
-X(flipX,           bool, false,  0, 0, "Horizontal flip toggle")                             \
-X(flipY,           bool, false,  0, 0, "Vertical flip toggle")                               \
-X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or shrink")       \
-X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects result")
+#define TRANSFORM_SHADER_PARAMS(X)                                                                 \
+X(rotationDegrees, float, 0.f,   -360.f, 360.f, "Rotation applied to the screen", true)            \
+X(shift,           sf::Vector2f, sf::Vector2f(0.f, 0.f), 0.f, 0.f, "Screen offset (X, Y)", false)  \
+X(flipX,           bool, false,  0, 0, "Horizontal flip toggle", false)                            \
+X(flipY,           bool, false,  0, 0, "Vertical flip toggle", false)                              \
+X(scale,           float, 1.f,   0.1f, 5.f, "Uniform scale factor for zoom or shrink", true)       \
+X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects result", true)
 
     struct TransformData_t
     {
@@ -31,8 +31,8 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
 
   public:
 
-    explicit TransformShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit TransformShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -43,6 +43,8 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
         LOG_DEBUG( "Transform fragment shader loaded successfully" );
         m_easing.setEasingType( E_TimeEasingType::E_Disabled );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(TRANSFORM_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     [[nodiscard]]
@@ -98,8 +100,8 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
         {
           const sf::Vector2f calibrated
           {
-            ( m_data.shift.x + 0.5f ) * static_cast< float >( m_globalInfo.windowSize.x ),
-            ( m_data.shift.y + 0.5f ) * static_cast< float >( m_globalInfo.windowSize.y )
+            ( m_data.shift.x + 0.5f ) * static_cast< float >( m_ctx.globalInfo.windowSize.x ),
+            ( m_data.shift.y + 0.5f ) * static_cast< float >( m_ctx.globalInfo.windowSize.y )
           };
 
           m_timedCursorShift.setPosition( calibrated );
@@ -160,7 +162,7 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     TransformData_t m_data;
 

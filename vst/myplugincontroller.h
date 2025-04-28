@@ -44,13 +44,14 @@ public:
 	Steinberg::tresult PLUGIN_API getState (Steinberg::IBStream* state) SMTG_OVERRIDE;
   Steinberg::tresult PLUGIN_API setParamNormalized(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) SMTG_OVERRIDE
   {
-    m_stateContext.paramBindingManager->setParamNormalized(id, value);
+    m_stateContext.paramBindingManager.setParamNormalized(id, value);
     return Steinberg::kResultTrue;
   }
 
   Steinberg::Vst::ParamValue PLUGIN_API getParamNormalized(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
   {
-    for (const auto& control : m_stateContext.paramBindingManager->getBindings())
+    for (const auto& control :
+         m_stateContext.paramBindingManager.getBindings())
     {
       if (control.vstParamID == tag)
       {
@@ -85,8 +86,7 @@ private:
 
   VSTStateContext m_stateContext
   {
-    .paramBindingManager = &m_paramBindingManager,
-    .state = &m_state
+    m_paramBindingManager
   };
 };
 

@@ -13,7 +13,10 @@ namespace nx
   /// When the user opens the active plugin window again, a new IVSTView is instantiated.
   struct VSTStateContext
   {
-    VSTParamBindingManager * paramBindingManager;
-    nlohmann::json * state;
+    explicit VSTStateContext( VSTParamBindingManager& bindingManager )
+     : paramBindingManager( bindingManager )
+    {}
+
+    VSTParamBindingManager& paramBindingManager;
   };
 }

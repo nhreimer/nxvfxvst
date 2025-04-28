@@ -7,15 +7,13 @@ namespace nx
   class RippleShader final : public IShader
   {
 
-#define RIPPLE_SHADER_PARAMS(X)                                                                     \
-X(rippleCenterX, float, 0.5f,  0.f, 1.f,   "Horizontal origin of ripple (0.0 = left, 1.0 = right)") \
-X(rippleCenterY, float, 0.5f,  0.f, 1.f,   "Vertical origin of ripple (0.0 = top, 1.0 = bottom)")   \
-X(amplitude,     float, 0.05f, 0.f, 1.f,   "[CALC] Ripple strength, typically eased")               \
-X(frequency,     float, 10.f,  1.f, 100.f, "Wave density across the screen")                        \
-X(speed,         float, 0.f,   0.f, 50.f,  "Wave movement speed over time")                         \
-X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects result")
-
-
+#define RIPPLE_SHADER_PARAMS(X)                                                                           \
+X(rippleCenterX, float, 0.5f,  0.f, 1.f,   "Horizontal origin of ripple (0.0 = left, 1.0 = right)", true) \
+X(rippleCenterY, float, 0.5f,  0.f, 1.f,   "Vertical origin of ripple (0.0 = top, 1.0 = bottom)", true)   \
+X(amplitude,     float, 0.05f, 0.f, 1.f,   "[CALC] Ripple strength, typically eased", true)               \
+X(frequency,     float, 10.f,  1.f, 100.f, "Wave density across the screen", true)                        \
+X(speed,         float, 0.f,   0.f, 50.f,  "Wave movement speed over time", true)                         \
+X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects result", true)
     struct RippleData_t
     {
       bool isActive { true };
@@ -35,8 +33,8 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
 
   public:
 
-    explicit RippleShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit RippleShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -47,6 +45,8 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
         LOG_INFO( "Ripple fragment shader loaded" );
         m_easing.setEasingType( E_TimeEasingType::E_Linear );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(RIPPLE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     ~RippleShader() override = default;
@@ -98,8 +98,8 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
 
         if ( oldCenterX != m_data.rippleCenterX || oldCenterY != m_data.rippleCenterY )
         {
-          const sf::Vector2f calibrated { m_data.rippleCenterX * static_cast< float >(m_globalInfo.windowSize.x),
-                                          m_data.rippleCenterY * static_cast< float >(m_globalInfo.windowSize.y) };
+          const sf::Vector2f calibrated { m_data.rippleCenterX * static_cast< float >(m_ctx.globalInfo.windowSize.x),
+                                          m_data.rippleCenterY * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
           m_timedCursor.setPosition( calibrated );
         }
 
@@ -131,9 +131,9 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
     [[nodiscard]]
     sf::RenderTexture & applyShader( const sf::RenderTexture &inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "failed to resize ripple texture" );
         }
@@ -164,7 +164,7 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     RippleData_t m_data;
 
     sf::Clock m_clock;

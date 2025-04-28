@@ -144,7 +144,8 @@ namespace priv
                         std::function< void( IVSTView * ) >&& onRemoved )
       : m_stateContext( stateContext ),
         m_rect( windowSize ),
-        m_onRemoved( onRemoved )
+        m_onRemoved( onRemoved ),
+        m_eventFacade( stateContext )
     {}
 
     ////////////////////////////////////////////////////////////////////////////////

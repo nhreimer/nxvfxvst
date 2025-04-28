@@ -9,12 +9,12 @@ namespace nx
   {
 
     // The BlenderShader for this one is already built in. it was the prototype example.
-#define DUALKAWASE_SHADER_PARAMS(X)                                                           \
-X(passes,      int,   4,     1,    10,    "Number of downsample/upsample passes")             \
-X(offset,      float, 1.0f,  0.0f, 10.f,  "Kernel offset per pass")                           \
-X(bloomGain,   float, 1.0f,  0.0f, 10.f,  "Gain applied to bloom texture before blending")    \
-X(brightness,  float, 1.0f,  0.0f, 3.f,   "Brightness boost for final output")                \
-X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred result")
+#define DUALKAWASE_SHADER_PARAMS(X)                                                                 \
+X(passes,      int,   4,     1,    10,    "Number of downsample/upsample passes", true)             \
+X(offset,      float, 1.0f,  0.0f, 10.f,  "Kernel offset per pass",true)                            \
+X(bloomGain,   float, 1.0f,  0.0f, 10.f,  "Gain applied to bloom texture before blending", true)    \
+X(brightness,  float, 1.0f,  0.0f, 3.f,   "Brightness boost for final output", true)                \
+X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred result", true)
 
     struct DKBlurData_t
     {
@@ -35,8 +35,8 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
   public:
 
-    explicit DualKawaseBlurShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit DualKawaseBlurShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) ||
            !m_compositeShader.loadFromMemory( m_compositeFragmentShader, sf::Shader::Type::Fragment ) )
@@ -47,6 +47,8 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       {
         LOG_INFO( "loaded dk blur shader" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(DUALKAWASE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     ///////////////////////////////////////////////////////
@@ -76,6 +78,8 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       {
         LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(DUALKAWASE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     // identify type for easier loading
@@ -167,7 +171,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     sf::Shader m_shader;
     sf::Shader m_compositeShader;

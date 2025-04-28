@@ -41,13 +41,19 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
   public:
 
-    explicit SmearShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit SmearShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
         LOG_ERROR( "Failed to load smear fragment shader" );
       }
+      else
+      {
+        LOG_INFO( "Smear fragment shader loaded" );
+      }
+
+      EXPAND_SHADER_VST_BINDINGS(SMEAR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     ~SmearShader() override = default;
@@ -190,7 +196,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     SmearData_t m_data;
 

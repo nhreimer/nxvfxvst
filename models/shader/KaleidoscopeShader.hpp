@@ -11,18 +11,18 @@ namespace nx
 // easings
 // slices, angleSteps, and swirlStrength
 
-#define KALEIDOSCOPE_SHADER_PARAMS(X)                                                          \
-X(masterGain,     float, 0.1f,  0.f,  5.f,   "Overall kaleido intensity multiplier")           \
-X(slices,         float, 6.f,   3.f,  24.f,  "Number of kaleidoscope slices")                  \
-X(swirlStrength,  float, 1.f,   0.f,  5.f,   "Amount of swirl distortion per slice")           \
-X(swirlDensity,   float, 1.f,   0.f,  10.f,  "Swirl frequency (tightness of rotation)")        \
-X(pulseStrength,  float, 0.2f,  0.f,  5.f,   "Strength of pulsing wave distortions")           \
-X(pulseFrequency, float, 10.f,  0.f,  50.f,  "How often pulses occur (Hz)")                    \
-X(pulseSpeed,     float, 5.f,   0.f,  50.f,  "How quickly pulses move through the shape")      \
-X(angleSteps,     float, 32.f,  3.f,  128.f, "How many radial segments are processed")         \
-X(radialStretch,  float, 1.f,   0.1f, 3.f,   "Stretch factor on the radial axis")              \
-X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion overlay")       \
-X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+#define KALEIDOSCOPE_SHADER_PARAMS(X)                                                                \
+X(masterGain,     float, 0.1f,  0.f,  5.f,   "Overall kaleido intensity multiplier", true)           \
+X(slices,         float, 6.f,   3.f,  24.f,  "Number of kaleidoscope slices", true)                  \
+X(swirlStrength,  float, 1.f,   0.f,  5.f,   "Amount of swirl distortion per slice", true)           \
+X(swirlDensity,   float, 1.f,   0.f,  10.f,  "Swirl frequency (tightness of rotation)", true)        \
+X(pulseStrength,  float, 0.2f,  0.f,  5.f,   "Strength of pulsing wave distortions", true)           \
+X(pulseFrequency, float, 10.f,  0.f,  50.f,  "How often pulses occur (Hz)", true)                    \
+X(pulseSpeed,     float, 5.f,   0.f,  50.f,  "How quickly pulses move through the shape", true)      \
+X(angleSteps,     float, 32.f,  3.f,  128.f, "How many radial segments are processed", true)         \
+X(radialStretch,  float, 1.f,   0.1f, 3.f,   "Stretch factor on the radial axis", true)              \
+X(noiseStrength,  float, 0.5f,  0.f,  2.f,   "Amount of Perlin-like distortion overlay", true)       \
+X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct KaleidoscopeData_t
     {
@@ -43,8 +43,8 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
 
   public:
 
-    explicit KaleidoscopeShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit KaleidoscopeShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -54,6 +54,8 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
       {
         LOG_INFO( "Kaleidoscope fragment shader loaded" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(KALEIDOSCOPE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     ~KaleidoscopeShader() override = default;
@@ -129,9 +131,9 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "failed to resize kaleidoscope texture" );
         }
@@ -169,7 +171,7 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;

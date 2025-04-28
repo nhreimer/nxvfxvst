@@ -89,7 +89,7 @@ tresult PLUGIN_API nxvfxvstController::initialize (FUnknown* context)
 	}
 
 	// Register a bunch of dummy parameters
-  for (int i = 0; i < 128; ++i)
+  for (int32_t i = 0; i < 128; ++i)
   {
     std::string paramName( "Param_" + std::to_string(i) );
     const auto param = new Vst::RangeParameter(USTRING( paramName.c_str() ), i, nullptr, 0.f, 1.f, 0.f);

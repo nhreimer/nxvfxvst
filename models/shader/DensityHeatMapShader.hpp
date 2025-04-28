@@ -7,6 +7,9 @@
 namespace nx
 {
 
+  // TODO: NONE of this is hooked up to the macro system yet, so it doesn't automatically get
+  // TODO: some of the built-in features.
+  // TODO: ADD IT TO THE MACRO SYSTEM!
   class DensityHeatMapShader final : public IShader
   {
 
@@ -34,8 +37,8 @@ namespace nx
     };
 
   public:
-    explicit DensityHeatMapShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit DensityHeatMapShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -131,9 +134,9 @@ namespace nx
     [[nodiscard]]
     sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "failed to resize density heat map texture" );
         }
@@ -166,7 +169,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     DensityHeatMapData_t m_data;
 
     sf::Shader m_shader;

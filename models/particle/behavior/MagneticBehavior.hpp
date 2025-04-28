@@ -17,7 +17,9 @@ namespace nx
     };
 
   public:
-    explicit MagneticAttractorBehavior(const GlobalInfo_t &info) : m_globalInfo(info) {}
+    explicit MagneticAttractorBehavior(PipelineContext& context)
+      : m_ctx( context )
+    {}
 
     [[nodiscard]]
     nlohmann::json serialize() const override { return {}; }
@@ -33,8 +35,8 @@ namespace nx
     {
       const sf::Vector2f pos = p->shape.getPosition();
 
-      const sf::Vector2f attractor { m_data.magnetLocation.x * static_cast< float >(m_globalInfo.windowSize.x ),
-                                      m_data.magnetLocation.y * static_cast< float >(m_globalInfo.windowSize.y) };
+      const sf::Vector2f attractor { m_data.magnetLocation.x * static_cast< float >(m_ctx.globalInfo.windowSize.x ),
+                                      m_data.magnetLocation.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
 
       const sf::Vector2f dir = attractor - pos;
       const float distance = std::max(length(dir), 0.001f); // avoid divide by 0
@@ -67,8 +69,8 @@ namespace nx
         if ( ImGui::SliderFloat( "Magnet x##1", &m_data.magnetLocation.x, 0.f, 1.f ) ||
              ImGui::SliderFloat( "Magnet y##1", &m_data.magnetLocation.y, 0.f, 1.f ) )
         {
-          const sf::Vector2f calibrated { m_data.magnetLocation.x * static_cast< float >( m_globalInfo.windowSize.x ),
-                                          m_data.magnetLocation.y * static_cast< float >( m_globalInfo.windowSize.y ) };
+          const sf::Vector2f calibrated { m_data.magnetLocation.x * static_cast< float >( m_ctx.globalInfo.windowSize.x ),
+                                          m_data.magnetLocation.y * static_cast< float >( m_ctx.globalInfo.windowSize.y ) };
           m_timedCursor.setPosition( calibrated );
         }
 
@@ -88,7 +90,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext m_ctx;
 
     MagneticData_t m_data;
     TimedCursorPosition m_timedCursor;

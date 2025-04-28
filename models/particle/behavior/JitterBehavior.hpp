@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "models/IParticleBehavior.hpp"
 
 namespace nx
@@ -13,8 +15,8 @@ namespace nx
     };
 
   public:
-    explicit JitterBehavior( const GlobalInfo_t& info )
-      : m_globalInfo( info )
+    explicit JitterBehavior( PipelineContext& context )
+      : m_ctx( context )
     {}
 
     [[nodiscard]]
@@ -73,7 +75,7 @@ namespace nx
     }
 
   private:
-      const GlobalInfo_t& m_globalInfo;
+      PipelineContext& m_ctx;
 
       std::mt19937 m_rand;
       JitterData_t m_data;

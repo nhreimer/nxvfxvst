@@ -4,8 +4,9 @@
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 #include "models/modifier/PerlinDeformerModifier.hpp"
 #include "models/modifier/RingZoneMeshModifier.hpp"
-
 #include "models/modifier/MirrorModifier.hpp"
+
+#include "data/PipelineContext.hpp"
 
 namespace nx
 {
@@ -14,8 +15,8 @@ class ModifierPipeline final
 {
 public:
 
-  explicit ModifierPipeline( const GlobalInfo_t& globalInfo )
-    : m_globalInfo( globalInfo )
+  explicit ModifierPipeline( PipelineContext& context )
+    : m_ctx( context )
   {}
 
   void update( const sf::Time& deltaTime ) const
@@ -99,9 +100,9 @@ public:
     const ParticleLayoutData_t& particleLayoutData,
     std::deque< TimedParticle_t* >& particles )
   {
-    if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+    if ( m_outputTexture.getSize() != m_ctx.globalInfo.windowSize )
     {
-      if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+      if ( !m_outputTexture.resize( m_ctx.globalInfo.windowSize ) )
       {
         LOG_ERROR( "Failed to resize modifier pipeline texture" );
       }
@@ -235,7 +236,7 @@ private:
   IParticleModifier * createModifier()
   {
     auto& modifier = m_modifiers.emplace_back< std::unique_ptr< T > >(
-      std::make_unique< T >( m_globalInfo ) );
+      std::make_unique< T >( m_ctx ) );
     return modifier.get();
   }
 
@@ -243,14 +244,14 @@ private:
   IParticleModifier * deserializeModifier( const nlohmann::json& j )
   {
     auto& modifier = m_modifiers.emplace_back< std::unique_ptr< T > >(
-      std::make_unique< T >( m_globalInfo ) );
+      std::make_unique< T >( m_ctx ) );
     modifier->deserialize( j );
     return modifier.get();
   }
 
 private:
 
-  const GlobalInfo_t& m_globalInfo;
+  PipelineContext& m_ctx;
 
   sf::RenderTexture m_outputTexture;
 

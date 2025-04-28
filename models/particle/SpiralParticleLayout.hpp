@@ -3,27 +3,47 @@
 #include <random>
 
 #include "helpers/MathHelper.hpp"
-#include "helpers/MenuHelper.hpp"
-
-#include "models/particle/ParticleConsumer.hpp"
+#include "helpers/MidiHelper.hpp"
 
 #include "shapes/TimedCursorPosition.hpp"
 
 namespace nx
 {
 
-  class SpiralParticleLayout final : public ParticleConsumer< ParticleLayoutData_t >
+  class SpiralParticleLayout final : public ParticleLayoutBase< ParticleLayoutData_t >
   {
   public:
 
-    explicit SpiralParticleLayout( const GlobalInfo_t& winfo )
-      : ParticleConsumer( winfo )
+    explicit SpiralParticleLayout( PipelineContext& context )
+      : ParticleLayoutBase( context )
     {}
 
     ~SpiralParticleLayout() override = default;
 
     [[nodiscard]]
     E_LayoutType getType() const override { return E_LayoutType::E_SpiralLayout; }
+
+    [[nodiscard]]
+    nlohmann::json serialize() const override
+    {
+      auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+      j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+      return j;
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      ParticleHelper::deserialize( m_data, j );
+      if (j.contains("behaviors"))
+        m_behaviorPipeline.loadPipeline(j.at("behaviors"));
+    }
+
+    void addMidiEvent(const Midi_t &midiEvent) override
+    {
+      auto * p = m_particles.emplace_back( new TimedParticle_t() );
+      p->shape.setPosition( getNextPosition( midiEvent ) );
+      ParticleLayoutBase::initializeParticle( p, midiEvent );
+    }
 
     void drawMenu() override
     {
@@ -46,7 +66,7 @@ namespace nx
   protected:
 
 
-    sf::Vector2f getNextPosition( const Midi_t& midiNote ) override
+    static sf::Vector2f getNextPosition( const Midi_t& midiNote )
     {
       const auto noteInfo = MidiHelper::getMidiNote( midiNote.pitch );
 

@@ -9,7 +9,9 @@ namespace nx
 
   class ColorShader final : public IShader
   {
+  public:
 
+  private:
 #define COLOR_SHADER_PARAMS(X)                                                                       \
 X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness", true)               \
 X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors", true)                    \
@@ -37,8 +39,8 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
   public:
 
-    explicit ColorShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit ColorShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -48,11 +50,8 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       {
         LOG_DEBUG( "Color fragment shader loaded successfully" );
       }
-    }
 
-    void registerShaderControls( VSTParamBindingManager& bindingManager ) override
-    {
-      COLOR_SHADER_PARAMS(GEN_VST_BINDING)
+      EXPAND_SHADER_VST_BINDINGS(COLOR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     [[nodiscard]]
@@ -150,7 +149,8 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
+
     ColorData_t m_data;
 
     sf::Shader m_shader;

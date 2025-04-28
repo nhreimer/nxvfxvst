@@ -18,15 +18,15 @@ namespace nx
   {
   public:
 
-    explicit EllipticalLayout( const GlobalInfo_t& globalInfo )
-      : ParticleLayoutBase( globalInfo )
+    explicit EllipticalLayout( PipelineContext& context )
+      : ParticleLayoutBase( context )
     {}
 
     [[nodiscard]]
     nlohmann::json serialize() const override
     {
       auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
-      j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
+      j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
       j[ "radiusX" ] = m_data.radiusX;
       j[ "radiusY" ] = m_data.radiusY;
       j[ "arcSpreadDegrees" ] = m_data.arcSpreadDegrees;
@@ -53,7 +53,7 @@ namespace nx
                                                j[ "centerOffset" ].value( "y", 0.f ) };
       }
       if ( j.contains( "behaviors" ) )
-        m_behaviorPipeline.loadModifierPipeline( j.at( "behaviors" ) );
+        m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
     }
 
     [[nodiscard]]
@@ -99,7 +99,7 @@ namespace nx
       const float x = std::cos(angle) * m_data.radiusX;
       const float y = std::sin(angle) * m_data.radiusY;
 
-      const sf::Vector2f pos = m_globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
+      const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
 
       auto * p = m_particles.emplace_back( new TimedParticle_t() );
       p->shape.setPosition(pos);
@@ -123,7 +123,7 @@ namespace nx
       const float x = std::cos(angle) * m_data.radiusX;
       const float y = std::sin(angle) * m_data.radiusY;
 
-      const sf::Vector2f pos = m_globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
+      const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
 
       auto * p = m_particles.emplace_back( new TimedParticle_t() );
       p->shape.setPosition(pos);

@@ -8,18 +8,18 @@ namespace nx
   class RumbleShader final : public IShader
   {
 
-#define RUMBLE_SHADER_PARAMS(X)                                                                 \
-X(rumbleStrength, float, 20.f, 0.f, 100.f,  "Max pixel offset during shake")                    \
-X(frequency,       float, 40.f, 1.f, 200.f, "Shake frequency in Hz")                            \
-X(pulseDecay,      float, -5.f, -50.f, 0.f, "Decay rate for shake pulses")                      \
-X(direction, sf::Vector2f, sf::Vector2f(1.f, 1.f), 0.f, 0.f, "Shake axis direction (x, y)")     \
-X(useNoise,        bool, false, 0, 0,      "Enable procedural noise mode instead of sine wave") \
-X(modAmplitude,    float, 0.5f, 0.f, 2.f,  "Amount of wobble modulation over time")             \
-X(modFrequency,    float, 10.f, 0.f, 50.f, "Speed of wobble modulation")                        \
-X(colorDesync,     float, 1.0f, 0.f, 5.f,  "RGB offset multiplier (screen tearing)")            \
-X(baseColorDesync, float, 0.25f, 0.f, 2.f, "Base chroma offset before modulation")              \
-X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center")                     \
-X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+#define RUMBLE_SHADER_PARAMS(X)                                                                       \
+X(rumbleStrength, float, 20.f, 0.f, 100.f,  "Max pixel offset during shake", true)                    \
+X(frequency,       float, 40.f, 1.f, 200.f, "Shake frequency in Hz", true)                            \
+X(pulseDecay,      float, -5.f, -50.f, 0.f, "Decay rate for shake pulses", true)                      \
+X(direction, sf::Vector2f, sf::Vector2f(1.f, 1.f), 0.f, 0.f, "Shake axis direction (x, y)", false)    \
+X(useNoise,        bool, false, 0, 0,      "Enable procedural noise mode instead of sine wave", true) \
+X(modAmplitude,    float, 0.5f, 0.f, 2.f,  "Amount of wobble modulation over time", true)             \
+X(modFrequency,    float, 10.f, 0.f, 50.f, "Speed of wobble modulation", true)                        \
+X(colorDesync,     float, 1.0f, 0.f, 5.f,  "RGB offset multiplier (screen tearing)", true)            \
+X(baseColorDesync, float, 0.25f, 0.f, 2.f, "Base chroma offset before modulation", true)              \
+X(maxColorDesync,  float, 0.25f, 0.f, 2.f, "Max chroma offset from center", true)                     \
+X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct RumbleData_t
     {
@@ -40,8 +40,8 @@ X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects
 
   public:
 
-    explicit RumbleShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit RumbleShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -51,6 +51,8 @@ X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects
       {
         LOG_DEBUG( "Rumble fragment shader loaded successfully" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(RUMBLE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     [[nodiscard]]
@@ -153,7 +155,7 @@ X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     RumbleData_t m_data;
 
     sf::Clock m_clock;

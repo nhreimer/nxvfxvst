@@ -25,7 +25,7 @@ namespace nx
     virtual sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) = 0;
 
-    virtual void registerShaderControls(VSTParamBindingManager& bindingManager) = 0;
+    //virtual void registerShaderControls(VSTParamBindingManager& bindingManager) = 0;
   };
 
 }

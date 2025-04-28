@@ -1,9 +1,10 @@
 #pragma once
 
+#include "data/PipelineContext.hpp"
 #include "models/ChannelPipeline.hpp"
-#include "shapes/TimedMessage.hpp"
-#include "models/encoder/EncoderFactory.hpp"
 #include "models/EventRecorder.hpp"
+#include "models/encoder/EncoderFactory.hpp"
+#include "shapes/TimedMessage.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
@@ -20,11 +21,11 @@ namespace nx
     static constexpr int MAX_CHANNELS = 4;
 
   public:
-    explicit MultichannelPipeline( const GlobalInfo_t &globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit MultichannelPipeline( PipelineContext& context )
+      : m_ctx( context )
     {
       for ( int i = 0; i < m_channels.size(); ++i )
-        m_channels[ i ] = std::make_unique< ChannelPipeline >( globalInfo );
+        m_channels[ i ] = std::make_unique< ChannelPipeline >( context );
     }
 
     ~MultichannelPipeline() = default;
@@ -86,8 +87,8 @@ namespace nx
         ImGuiWindowFlags_AlwaysAutoResize );
 
       ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
-      ImGui::Text( "Window Size: %d, %d", m_globalInfo.windowSize.x, m_globalInfo.windowSize.y );
-      ImGui::Text( "BPM: %0.2f", m_globalInfo.bpm );
+      ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
+      ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
 
       int32_t offsetChannel = m_selectedChannel + 1;
 
@@ -165,7 +166,7 @@ namespace nx
         }
         else if ( ImGui::Button( "Start Recording" ) )
         {
-          m_encoderData.size = m_globalInfo.windowSize;
+          m_encoderData.size = m_ctx.globalInfo.windowSize;
           m_encoder.reset( nullptr );
           m_encoder = EncoderFactory::create( m_encoderType, m_encoderData );
           if ( m_encoder && m_encoder->isRecording() )
@@ -191,7 +192,7 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t &m_globalInfo;
+    PipelineContext m_ctx;
 
     std::array< std::unique_ptr< ChannelPipeline >, MAX_CHANNELS > m_channels;
     TimedMessage m_messageClock;

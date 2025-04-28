@@ -8,9 +8,11 @@
 #include "models/ModifierPipeline.hpp"
 #include "models/ShaderPipeline.hpp"
 
+#include "data/PipelineContext.hpp"
 #include "models/ParticleLayoutManager.hpp"
 
 #include <future>
+
 
 namespace nx
 {
@@ -19,11 +21,11 @@ namespace nx
 
   public:
 
-    explicit ChannelPipeline( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo ),
-        m_particleLayout( globalInfo ),
-        m_modifierPipeline( globalInfo ),
-        m_shaderPipeline( globalInfo )
+    explicit ChannelPipeline( PipelineContext& context )
+      : m_ctx( context ),
+        m_particleLayout( context ),
+        m_modifierPipeline( context ),
+        m_shaderPipeline( context )
     {}
 
     ~ChannelPipeline() = default;
@@ -139,7 +141,8 @@ namespace nx
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    // const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     std::atomic< bool > m_isReady { false };
 

@@ -9,7 +9,8 @@
 #include "models/particle/LSystemCurveLayout.hpp"
 #include "models/particle/GoldenSpiralLayout.hpp"
 #include "models/particle/EllipticalLayout.hpp"
-#include "models/particle/TestParticleLayout.hpp"
+
+#include "data/PipelineContext.hpp"
 
 namespace nx
 {
@@ -18,9 +19,9 @@ namespace nx
   {
   public:
 
-    explicit ParticleLayoutManager( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo ),
-        m_particleLayout( std::make_unique< SpiralParticleLayout >( globalInfo ) )
+    explicit ParticleLayoutManager( PipelineContext& context )
+      : m_ctx( context ),
+        m_particleLayout( std::make_unique< SpiralParticleLayout >( context ) )
     {}
 
     nlohmann::json serialize() const
@@ -113,7 +114,7 @@ namespace nx
     void changeLayout()
     {
       m_tempSettings[ SerialHelper::serializeEnum( m_particleLayout->getType() ) ] = m_particleLayout->serialize();
-      m_particleLayout.reset( new T( m_globalInfo ) );
+      m_particleLayout.reset( new T( m_ctx ) );
 
       const auto newLayoutName = SerialHelper::serializeEnum( m_particleLayout->getType() );
       if ( m_tempSettings.contains( newLayoutName ) )
@@ -121,7 +122,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     std::unique_ptr< IParticleLayout > m_particleLayout;
 

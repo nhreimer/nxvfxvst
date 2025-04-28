@@ -14,8 +14,8 @@ namespace nx
     };
 
   public:
-    explicit RadialSpreaderBehavior(const GlobalInfo_t& info)
-      : m_globalInfo(info)
+    explicit RadialSpreaderBehavior(PipelineContext& context)
+      : m_ctx( context )
     {}
 
     [[nodiscard]]
@@ -41,23 +41,23 @@ namespace nx
     {
       sf::Vector2f pos = p->shape.getPosition();
       const sf::Vector2f dir =
-        ( pos - m_globalInfo.windowHalfSize ) * ( m_globalInfo.elapsedTimeSeconds - p->spawnTime );
+        ( pos - m_ctx.globalInfo.windowHalfSize ) * ( m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime );
 
       // Avoid NaNs if particle spawns directly at center
       if (dir.x == 0.f && dir.y == 0.f) return;
 
-      pos = m_globalInfo.windowHalfSize + dir * m_data.spreadMultiplier;
+      pos = m_ctx.globalInfo.windowHalfSize + dir * m_data.spreadMultiplier;
       p->shape.setPosition(pos);
     }
 
     void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override
     {
-      const sf::Vector2f baseDir = p->originalPosition - m_globalInfo.windowHalfSize;
+      const sf::Vector2f baseDir = p->originalPosition - m_ctx.globalInfo.windowHalfSize;
 
-      const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+      const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
       const float pulse = std::sin(elapsed * m_data.speed) * 0.5f + 0.5f; // oscillates between [0, 1]
 
-      const sf::Vector2f animatedPos = m_globalInfo.windowHalfSize + baseDir * (1.f + m_data.spreadMultiplier * pulse);
+      const sf::Vector2f animatedPos = m_ctx.globalInfo.windowHalfSize + baseDir * (1.f + m_data.spreadMultiplier * pulse);
       p->shape.setPosition(animatedPos);
     }
 
@@ -74,7 +74,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     RadialSpreaderData_t m_data;
   };
 }
