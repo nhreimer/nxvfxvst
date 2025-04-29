@@ -58,15 +58,12 @@ namespace nx
         ImGui::TreePop();
         ImGui::Spacing();
       }
-
-      if ( !m_timedDrawing.hasExpired() )
-        m_timedDrawing.drawPosition();
     }
 
   protected:
 
 
-    static sf::Vector2f getNextPosition( const Midi_t& midiNote )
+    sf::Vector2f getNextPosition( const Midi_t& midiNote )
     {
       const auto noteInfo = MidiHelper::getMidiNote( midiNote.pitch );
 
@@ -74,17 +71,16 @@ namespace nx
       const auto noteOctave = std::get< 1 >( noteInfo );
 
       // 0. calculate the position based on the note, octave, and spread
-      return MathHelper::getAnglePosition( 12,
+      auto position = MathHelper::getAnglePosition( 12,
                                                       noteNumber,
                                                       static_cast< float >( noteOctave ),
                                                       static_cast< float >( noteOctave ) );
+
+      return { m_ctx.globalInfo.windowHalfSize.x + position.x,
+               m_ctx.globalInfo.windowHalfSize.y + position.y };
     }
 
   private:
-
-    std::mt19937 m_rand;
-
-    TimedCursorPosition m_timedDrawing;
 
   };
 
