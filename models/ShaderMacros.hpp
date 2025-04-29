@@ -12,10 +12,6 @@ namespace nx
                             const char* tooltip,
                             const bool allowVSTBinding)
   {
-    if ( !allowVSTBinding ) return;
-
-    bool isHandled = true;
-
     if constexpr (std::is_same_v<T, float>)
     {
       ImGui::SliderFloat(label, &value, min, max);
@@ -42,12 +38,8 @@ namespace nx
     {
       MenuHelper::drawBlendOptions( value );
     }
-    else
-    {
-      isHandled = false;
-    }
 
-    if ( isHandled )
+    if ( allowVSTBinding )
     {
       ImGui::SameLine();
       ImGui::Text( " (%d)", paramId );

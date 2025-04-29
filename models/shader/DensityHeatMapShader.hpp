@@ -141,7 +141,9 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                              m_outputTexture,
+                              m_data.mixFactor.first );
     }
 
   private:
@@ -150,6 +152,7 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+    BlenderShader m_blender;
 
     TimeEasing m_easing;
 
