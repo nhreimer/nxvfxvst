@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cmath> // std::lerp
-
 namespace nx
 {
 
@@ -11,8 +9,10 @@ namespace nx
                             const float min,
                             const float max,
                             const char* tooltip,
-                            bool allowVSTBinding)
+                            const bool allowVSTBinding)
   {
+    if ( !allowVSTBinding ) return;
+
     if constexpr (std::is_same_v<T, float>)
     {
       ImGui::SliderFloat(label, &value, min, max);
@@ -45,47 +45,44 @@ namespace nx
   }
 }
 
-// ========== ImGui Menu Drawing ==========
-#define DRAW_FIELD(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
-nx::drawShaderParamImGui<type>(#name, m_data.name, minVal, maxVal, tooltip, allowVSTBinding);
-#define DRAW_FIELDS_IMGUI(PARAMS) PARAMS(DRAW_FIELD)
+////////////////////////////////////////////////////////////////////////////////////////////
 
-// =========================================
-// Dispatcher Macro (must be called after binding STRUCT_REF)
-// =========================================
+// ========== ImGui Menu Drawing ===========
 
 #define DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip, allowVSTBinding) \
 nx::drawShaderParamImGui<type>(#name, STRUCT_REF.name, minVal, maxVal, tooltip, allowVSTBinding);
 
-// =========================================
-// Expansion Macro
-// Must call from within a drawMenu() function or similar:
-//     auto& STRUCT_REF = yourStruct;
-//     PARAM_MACRO(X_SHADER_IMGUI);
-// =========================================
-
 #define X_SHADER_IMGUI(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
 DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip, allowVSTBinding)
 
+#define EXPAND_SHADER_IMGUI(PARAM_MACRO, DATA_STRUCT) \
+auto& STRUCT_REF = DATA_STRUCT;                       \
+PARAM_MACRO(X_SHADER_IMGUI)
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+#define GEN_STRUCT_FIELD2(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
+std::pair<type, int32_t> name = { defaultVal, -1 };
+
+#define EXPAND_SHADER_PARAMS_FOR_STRUCT2(PARAM_MACRO)     \
+PARAM_MACRO(GEN_STRUCT_FIELD2)
+
 // FOR STRUCTS
 #define GEN_STRUCT_FIELD(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) type name = defaultVal;
+
 #define EXPAND_SHADER_PARAMS_FOR_STRUCT(PARAM_MACRO)     \
-PARAM_MACRO(GEN_STRUCT_FIELD)                            \
-/* optionally undef here if you care */                  \
-/**/
+PARAM_MACRO(GEN_STRUCT_FIELD)
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
 // FOR ENUM
 #define GEN_ENUM_FIELD(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) name,
 #define EXPAND_SHADER_PARAMS_FOR_ENUM(PARAM_MACRO)       \
 PARAM_MACRO(GEN_ENUM_FIELD)
 
-// FOR IMGUI
-// #define GEN_IMGUI_FLOATS(name, type, defaultVal, minVal, maxVal) \
-// ImGui::SliderFloat(#name, &m_data.name, minVal, maxVal);
-// #define EXPAND_SHADER_PARAMS_FOR_IMGUI(PARAM_MACRO)      \
-// PARAM_MACRO(GEN_IMGUI_FLOATS)
+////////////////////////////////////////////////////////////////////////////////////////////
 
-// FOR IMGUI CONTROLS
+// FOR SERIALIZATION
 #define GEN_TO_JSON(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
 j[#name] = m_data.name;
 #define EXPAND_SHADER_PARAMS_TO_JSON(PARAM_MACRO) \
@@ -99,6 +96,8 @@ PARAM_MACRO(GEN_FROM_JSON)
 #define GEN_LABEL_STRING(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) #name,
 #define EXPAND_SHADER_PARAM_LABELS(PARAM_MACRO) \
 PARAM_MACRO(GEN_LABEL_STRING)
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace nx
 {

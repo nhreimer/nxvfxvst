@@ -88,8 +88,7 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
       if ( ImGui::TreeNode( "Strobe Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        STROBE_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(STROBE_SHADER_PARAMS, m_data)
 
         ImGui::Separator();
         m_easing.drawMenu();

@@ -107,8 +107,7 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
         const float oldCenterX = m_data.center.x;
         const float oldCenterY = m_data.center.y;
 
-        auto& STRUCT_REF = m_data;
-        SHOCK_BLOOM_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(SHOCK_BLOOM_SHADER_PARAMS, m_data)
 
         if ( oldCenterX != m_data.center.x || oldCenterY != m_data.center.y )
         {

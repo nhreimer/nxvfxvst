@@ -14,7 +14,7 @@ X(sigma,             float, 7.f,     0.f,   50.f , "Amount of blurring", true)  
 X(brighten,          float, 1.f,     0.f,   5.f  , "Brightens the blurred areas", true)           \
 X(blurHorizontal,    float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction", true)     \
 X(blurVertical,      float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction", true)       \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true) \
 
     struct BlurData_t
     {
@@ -95,8 +95,8 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       if ( ImGui::TreeNode( "Gaussian Blur Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        BLUR_SHADER_PARAMS(X_SHADER_IMGUI);
+
+        EXPAND_SHADER_IMGUI(BLUR_SHADER_PARAMS, m_data)
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();

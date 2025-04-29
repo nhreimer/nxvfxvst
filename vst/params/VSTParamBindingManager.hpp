@@ -115,6 +115,17 @@ namespace nx
       }
     }
 
+    int32_t findParamID( const IShader * owner, const std::string& controlName ) const
+    {
+      for ( auto& binding : m_bindings )
+      {
+        if ( binding.owner == owner && binding.shaderControlName == controlName )
+          return binding.vstParamID;
+      }
+
+      return -1;
+    }
+
     static float convertToDenormalized( const VSTParamBinding& binding, const float normalizedValue )
     {
       // we convert the normalized for display purposes
@@ -146,7 +157,6 @@ namespace nx
       {
         if constexpr (std::is_same_v<T, float>)
         {
-
           m_bindings[ vstParamID ].lastValue = convertToNormalized( m_bindings[ vstParamID ], value );
           LOG_INFO( "Setting VST Param ID: {} => {} ({})", vstParamID, value, m_bindings[ vstParamID ].lastValue );
 

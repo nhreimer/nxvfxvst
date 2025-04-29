@@ -101,8 +101,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       if ( ImGui::TreeNode( "Color Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        COLOR_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(COLOR_SHADER_PARAMS, m_data)
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();

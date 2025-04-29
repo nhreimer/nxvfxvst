@@ -95,8 +95,7 @@ X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects
       if ( ImGui::TreeNode("Rumble Options" ) )
       {
         ImGui::Checkbox("Active", &m_data.isActive);
-        auto& STRUCT_REF = m_data;
-        RUMBLE_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(RUMBLE_SHADER_PARAMS, m_data)
 
         ImGui::Separator();
         m_easing.drawMenu();

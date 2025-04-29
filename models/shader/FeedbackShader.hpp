@@ -78,8 +78,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     {
       if ( ImGui::TreeNode( "Feedback Options" ) )
       {
-        auto& STRUCT_REF = m_data;
-        FEEDBACK_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(FEEDBACK_SHADER_PARAMS, m_data)
 
         if ( ImGui::SmallButton( "Clear" ) )
           m_outputTexture.clear( sf::Color::Transparent );

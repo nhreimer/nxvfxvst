@@ -98,8 +98,7 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
         const float offsetX = m_data.shift.x;
         const float offsetY = m_data.shift.y;
 
-        auto& STRUCT_REF = m_data;
-        TRANSFORM_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(TRANSFORM_SHADER_PARAMS, m_data)
 
         if ( offsetX != m_data.shift.x || offsetY != m_data.shift.y )
         {
