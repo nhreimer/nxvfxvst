@@ -147,19 +147,19 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
       m_shader.setUniform( "u_time", m_easing.getEasing() );
 
       m_shader.setUniform("u_texture", inputTexture.getTexture());
-      m_shader.setUniform("u_intensity", m_data.masterGain);
+      m_shader.setUniform("u_intensity", m_data.masterGain.first);
       m_shader.setUniform("u_resolution", sf::Vector2f(inputTexture.getSize()));
 
       // Custom control knobs
-      m_shader.setUniform("u_kaleidoSlices", m_data.slices);
-      m_shader.setUniform("u_swirlStrength", m_data.swirlStrength);
-      m_shader.setUniform("u_swirlDensity", m_data.swirlDensity);
-      m_shader.setUniform("u_angularPulseFreq", m_data.pulseFrequency);
-      m_shader.setUniform("u_pulseStrength", m_data.pulseStrength);
-      m_shader.setUniform("u_pulseSpeed", m_data.pulseSpeed);
-      m_shader.setUniform("u_angleSteps", m_data.angleSteps);
-      m_shader.setUniform("u_radialStretch", m_data.radialStretch);
-      m_shader.setUniform("u_noiseStrength", m_data.noiseStrength);
+      m_shader.setUniform("u_kaleidoSlices", m_data.slices.first);
+      m_shader.setUniform("u_swirlStrength", m_data.swirlStrength.first);
+      m_shader.setUniform("u_swirlDensity", m_data.swirlDensity.first);
+      m_shader.setUniform("u_angularPulseFreq", m_data.pulseFrequency.first);
+      m_shader.setUniform("u_pulseStrength", m_data.pulseStrength.first);
+      m_shader.setUniform("u_pulseSpeed", m_data.pulseSpeed.first);
+      m_shader.setUniform("u_angleSteps", m_data.angleSteps.first);
+      m_shader.setUniform("u_radialStretch", m_data.radialStretch.first);
+      m_shader.setUniform("u_noiseStrength", m_data.noiseStrength.first);
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -167,7 +167,7 @@ X(mixFactor,      float, 1.0f,    0.f,   1.f, "Mix between original and effects 
 
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:

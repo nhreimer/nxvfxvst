@@ -128,8 +128,8 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
       }
 
       m_shader.setUniform( "texture", inputTexture.getTexture() );
-      m_shader.setUniform("flashAmount", m_data.flashAmount * m_easing.getEasing()); // or assigned easing
-      m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor));
+      m_shader.setUniform("flashAmount", m_data.flashAmount.first * m_easing.getEasing()); // or assigned easing
+      m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor.first));
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -137,7 +137,7 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
 
       return m_blender.applyShader( inputTexture,
                               m_outputTexture,
-                              m_data.mixFactor );
+                              m_data.mixFactor.first );
     }
 
   private:

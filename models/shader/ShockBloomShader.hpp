@@ -104,15 +104,15 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
       {
         ImGui::Checkbox( "Strobe Active##1", &m_data.isActive );
 
-        const float oldCenterX = m_data.center.x;
-        const float oldCenterY = m_data.center.y;
+        const float oldCenterX = m_data.center.first.x;
+        const float oldCenterY = m_data.center.first.y;
 
         EXPAND_SHADER_IMGUI(SHOCK_BLOOM_SHADER_PARAMS, m_data)
 
-        if ( oldCenterX != m_data.center.x || oldCenterY != m_data.center.y )
+        if ( oldCenterX != m_data.center.first.x || oldCenterY != m_data.center.first.y )
         {
-          const sf::Vector2f calibrated { m_data.center.x * static_cast< float >(m_ctx.globalInfo.windowSize.x),
-                                          m_data.center.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
+          const sf::Vector2f calibrated { m_data.center.first.x * static_cast< float >(m_ctx.globalInfo.windowSize.x),
+                                          m_data.center.first.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
           m_timedCursor.setPosition( calibrated );
         }
 
@@ -146,17 +146,17 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
       }
 
       const float easing = m_easing.getEasing();
-      const float radius = m_data.maxRadius * easing;
-      const float alpha = easing * m_data.easingMultiplier;
+      const float radius = m_data.maxRadius.first * easing;
+      const float alpha = easing * m_data.easingMultiplier.first;
 
       // Update uniforms
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
-      m_shader.setUniform("center", m_data.center);
+      m_shader.setUniform("center", m_data.center.first);
       m_shader.setUniform("radius", radius);
-      m_shader.setUniform("thickness", m_data.thickness);
-      m_shader.setUniform("color", m_data.color);
-      m_shader.setUniform("intensity", m_data.intensity * alpha);
-      m_shader.setUniform("innerTransparency", m_data.innerTransparency);
+      m_shader.setUniform("thickness", m_data.thickness.first);
+      m_shader.setUniform("color", m_data.color.first);
+      m_shader.setUniform("intensity", m_data.intensity.first * alpha);
+      m_shader.setUniform("innerTransparency", m_data.innerTransparency.first);
 
       // Fullscreen quad
       sf::RectangleShape fullscreen(sf::Vector2f(inputTexture.getSize()));
@@ -166,7 +166,7 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
       m_outputTexture.draw(fullscreen, &m_shader);
       m_outputTexture.display();
 
-      return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor );
+      return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor.first );
     }
 
   private:

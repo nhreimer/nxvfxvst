@@ -115,10 +115,10 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       // Resize fade quad
       m_fadeQuad.setSize(targetSize);
-      m_fadeQuad.setFillColor(sf::Color(m_data.fadeColor.r,
-                                            m_data.fadeColor.g,
-                                            m_data.fadeColor.b,
-                                            static_cast<uint8_t>(m_data.trailFadeAlpha * clampedEasing)));
+      m_fadeQuad.setFillColor(sf::Color(m_data.fadeColor.first.r,
+                                            m_data.fadeColor.first.g,
+                                            m_data.fadeColor.first.b,
+                                            static_cast<uint8_t>(m_data.trailFadeAlpha.first * clampedEasing)));
 
       // Step 1: Fade out previous trail
       m_outputTexture.draw(m_fadeQuad, sf::BlendAlpha);
@@ -130,7 +130,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:

@@ -145,15 +145,15 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
       const auto easing = m_easing.getEasing();
 
-      for (int i = 0; i < m_data.passes; ++i)
+      for (int i = 0; i < m_data.passes.first; ++i)
       {
         dst->clear();
 
         m_shader.setUniform("u_texture", src->getTexture());
         m_shader.setUniform("u_texelSize", sf::Glsl::Vec2(1.f / inputTexture.getSize().x, 1.f / inputTexture.getSize().y));
-        m_shader.setUniform("u_offset", m_data.offset + i); // optional increase per pass
-        m_shader.setUniform("u_bloomGain", m_data.bloomGain * easing);     // user/MIDI-driven
-        m_shader.setUniform("u_brightness", m_data.brightness * easing);   // compensate blur
+        m_shader.setUniform("u_offset", m_data.offset.first + i); // optional increase per pass
+        m_shader.setUniform("u_bloomGain", m_data.bloomGain.first * easing);     // user/MIDI-driven
+        m_shader.setUniform("u_brightness", m_data.brightness.first * easing);   // compensate blur
 
         dst->draw(sf::Sprite(src->getTexture()), &m_shader);
         dst->display();
@@ -165,7 +165,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       m_compositeTexture.clear();
       m_compositeShader.setUniform("u_scene", inputTexture.getTexture());
       m_compositeShader.setUniform("u_bloom", src->getTexture());
-      m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor * easing);
+      m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor.first * easing);
 
       m_compositeTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_compositeShader );
       m_compositeTexture.display();

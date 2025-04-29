@@ -137,7 +137,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     }
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive && m_data.glitchStrength > 0.f; }
+    bool isShaderActive() const override { return m_data.isActive; }
 
     [[nodiscard]]
     sf::RenderTexture& applyShader( const sf::RenderTexture &inputTexture ) override
@@ -151,14 +151,14 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       }
 
       const float cumulative = m_burstManager.getEasing();
-      const float boostedStrength = m_data.glitchBaseStrength + cumulative * m_data.glitchPulseBoost;
+      const float boostedStrength = m_data.glitchBaseStrength.first + cumulative * m_data.glitchPulseBoost.first;
 
       m_shader.setUniform("glitchStrength", boostedStrength);
       //m_shader.setUniform("easingValue", cumulative); // optional, for shader-side sync
 
       // determine whether to apply cumulative triggers only, which provides a staccato feel, especially
       // on fast beats, but it can be weird on slower events
-      if ( !m_data.applyOnlyOnEvents )
+      if ( !m_data.applyOnlyOnEvents.first )
         m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
       else
         m_shader.setUniform("easedTime", m_burstManager.getLastTriggeredInSeconds() );
@@ -168,11 +168,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
 
-      m_shader.setUniform("glitchAmount", m_data.glitchAmount);
+      m_shader.setUniform("glitchAmount", m_data.glitchAmount.first);
       // m_shader.setUniform("scanlineIntensity", m_data.scanlineIntensity);
-      m_shader.setUniform("chromaFlickerAmount", m_data.chromaFlickerAmount);
-      m_shader.setUniform("pixelJumpAmount", m_data.pixelJumpAmount);
-      m_shader.setUniform("bandCount", m_data.bandCount);
+      m_shader.setUniform("chromaFlickerAmount", m_data.chromaFlickerAmount.first);
+      m_shader.setUniform("pixelJumpAmount", m_data.pixelJumpAmount.first);
+      m_shader.setUniform("bandCount", m_data.bandCount.first);
 
       m_outputTexture.clear();
       m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
@@ -180,7 +180,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       return m_blender.applyShader( inputTexture,
                               m_outputTexture,
-                              m_data.mixFactor );
+                              m_data.mixFactor.first );
     }
 
   private:

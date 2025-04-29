@@ -136,11 +136,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       const auto easing = m_easing.getEasing();
 
       m_shader.setUniform("u_texture", inputTexture.getTexture());
-      m_shader.setUniform( "u_brightness", m_data.brightness * easing );
-      m_shader.setUniform( "u_saturation", m_data.saturation * easing );
-      m_shader.setUniform( "u_contrast", m_data.contrast );
-      m_shader.setUniform( "u_hueShift", m_data.hueShift );
-      m_shader.setUniform( "u_gain", m_data.colorGain );
+      m_shader.setUniform( "u_brightness", m_data.brightness.first * easing );
+      m_shader.setUniform( "u_saturation", m_data.saturation.first * easing );
+      m_shader.setUniform( "u_contrast", m_data.contrast.first );
+      m_shader.setUniform( "u_hueShift", m_data.hueShift.first );
+      m_shader.setUniform( "u_gain", m_data.colorGain.first );
 
       m_outputTexture.clear(sf::Color::Transparent);
       m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), &m_shader);
@@ -149,7 +149,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       //return m_outputTexture;
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:

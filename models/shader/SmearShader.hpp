@@ -145,25 +145,25 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize() ) );
-      m_shader.setUniform("smearLength", m_data.length);
-      m_shader.setUniform("smearIntensity", m_data.intensity);
-      m_shader.setUniform("sampleCount", m_data.sampleCount);
+      m_shader.setUniform("smearLength", m_data.length.first);
+      m_shader.setUniform("smearIntensity", m_data.intensity.first);
+      m_shader.setUniform("sampleCount", m_data.sampleCount.first);
 
       m_shader.setUniform("time", m_clock.getElapsedTime().asSeconds());
-      m_shader.setUniform("jitterAmount", m_data.jitterAmount);         // 0.0–0.2
-      m_shader.setUniform("brightnessBoost", m_data.brightnessBoost);   // 1.0–3.0
+      m_shader.setUniform("jitterAmount", m_data.jitterAmount.first);         // 0.0–0.2
+      m_shader.setUniform("brightnessBoost", m_data.brightnessBoost.first);   // 1.0–3.0
       m_shader.setUniform("pulseValue", easing);
-      m_shader.setUniform("falloffPower", m_data.falloffPower);         // e.g. 1.0 = linear, >1 = tighter fade
+      m_shader.setUniform("falloffPower", m_data.falloffPower.first);         // e.g. 1.0 = linear, >1 = tighter fade
       m_shader.setUniform("brightnessPulse", easing);
 
-      m_shader.setUniform("directionAngle", m_data.directionAngleInRadians);
-      m_shader.setUniform("wiggleAmplitude", m_data.wiggleAmplitude);
-      m_shader.setUniform("wiggleFrequency", m_data.wiggleFrequency);
+      m_shader.setUniform("directionAngle", m_data.directionAngleInRadians.first);
+      m_shader.setUniform("wiggleAmplitude", m_data.wiggleAmplitude.first);
+      m_shader.setUniform("wiggleFrequency", m_data.wiggleFrequency.first);
 
        const auto tintVec = sf::Glsl::Vec3(
-           static_cast< float >(m_data.tint.r) / 255.f,
-           static_cast< float >(m_data.tint.g) / 255.f,
-           static_cast< float >(m_data.tint.b) / 255.f
+           static_cast< float >(m_data.tint.first.r) / 255.f,
+           static_cast< float >(m_data.tint.first.g) / 255.f,
+           static_cast< float >(m_data.tint.first.b) / 255.f
        );
 
       m_shader.setUniform("smearTint", tintVec);
@@ -179,13 +179,13 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       // 3. Fade feedback with a semi-transparent black quad to prevent infinite trails
       m_feedbackFadeShape.setFillColor(
         sf::Color(0, 0, 0,
-                    static_cast< uint8_t >( 255 * m_data.feedbackFade ) ) );
+                    static_cast< uint8_t >( 255 * m_data.feedbackFade.first ) ) );
 
       m_feedbackTexture.draw(m_feedbackFadeShape, sf::BlendAlpha);
 
       // 4. Add current smeared frame into feedback buffer
       const sf::Sprite smearedFrame(m_outputTexture.getTexture());
-      m_feedbackTexture.draw(smearedFrame, m_data.feedbackBlendMode);
+      m_feedbackTexture.draw(smearedFrame, m_data.feedbackBlendMode.first);
 
       // 5. Display feedback buffer
       m_feedbackTexture.display();
@@ -194,7 +194,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       //return m_feedbackTexture;
       return m_blender.applyShader( inputTexture,
                               m_feedbackTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:

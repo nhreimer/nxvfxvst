@@ -92,16 +92,16 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
       {
         ImGui::Checkbox( "Ripple Active##1", &m_data.isActive );
 
-        const float oldCenterX = m_data.rippleCenterX;
-        const float oldCenterY = m_data.rippleCenterY;
+        const float oldCenterX = m_data.rippleCenterX.first;
+        const float oldCenterY = m_data.rippleCenterY.first;
 
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
         EXPAND_SHADER_IMGUI(RIPPLE_SHADER_PARAMS, m_data)
 
-        if ( oldCenterX != m_data.rippleCenterX || oldCenterY != m_data.rippleCenterY )
+        if ( oldCenterX != m_data.rippleCenterX.first || oldCenterY != m_data.rippleCenterY.first )
         {
-          const sf::Vector2f calibrated { m_data.rippleCenterX * static_cast< float >(m_ctx.globalInfo.windowSize.x),
-                                          m_data.rippleCenterY * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
+          const sf::Vector2f calibrated { m_data.rippleCenterX.first * static_cast< float >(m_ctx.globalInfo.windowSize.x),
+                                          m_data.rippleCenterY.first * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
           m_timedCursor.setPosition( calibrated );
         }
 
@@ -145,16 +145,16 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
       constexpr float maxPulseAmplitude = 0.03f;
 
       const float eased = m_easing.getEasing();
-      m_data.amplitude = baseAmplitude + eased * maxPulseAmplitude;
+      m_data.amplitude.first = baseAmplitude + eased * maxPulseAmplitude;
 
       m_shader.setUniform( "texture", inputTexture.getTexture() );
       m_shader.setUniform( "resolution", sf::Vector2f( inputTexture.getSize() ) );
       m_shader.setUniform( "time", m_clock.getElapsedTime().asSeconds() );
 
-      m_shader.setUniform( "rippleCenter", sf::Vector2f( m_data.rippleCenterX, m_data.rippleCenterY) );
-      m_shader.setUniform( "amplitude", m_data.amplitude );     // 0.0f – 0.05f
-      m_shader.setUniform( "frequency", m_data.frequency );     // 10.0f – 50.0f
-      m_shader.setUniform( "speed", m_data.speed );             // 0.0f – 10.0f
+      m_shader.setUniform( "rippleCenter", sf::Vector2f( m_data.rippleCenterX.first, m_data.rippleCenterY.first) );
+      m_shader.setUniform( "amplitude", m_data.amplitude.first );     // 0.0f – 0.05f
+      m_shader.setUniform( "frequency", m_data.frequency.first );     // 10.0f – 50.0f
+      m_shader.setUniform( "speed", m_data.speed.first );             // 0.0f – 10.0f
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -162,7 +162,7 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
 
       return m_blender.applyShader( inputTexture,
                               m_outputTexture,
-                              m_data.mixFactor );
+                              m_data.mixFactor.first );
     }
 
   private:

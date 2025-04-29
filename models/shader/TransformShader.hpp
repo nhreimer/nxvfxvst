@@ -95,17 +95,17 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
       if ( ImGui::TreeNode("Transform Options") )
       {
 
-        const float offsetX = m_data.shift.x;
-        const float offsetY = m_data.shift.y;
+        const float offsetX = m_data.shift.first.x;
+        const float offsetY = m_data.shift.first.y;
 
         EXPAND_SHADER_IMGUI(TRANSFORM_SHADER_PARAMS, m_data)
 
-        if ( offsetX != m_data.shift.x || offsetY != m_data.shift.y )
+        if ( offsetX != m_data.shift.first.x || offsetY != m_data.shift.first.y )
         {
           const sf::Vector2f calibrated
           {
-            ( m_data.shift.x + 0.5f ) * static_cast< float >( m_ctx.globalInfo.windowSize.x ),
-            ( m_data.shift.y + 0.5f ) * static_cast< float >( m_ctx.globalInfo.windowSize.y )
+            ( m_data.shift.first.x + 0.5f ) * static_cast< float >( m_ctx.globalInfo.windowSize.x ),
+            ( m_data.shift.first.y + 0.5f ) * static_cast< float >( m_ctx.globalInfo.windowSize.y )
           };
 
           m_timedCursorShift.setPosition( calibrated );
@@ -149,12 +149,12 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
 
       m_shader.setUniform("u_texture", inputTexture.getTexture());
       m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
-      m_shader.setUniform("u_offset", sf::Glsl::Vec2( m_data.shift ));
-      m_shader.setUniform("u_scale", m_data.scale * easing );
+      m_shader.setUniform("u_offset", sf::Glsl::Vec2( m_data.shift.first ) );
+      m_shader.setUniform("u_scale", m_data.scale.first * easing );
 
-      m_shader.setUniform("u_rotation", sf::degrees(m_data.rotationDegrees).asRadians());
-      m_shader.setUniform("u_flipX", m_data.flipX);
-      m_shader.setUniform("u_flipY", m_data.flipY);
+      m_shader.setUniform("u_rotation", sf::degrees(m_data.rotationDegrees.first).asRadians());
+      m_shader.setUniform("u_flipX", m_data.flipX.first);
+      m_shader.setUniform("u_flipY", m_data.flipY.first);
 
       m_outputTexture.clear();
       m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
@@ -162,7 +162,7 @@ X(mixFactor,       float, 1.0f,  0.f,  1.f, "Mix between original and effects re
 
       return m_blender.applyShader( inputTexture,
                               m_outputTexture,
-                              m_data.mixFactor );
+                              m_data.mixFactor.first );
     }
 
   private:

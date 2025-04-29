@@ -116,7 +116,10 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     }
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive && m_data.blurHorizontal + m_data.blurVertical > 0.f; }
+    bool isShaderActive() const override
+    {
+      return m_data.isActive;
+    }
 
     [[nodiscard]]
     sf::RenderTexture& applyShader(
@@ -138,10 +141,10 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       // Apply horizontal blur
       m_shader.setUniform( "texture", inputTexture.getTexture() );
       m_shader.setUniform( "direction", sf::Glsl::Vec2( 1.f, 0.f ) ); // Horizontal
-      m_shader.setUniform( "blurRadiusX", m_data.blurHorizontal );
+      m_shader.setUniform( "blurRadiusX", m_data.blurHorizontal.first );
       m_shader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
-      m_shader.setUniform( "sigma", m_data.sigma );
-      m_shader.setUniform( "brighten", m_data.brighten );
+      m_shader.setUniform( "sigma", m_data.sigma.first );
+      m_shader.setUniform( "brighten", m_data.brighten.first );
 
       m_shader.setUniform( "intensity", easing );
 
@@ -153,9 +156,9 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       m_shader.setUniform("texture", m_intermediary.getTexture());
       m_shader.setUniform("direction", sf::Glsl::Vec2(0.f, 1.f)); // Vertical
       m_shader.setUniform("blurRadiusX", 0.f); // No horizontal blur in this pass
-      m_shader.setUniform("blurRadiusY", m_data.blurVertical);
-      m_shader.setUniform( "sigma", m_data.sigma );
-      m_shader.setUniform( "brighten", m_data.brighten );
+      m_shader.setUniform("blurRadiusY", m_data.blurVertical.first);
+      m_shader.setUniform( "sigma", m_data.sigma.first );
+      m_shader.setUniform( "brighten", m_data.brighten.first );
       m_shader.setUniform( "intensity",easing );
 
       m_outputTexture.clear(sf::Color::Transparent);
@@ -164,7 +167,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:

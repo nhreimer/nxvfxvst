@@ -137,15 +137,15 @@ X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
       m_shader.setUniform("time", time);
 
-      m_shader.setUniform("rumbleStrength", m_data.rumbleStrength);
-      m_shader.setUniform("frequency", m_data.frequency);
+      m_shader.setUniform("rumbleStrength", m_data.rumbleStrength.first);
+      m_shader.setUniform("frequency", m_data.frequency.first);
       m_shader.setUniform("pulseValue", pulse); // now driven by easing
-      m_shader.setUniform("direction", sf::Glsl::Vec2(m_data.direction));
-      m_shader.setUniform("useNoise", m_data.useNoise);
+      m_shader.setUniform("direction", sf::Glsl::Vec2(m_data.direction.first));
+      m_shader.setUniform("useNoise", m_data.useNoise.first);
 
-      m_shader.setUniform("modAmplitude", m_data.modAmplitude);
-      m_shader.setUniform("modFrequency", m_data.modFrequency);
-      m_shader.setUniform("colorDesync", pulse * m_data.maxColorDesync + m_data.baseColorDesync);
+      m_shader.setUniform("modAmplitude", m_data.modAmplitude.first);
+      m_shader.setUniform("modFrequency", m_data.modFrequency.first);
+      m_shader.setUniform("colorDesync", pulse * m_data.maxColorDesync.first + m_data.baseColorDesync.first);
       //m_shader.setUniform("colorDesync", m_data.colorDesync);
 
       m_outputTexture.clear();
@@ -154,7 +154,7 @@ X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects
 
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:
