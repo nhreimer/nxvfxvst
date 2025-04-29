@@ -203,7 +203,11 @@ namespace nx
       test::MidiGenerator { 3, 500, m_onEvent } };
 
     // the following two are dummy vars for the app since there is no automation to perform
-    VSTParamBindingManager m_paramBindingManager;
+    VSTParamBindingManager m_paramBindingManager
+    {
+      []( const int32_t paramId, const float normalizedValue ) {}
+    };
+
     VSTStateContext m_stateContext { m_paramBindingManager };
 
     GlobalInfo_t m_globalInfo

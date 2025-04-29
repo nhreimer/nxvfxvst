@@ -5,8 +5,6 @@
 #include "helpers/MathHelper.hpp"
 #include "helpers/MidiHelper.hpp"
 
-#include "shapes/TimedCursorPosition.hpp"
-
 namespace nx
 {
 
@@ -63,21 +61,20 @@ namespace nx
   protected:
 
 
-    sf::Vector2f getNextPosition( const Midi_t& midiNote )
+    sf::Vector2f getNextPosition( const Midi_t& midiNote ) const
     {
       const auto noteInfo = MidiHelper::getMidiNote( midiNote.pitch );
 
       const auto noteNumber = std::get< 0 >( noteInfo );
       const auto noteOctave = std::get< 1 >( noteInfo );
 
-      // 0. calculate the position based on the note, octave, and spread
-      auto position = MathHelper::getAnglePosition( 12,
+      const auto position = MathHelper::getAnglePosition( 12,
                                                       noteNumber,
                                                       static_cast< float >( noteOctave ),
                                                       static_cast< float >( noteOctave ) );
 
       return { m_ctx.globalInfo.windowHalfSize.x + position.x,
-               m_ctx.globalInfo.windowHalfSize.y + position.y };
+                  m_ctx.globalInfo.windowHalfSize.y + position.y };
     }
 
   private:

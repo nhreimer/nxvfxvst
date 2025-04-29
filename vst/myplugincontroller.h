@@ -20,7 +20,16 @@ class nxvfxvstController : public Steinberg::Vst::EditControllerEx1
 {
 public:
   //------------------------------------------------------------------------
-	nxvfxvstController() { m_state = nlohmann::json::object(); }
+	nxvfxvstController()
+	  : m_paramBindingManager(
+	    [this]( const int32_t vstParamId, const float normalizedValue )
+	    {
+	      LOG_WARN( "{} => {}", vstParamId, normalizedValue );
+	      setParamNormalized(vstParamId, normalizedValue);
+	    } )
+	{
+	  m_state = nlohmann::json::object();
+	}
 	~nxvfxvstController () SMTG_OVERRIDE = default;
 
     // Create function
@@ -52,9 +61,8 @@ public:
   Steinberg::Vst::ParamValue PLUGIN_API getParamNormalized(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
   {
     auto& binding = m_paramBindingManager.getBindingById( tag );
-    return binding.lastValue;
+    return VSTParamBindingManager::convertToNormalized( binding, binding.lastValue );
   }
-
 
   Steinberg::tresult PLUGIN_API getParamStringByValue(Steinberg::Vst::ParamID tag,
                                            Steinberg::Vst::ParamValue valueNormalized,
@@ -65,7 +73,8 @@ public:
 
     std::string str( binding.shaderControlName );
     str.append( " [" );
-    str.append( std::to_string( VSTParamBindingManager::getParamDenormalized( binding, valueNormalized ) ) );
+    // display the value when adjusting the parameter
+    str.append( std::to_string( VSTParamBindingManager::convertToDenormalized( binding, valueNormalized ) ) );
     str.append( "]" );
 
     Steinberg::UString128 ustr( str.c_str() );
