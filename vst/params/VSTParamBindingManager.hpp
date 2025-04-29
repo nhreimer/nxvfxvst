@@ -11,7 +11,7 @@
 namespace nx
 {
   // Forward declaration
-  using ShaderControlSetter = std::function<void(float)>; // normalized 0–1
+  using ShaderControlSetter = std::function<float(float)>; // normalized 0–1
 
   // Represents a single binding between a VST param and a Shader Control
   struct VSTParamBinding
@@ -21,6 +21,8 @@ namespace nx
     std::string shaderControlName;    // e.g., "Brightness", "Sigma", etc.
     ShaderControlSetter setter;       // Function to call when param changes
     float lastValue { 0.f };          // last known value
+    float minValue { 0.f };
+    float maxValue { 0.f };
   };
 
   ///
@@ -34,15 +36,17 @@ namespace nx
 
     VSTParamBindingManager() = default;
 
-    void registerBindableControl( IShader * owner,
+    int32_t registerBindableControl( IShader * owner,
                                   const std::string& controlName,
+                                  const float minValue,
+                                  const float maxValue,
                                   ShaderControlSetter&& setter)
     {
       const auto nextId = getAvailableVSTParamID();
       if ( nextId == -1 )
       {
         LOG_WARN( "All VST Param IDs taken. Failed to bind control." );
-        return;
+        return -1;
       }
 
       auto& bindable = m_bindings[ nextId ];
@@ -51,8 +55,11 @@ namespace nx
       bindable.vstParamID = nextId;
       bindable.shaderControlName = controlName;
       bindable.lastValue = 0.f;
+      bindable.minValue = minValue;
+      bindable.maxValue = maxValue;
 
       LOG_INFO( "Registered {} as VST Param ID: {}", controlName, nextId );
+      return nextId;
     }
 
     void unregisterAllControlsOwnedBy( const IShader * owner )
@@ -93,11 +100,19 @@ namespace nx
       for ( auto& binding : m_bindings ) resetBinding( binding );
     }
 
-    void setParamNormalized(const int32_t vstParamID, const float normalizedValue)
+    void setParamNormalized(const int32_t vstParamID,
+                            const float normalizedValue)
     {
       auto& binding = m_bindings[ vstParamID ];
       if ( binding.setter )
-        binding.setter( normalizedValue );
+      {
+        binding.lastValue = binding.setter( normalizedValue );
+      }
+    }
+
+    static float getParamDenormalized( const VSTParamBinding& binding, const float normalizedValue )
+    {
+      return ( binding.maxValue - binding.minValue ) / normalizedValue;
     }
 
     [[nodiscard]]
@@ -105,6 +120,23 @@ namespace nx
 
     [[nodiscard]]
     const auto& getBindingById( const int32_t paramID ) const { return m_bindings[ paramID ]; }
+
+    template < typename T >
+    void setValue( const int32_t vstParamID,
+                   const T value )
+    {
+      if ( vstParamID > -1 )
+      {
+        if constexpr (std::is_same_v<T, float>)
+        {
+          m_bindings[ vstParamID ].lastValue = value;
+        }
+        else if constexpr (std::is_same_v<T, bool>)
+        {
+          m_bindings[ vstParamID ].lastValue = ( value > 0.f ) ? 1.f : 0.f;
+        }
+      }
+    }
 
   private:
 

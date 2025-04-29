@@ -60,12 +60,12 @@ public:
                                            Steinberg::Vst::ParamValue valueNormalized,
                                            Steinberg::Vst::String128 string) SMTG_OVERRIDE
   {
-
     // TODO: not satisfied with this conversion!
     auto& binding = m_paramBindingManager.getBindingById( tag );
+
     std::string str( binding.shaderControlName );
     str.append( " [" );
-    str.append( std::to_string( binding.lastValue ) );
+    str.append( std::to_string( VSTParamBindingManager::getParamDenormalized( binding, valueNormalized ) ) );
     str.append( "]" );
 
     Steinberg::UString128 ustr( str.c_str() );

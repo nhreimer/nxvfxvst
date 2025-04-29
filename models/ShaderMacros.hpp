@@ -103,36 +103,40 @@ PARAM_MACRO(GEN_LABEL_STRING)
 namespace nx
 {
   template <typename T>
-  void updateParamValue(const float normalizedValue, T& value, const float min, const float max)
+  float updateParamValue(const float normalizedValue, T& value, const float min, const float max)
   {
     if constexpr (std::is_same_v<T, float>)
     {
       value = normalizedValue * ( max - min ) + min;
+      return value;
     }
     else if constexpr (std::is_same_v<T, bool>)
     {
-      if ( normalizedValue == 0.f )
-        value = false;
-      else
-        value = true;
+      value = ( normalizedValue > 0.f ? 1.f : 0.f );
+      return value;
     }
     else if constexpr (std::is_same_v<T, sf::Vector2f>)
     {
       // NOT SUPPORTED
+      return 0.f;
     }
     else if constexpr (std::is_same_v<T, sf::Glsl::Vec3>)
     {
       // NOT SUPPORTED
+      return 0.f;
     }
     else if constexpr (std::is_same_v<T, sf::Color>)
     {
       // NOT SUPPORTED
+      return 0.f;
     }
     else if constexpr (std::is_same_v<T, sf::BlendMode>)
     {
       // NOT SUPPORTED
-
+      return 0.f;
     }
+
+    return 0.f;
   }
 }
 
@@ -140,12 +144,15 @@ namespace nx
 #define GEN_VST_BINDING(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
 if constexpr (allowVSTBinding)                                                            \
 {                                                                                         \
-    bindingManagerRef.registerBindableControl(                                            \
+    auto paramId = bindingManagerRef.registerBindableControl(                             \
         this,                                                                             \
         #name,                                                                            \
+        minVal,                                                                           \
+        maxVal,                                                                           \
         [this](float normalizedValue) {                                                   \
-            nx::updateParamValue<type>(normalizedValue, m_data.name, minVal, maxVal);     \
+           return nx::updateParamValue<type>(normalizedValue, m_data.name, minVal, maxVal); \
        });                                                                                \
+     bindingManagerRef.setValue<type>(paramId, defaultVal);                               \
 }
 
 #define EXPAND_SHADER_VST_BINDINGS(PARAM_MACRO, bindingManager) \
