@@ -18,7 +18,7 @@ X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors", true
 X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation", true)                \
 X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians", true)                      \
 X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB", false) \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
+X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effects result", true)
 
     struct ColorData_t
     {
