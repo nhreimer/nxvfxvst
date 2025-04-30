@@ -64,6 +64,8 @@ if ( BUILD_PLUGIN )
 
     vst/EventFacadeVst.cpp
 
+    shapes/CurvedLine.cpp
+
     models/encoder/FFMpegEncoder.cpp
     models/encoder/RawRGBAEncoder.cpp
 
