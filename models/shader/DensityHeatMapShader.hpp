@@ -1,8 +1,7 @@
 #pragma once
 
 #include "helpers/CommonHeaders.hpp"
-
-#include "helpers/ColorHelper.hpp"
+#include "models/shader/BlenderShader.hpp"
 
 namespace nx
 {
@@ -39,20 +38,7 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
     };
 
   public:
-    explicit DensityHeatMapShader( PipelineContext& context )
-      : m_ctx( context )
-    {
-      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
-      {
-        LOG_ERROR( "Failed to load density heat map fragment shader" );
-      }
-      else
-      {
-        LOG_INFO( "Loaded density heat map fragment shader" );
-      }
-
-      EXPAND_SHADER_VST_BINDINGS(DENSITY_HEATMAP_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
-    }
+    explicit DensityHeatMapShader( PipelineContext& context );
 
     ~DensityHeatMapShader() override = default;
 
@@ -60,91 +46,23 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
     /// ISERIALIZABLE
     ///////////////////////////////////////////////////////
 
-    nlohmann::json serialize() const override
-    {
-      nlohmann::json j;
-      j[ "type" ] = SerialHelper::serializeEnum(getType());
-      EXPAND_SHADER_PARAMS_TO_JSON(DENSITY_HEATMAP_SHADER_PARAMS)
-      j[ "easing" ] = m_easing.serialize();
-      return j;
-    }
+    nlohmann::json serialize() const override;
 
-    void deserialize(const nlohmann::json& j) override
-    {
-      if ( SerialHelper::isTypeGood( j, getType() ) )
-      {
-        EXPAND_SHADER_PARAMS_FROM_JSON(DENSITY_HEATMAP_SHADER_PARAMS)
-        m_easing.deserialize( j[ "easing" ] );
-      }
-      else
-      {
-        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
-      }
-    }
+    void deserialize(const nlohmann::json& j) override;
 
     E_ShaderType getType() const override { return E_ShaderType::E_DensityHeatMapShader; }
 
-    void drawMenu() override
-    {
-      if ( ImGui::TreeNode( "Density Heat Map" ) )
-      {
-        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        EXPAND_SHADER_IMGUI(DENSITY_HEATMAP_SHADER_PARAMS, m_data)
-
-        ImGui::SeparatorText( "Easings" );
-        m_easing.drawMenu();
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
+    void drawMenu() override;
 
     void update( const sf::Time &deltaTime ) override {}
 
-    void trigger( const Midi_t &midi ) override
-    {
-      m_easing.trigger();
-    }
+    void trigger( const Midi_t &midi ) override;
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive; }
+    bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override
-    {
-      if ( m_outputTexture.getSize() != inputTexture.getSize() )
-      {
-        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-        {
-          LOG_ERROR( "failed to resize density heat map texture" );
-        }
-      }
-
-      m_shader.setUniform("u_densityTexture", inputTexture.getTexture());
-      m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
-      m_shader.setUniform("u_falloff", m_data.falloff.first * m_easing.getEasing() );
-
-      m_outputTexture.clear( sf::Color::Transparent );
-
-      m_shader.setUniform( "u_colorCoolStart", ColorHelper::convertFromVec4( m_data.colorCoolStart.first ) );
-      m_shader.setUniform( "u_colorCoolEnd", ColorHelper::convertFromVec4( m_data.colorCoolEnd.first ) );
-
-      m_shader.setUniform( "u_colorWarmStart", ColorHelper::convertFromVec4( m_data.colorWarmStart.first ) );
-      m_shader.setUniform( "u_colorWarmEnd", ColorHelper::convertFromVec4( m_data.colorWarmEnd.first ) );
-
-      m_shader.setUniform( "u_colorHotStart", ColorHelper::convertFromVec4( m_data.colorHotStart.first ) );
-      m_shader.setUniform( "u_colorHotEnd", ColorHelper::convertFromVec4( m_data.colorHotEnd.first ) );
-
-      m_shader.setUniform( "u_colorMaxStart", ColorHelper::convertFromVec4( m_data.colorMaxStart.first ) );
-      m_shader.setUniform( "u_colorMaxEnd", ColorHelper::convertFromVec4( m_data.colorMaxEnd.first ) );
-
-      m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
-      m_outputTexture.display();
-
-      return m_blender.applyShader( inputTexture,
-                              m_outputTexture,
-                              m_data.mixFactor.first );
-    }
+    sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override;
 
   private:
     PipelineContext& m_ctx;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "helpers/CommonHeaders.hpp"
+#include "models/shader/BlenderShader.hpp"
 
 namespace nx
 {
@@ -31,114 +31,31 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
     };
 
   public:
-    explicit StrobeShader( PipelineContext& context )
-      : m_ctx( context )
-    {
-      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
-      {
-        LOG_ERROR( "Failed to load strobe fragment shader" );
-      }
-      else
-      {
-        LOG_INFO( "Strobe shader loaded successfully" );
-      }
+    explicit StrobeShader( PipelineContext& context );
 
-      EXPAND_SHADER_VST_BINDINGS(STROBE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
-    }
-
-    ~StrobeShader() override
-    {
-      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
-    }
+    ~StrobeShader() override;
 
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
     ///////////////////////////////////////////////////////
 
-    nlohmann::json serialize() const override
-    {
-      nlohmann::json j;
-      j[ "type" ] = SerialHelper::serializeEnum( getType() );
-      EXPAND_SHADER_PARAMS_TO_JSON(STROBE_SHADER_PARAMS)
+    nlohmann::json serialize() const override;
 
-      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
-      j[ "easing" ] = m_easing.serialize();
-      return j;
-    }
-
-    void deserialize( const nlohmann::json& j ) override
-    {
-      if ( SerialHelper::isTypeGood( j, getType() ) )
-      {
-        EXPAND_SHADER_PARAMS_FROM_JSON(STROBE_SHADER_PARAMS)
-
-        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
-        m_easing.deserialize( j[ "easing" ] );
-      }
-      else
-      {
-        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
-      }
-    }
+    void deserialize( const nlohmann::json& j ) override;
 
     E_ShaderType getType() const override { return E_ShaderType::E_StrobeShader; }
 
-    void drawMenu() override
-    {
-      if ( ImGui::TreeNode( "Strobe Options" ) )
-      {
-        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        EXPAND_SHADER_IMGUI(STROBE_SHADER_PARAMS, m_data)
-
-        ImGui::Separator();
-        m_easing.drawMenu();
-
-        ImGui::Separator();
-        m_midiNoteControl.drawMenu();
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
+    void drawMenu() override;
 
     void update( const sf::Time &deltaTime ) override {}
 
-    void trigger( const Midi_t &midi ) override
-    {
-      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-        m_easing.trigger();
-    }
+    void trigger( const Midi_t &midi ) override;
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive; }
+    bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override
-    {
-      if ( m_outputTexture.getSize() != inputTexture.getSize() )
-      {
-        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-        {
-          LOG_ERROR( "failed to resize strobe texture" );
-        }
-        else
-        {
-          LOG_INFO( "resized strobe texture" );
-        }
-      }
-
-      m_shader.setUniform( "texture", inputTexture.getTexture() );
-      m_shader.setUniform("flashAmount", m_data.flashAmount.first * m_easing.getEasing()); // or assigned easing
-      m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor.first));
-
-      m_outputTexture.clear( sf::Color::Transparent );
-      m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
-      m_outputTexture.display();
-
-      return m_blender.applyShader( inputTexture,
-                              m_outputTexture,
-                              m_data.mixFactor.first );
-    }
+    sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override;
 
   private:
     PipelineContext& m_ctx;

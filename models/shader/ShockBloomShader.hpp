@@ -1,7 +1,8 @@
 #pragma once
 
-#include "models/data/PipelineContext.hpp"
 #include "models/IShader.hpp"
+#include "models/data/PipelineContext.hpp"
+#include "models/shader/BlenderShader.hpp"
 
 namespace nx
 {
@@ -39,52 +40,14 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
 
   public:
 
-    explicit ShockBloomShader(PipelineContext& context)
-      : m_ctx( context )
-    {
-      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
-      {
-        LOG_ERROR( "Failed to load shock bloom fragment shader" );
-      }
-      else
-      {
-        LOG_INFO( "Shock bloom shader loaded successfully" );
-      }
+    explicit ShockBloomShader(PipelineContext& context);
 
-      EXPAND_SHADER_VST_BINDINGS(SHOCK_BLOOM_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
-    }
-
-    ~ShockBloomShader() override
-    {
-      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
-    }
+    ~ShockBloomShader() override;
 
     [[nodiscard]]
-    nlohmann::json serialize() const override
-    {
-      nlohmann::json j;
-      j[ "type" ] = SerialHelper::serializeEnum( getType() );
-      EXPAND_SHADER_PARAMS_TO_JSON(SHOCK_BLOOM_SHADER_PARAMS)
+    nlohmann::json serialize() const override;
 
-      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
-      j[ "easing" ] = m_easing.serialize();
-      return j;
-    }
-
-    void deserialize(const nlohmann::json& j) override
-    {
-      if ( SerialHelper::isTypeGood( j, getType() ) )
-      {
-        EXPAND_SHADER_PARAMS_FROM_JSON(SHOCK_BLOOM_SHADER_PARAMS)
-
-        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
-        m_easing.deserialize( j[ "easing" ] );
-      }
-      else
-      {
-        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
-      }
-    }
+    void deserialize(const nlohmann::json& j) override;
 
     [[nodiscard]]
     E_ShaderType getType() const override { return E_ShaderType::E_ShockBloomShader; }
@@ -92,82 +55,15 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
     void update( const sf::Time& deltaTime ) override
     {}
 
-    void trigger( const Midi_t& midi ) override
-    {
-      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-        m_easing.trigger();
-    }
+    void trigger( const Midi_t& midi ) override;
 
-    void drawMenu() override
-    {
-      if ( ImGui::TreeNode( "Shock Bloom Options" ) )
-      {
-        ImGui::Checkbox( "Strobe Active##1", &m_data.isActive );
-
-        const float oldCenterX = m_data.center.first.x;
-        const float oldCenterY = m_data.center.first.y;
-
-        EXPAND_SHADER_IMGUI(SHOCK_BLOOM_SHADER_PARAMS, m_data)
-
-        if ( oldCenterX != m_data.center.first.x || oldCenterY != m_data.center.first.y )
-        {
-          const sf::Vector2f calibrated { m_data.center.first.x * static_cast< float >(m_ctx.globalInfo.windowSize.x),
-                                          m_data.center.first.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
-          m_timedCursor.setPosition( calibrated );
-        }
-
-        ImGui::Separator();
-        m_easing.drawMenu();
-
-        ImGui::Separator();
-        m_midiNoteControl.drawMenu();
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
+    void drawMenu() override;
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive; }
+    bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture& applyShader( const sf::RenderTexture& inputTexture ) override
-    {
-      if ( m_outputTexture.getSize() != inputTexture.getSize() )
-      {
-        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-        {
-          LOG_ERROR( "failed to resize shock bloom texture" );
-        }
-        else
-        {
-          LOG_INFO( "resized shock bloom texture" );
-        }
-      }
-
-      const float easing = m_easing.getEasing();
-      const float radius = m_data.maxRadius.first * easing;
-      const float alpha = easing * m_data.easingMultiplier.first;
-
-      // Update uniforms
-      m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
-      m_shader.setUniform("center", m_data.center.first);
-      m_shader.setUniform("radius", radius);
-      m_shader.setUniform("thickness", m_data.thickness.first);
-      m_shader.setUniform("color", m_data.color.first);
-      m_shader.setUniform("intensity", m_data.intensity.first * alpha);
-      m_shader.setUniform("innerTransparency", m_data.innerTransparency.first);
-
-      // Fullscreen quad
-      sf::RectangleShape fullscreen(sf::Vector2f(inputTexture.getSize()));
-      fullscreen.setFillColor(sf::Color::White);
-
-      m_outputTexture.clear(sf::Color::Transparent);
-      m_outputTexture.draw(fullscreen, &m_shader);
-      m_outputTexture.display();
-
-      return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor.first );
-    }
+    sf::RenderTexture& applyShader( const sf::RenderTexture& inputTexture ) override;
 
   private:
 

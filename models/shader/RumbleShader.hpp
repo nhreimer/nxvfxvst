@@ -1,6 +1,7 @@
 #pragma once
 
 #include "helpers/CommonHeaders.hpp"
+#include "models/shader/BlenderShader.hpp"
 
 namespace nx
 {
@@ -40,122 +41,29 @@ X(mixFactor,       float, 1.0f,    0.f,   1.f, "Mix between original and effects
 
   public:
 
-    explicit RumbleShader( PipelineContext& context )
-      : m_ctx( context )
-    {
-      if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
-      {
-        LOG_ERROR( "Failed to load rumble fragment shader" );
-      }
-      else
-      {
-        LOG_DEBUG( "Rumble fragment shader loaded successfully" );
-      }
+    explicit RumbleShader( PipelineContext& context );
 
-      EXPAND_SHADER_VST_BINDINGS(RUMBLE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
-    }
-
-    ~RumbleShader() override
-    {
-      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
-    }
+    ~RumbleShader() override;
 
     [[nodiscard]]
-    nlohmann::json serialize() const override
-    {
-      nlohmann::json j;
-      j[ "type" ] = SerialHelper::serializeEnum( getType() );
-      EXPAND_SHADER_PARAMS_TO_JSON(RUMBLE_SHADER_PARAMS)
+    nlohmann::json serialize() const override;
 
-      j[ "midiTriggers" ] = m_midiNoteControl.serialize();
-      j[ "easing" ] = m_easing.serialize();
-      return j;
-    }
-
-    void deserialize( const nlohmann::json &j ) override
-    {
-      if ( SerialHelper::isTypeGood( j, getType() ) )
-      {
-        EXPAND_SHADER_PARAMS_FROM_JSON(RUMBLE_SHADER_PARAMS)
-
-        m_midiNoteControl.deserialize( j[ "midiTriggers" ] );
-        m_easing.deserialize( j[ "easing" ] );
-      }
-      else
-      {
-        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
-      }
-    }
+    void deserialize( const nlohmann::json &j ) override;
 
     [[nodiscard]]
     E_ShaderType getType() const override { return E_ShaderType::E_RumbleShader; }
 
-    void drawMenu() override
-    {
-      if ( ImGui::TreeNode("Rumble Options" ) )
-      {
-        ImGui::Checkbox("Active", &m_data.isActive);
-        EXPAND_SHADER_IMGUI(RUMBLE_SHADER_PARAMS, m_data)
-
-        ImGui::Separator();
-        m_easing.drawMenu();
-
-        ImGui::Separator();
-        m_midiNoteControl.drawMenu();
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
+    void drawMenu() override;
 
     void update( const sf::Time &deltaTime ) override {}
 
-    void trigger( const Midi_t &midi ) override
-    {
-      if ( m_midiNoteControl.empty() || m_midiNoteControl.isNoteActive( midi.pitch ) )
-        m_easing.trigger();
-    }
+    void trigger( const Midi_t &midi ) override;
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive; }
+    bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture &applyShader(const sf::RenderTexture &inputTexture) override
-    {
-      if ( m_outputTexture.getSize() != inputTexture.getSize() )
-      {
-        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-        {
-          LOG_ERROR( "failed to resize rumble texture" );
-        }
-      }
-
-      const float time = m_clock.getElapsedTime().asSeconds();
-      const float pulse = m_easing.getEasing();
-
-      m_shader.setUniform("texture", inputTexture.getTexture());
-      m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
-      m_shader.setUniform("time", time);
-
-      m_shader.setUniform("rumbleStrength", m_data.rumbleStrength.first);
-      m_shader.setUniform("frequency", m_data.frequency.first);
-      m_shader.setUniform("pulseValue", pulse); // now driven by easing
-      m_shader.setUniform("direction", sf::Glsl::Vec2(m_data.direction.first));
-      m_shader.setUniform("useNoise", m_data.useNoise.first);
-
-      m_shader.setUniform("modAmplitude", m_data.modAmplitude.first);
-      m_shader.setUniform("modFrequency", m_data.modFrequency.first);
-      m_shader.setUniform("colorDesync", pulse * m_data.maxColorDesync.first + m_data.baseColorDesync.first);
-      //m_shader.setUniform("colorDesync", m_data.colorDesync);
-
-      m_outputTexture.clear();
-      m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
-      m_outputTexture.display();
-
-      return m_blender.applyShader( inputTexture,
-                                    m_outputTexture,
-                                    m_data.mixFactor.first );
-    }
+    sf::RenderTexture &applyShader(const sf::RenderTexture &inputTexture) override;
 
   private:
 

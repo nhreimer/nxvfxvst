@@ -1,8 +1,7 @@
 #pragma once
 
+#include "models/shader/BlenderShader.hpp"
 #include "helpers/CommonHeaders.hpp"
-
-#include "helpers/ColorHelper.hpp"
 
 namespace nx
 {
@@ -34,104 +33,31 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     };
 
   public:
-    explicit FeedbackShader( PipelineContext& context )
-      : m_ctx( context )
-    {
-      EXPAND_SHADER_VST_BINDINGS(FEEDBACK_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
-    }
+    explicit FeedbackShader( PipelineContext& context );
 
-    ~FeedbackShader() override
-    {
-      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
-    }
+    ~FeedbackShader() override;
 
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
     ///////////////////////////////////////////////////////
 
-    nlohmann::json serialize() const override
-    {
-      nlohmann::json j;
-      j[ "type" ] = SerialHelper::serializeEnum(getType());
-      EXPAND_SHADER_PARAMS_TO_JSON(FEEDBACK_SHADER_PARAMS)
-      j[ "easing" ] = m_easing.serialize();
-      return j;
-    }
+    nlohmann::json serialize() const override;
 
-    void deserialize(const nlohmann::json& j) override
-    {
-      if ( SerialHelper::isTypeGood( j, getType() ) )
-      {
-        EXPAND_SHADER_PARAMS_FROM_JSON(FEEDBACK_SHADER_PARAMS)
-        m_easing.deserialize( j[ "easing" ] );
-      }
-      else
-      {
-        LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
-        m_easing.setEasingType( E_TimeEasingType::E_Disabled );
-      }
-    }
+    void deserialize(const nlohmann::json& j) override;
 
     E_ShaderType getType() const override { return E_ShaderType::E_FeedbackShader; }
 
-    void drawMenu() override
-    {
-      if ( ImGui::TreeNode( "Feedback Options" ) )
-      {
-        EXPAND_SHADER_IMGUI(FEEDBACK_SHADER_PARAMS, m_data)
-
-        if ( ImGui::SmallButton( "Clear" ) )
-          m_outputTexture.clear( sf::Color::Transparent );
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
+    void drawMenu() override;
 
     void update( const sf::Time &deltaTime ) override {}
 
-    void trigger( const Midi_t &midi ) override
-    {
-      m_easing.trigger();
-    }
+    void trigger( const Midi_t &midi ) override;
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive; }
+    bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture& applyShader(const sf::RenderTexture& inputTexture) override
-    {
-      if ( m_outputTexture.getSize() != inputTexture.getSize() )
-      {
-        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-        {
-          LOG_ERROR("Failed to resize feedback textures");
-        }
-      }
-
-      const auto targetSize = sf::Vector2f{ inputTexture.getSize() };
-
-      const auto clampedEasing = std::clamp( m_easing.getEasing(), 0.f, 1.f );
-
-      // Resize fade quad
-      m_fadeQuad.setSize(targetSize);
-      m_fadeQuad.setFillColor(sf::Color(m_data.fadeColor.first.r,
-                                            m_data.fadeColor.first.g,
-                                            m_data.fadeColor.first.b,
-                                            static_cast<uint8_t>(m_data.trailFadeAlpha.first * clampedEasing)));
-
-      // Step 1: Fade out previous trail
-      m_outputTexture.draw(m_fadeQuad, sf::BlendAlpha);
-
-      // Step 2: Draw new input frame on top
-      m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), sf::BlendAdd);
-
-      m_outputTexture.display();
-
-      return m_blender.applyShader( inputTexture,
-                                    m_outputTexture,
-                                    m_data.mixFactor.first );
-    }
+    sf::RenderTexture& applyShader(const sf::RenderTexture& inputTexture) override;
 
   private:
     PipelineContext& m_ctx;

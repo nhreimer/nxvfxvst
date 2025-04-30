@@ -4,20 +4,17 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include "imgui-SFML.h"
+
 #include "pluginterfaces/vst/ivstevents.h"
+#include "pluginterfaces/base/keycodes.h"
 
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/ChannelPipeline.hpp"
 #include "models/MultichannelPipeline.hpp"
-
-#include "imgui.h"
-#include "imgui-SFML.h"
-
-#include "log/Logger.hpp"
-
-#include "pluginterfaces/base/keycodes.h"
-#include "vst/VSTStateContext.hpp"
 #include "models/data/PipelineContext.hpp"
+
+#include "vst/VSTStateContext.hpp"
 
 namespace nx
 {
@@ -27,210 +24,33 @@ namespace nx
   {
   public:
 
-    explicit EventFacadeVst( VSTStateContext& stateContext )
-      : m_pipelineContext( m_globalInfo, stateContext ),
-        m_pipelines( m_pipelineContext )
-    {}
+    explicit EventFacadeVst( VSTStateContext& stateContext );
 
     ~EventFacadeVst() = default;
 
-    void onKeyDown(Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers)
-    {
-      ImGuiIO& io = ImGui::GetIO();
+    void onKeyDown(Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers);
+    void onKeyUp( Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers );
 
-      // Add printable characters only
-      if (key >= 32 && key != 127)  // skip control characters like DEL
-        io.AddInputCharacter(key);
+    void saveState( nlohmann::json &j ) const;
 
-      // Map modifiers
-      io.KeyCtrl  = modifiers & Steinberg::KeyModifier::kControlKey;
-      io.KeyShift = modifiers & Steinberg::KeyModifier::kShiftKey;
-      io.KeyAlt   = modifiers & Steinberg::KeyModifier::kAlternateKey;
-      io.KeySuper = modifiers & Steinberg::KeyModifier::kCommandKey;
+    void restoreState( nlohmann::json &j );
 
-      // Map special keys
-      switch (keyCode)
-      {
-        case Steinberg::VirtualKeyCodes::KEY_BACK:
-          io.AddKeyEvent( ImGuiKey_Backspace, true );
-          break;
-        case Steinberg::VirtualKeyCodes::KEY_DELETE:
-          io.AddKeyEvent( ImGuiKey_Delete, true );
-          break;
-        case Steinberg::VirtualKeyCodes::KEY_LEFT:
-          io.AddKeyEvent( ImGuiKey_LeftArrow, true );
-          break;
-        case Steinberg::VirtualKeyCodes::KEY_RIGHT:
-          io.AddKeyEvent( ImGuiKey_RightArrow, true );
-          break;
-        default:
-          break;
-      }
-    }
+    void processVstEvent( const Steinberg::Vst::Event & event );
 
+    void processBPMChange( const double bpm );
 
-    void onKeyUp( Steinberg::char16 key, Steinberg::int16 keyCode, Steinberg::int16 modifiers )
-    {
-      ImGuiIO& io = ImGui::GetIO();
+    void initialize( sf::RenderWindow & window );
 
-      // Map modifiers
-      io.KeyCtrl  = modifiers & Steinberg::KeyModifier::kControlKey;
-      io.KeyShift = modifiers & Steinberg::KeyModifier::kShiftKey;
-      io.KeyAlt   = modifiers & Steinberg::KeyModifier::kAlternateKey;
-      io.KeySuper = modifiers & Steinberg::KeyModifier::kCommandKey;
+    void shutdown( sf::RenderWindow & window );
 
-      // Map special keys
-      switch (keyCode)
-      {
-        case Steinberg::VirtualKeyCodes::KEY_BACK:
-          io.AddKeyEvent( ImGuiKey_Backspace, false );
-          break;
-        case Steinberg::VirtualKeyCodes::KEY_DELETE:
-          io.AddKeyEvent( ImGuiKey_Delete, false );
-          break;
-        case Steinberg::VirtualKeyCodes::KEY_LEFT:
-          io.AddKeyEvent( ImGuiKey_LeftArrow, false );
-          break;
-        case Steinberg::VirtualKeyCodes::KEY_RIGHT:
-          io.AddKeyEvent( ImGuiKey_RightArrow, false );
-          break;
-        default:
-          break;
-      }
-    }
+    bool executeFrame( sf::RenderWindow & window );
 
-    void saveState( nlohmann::json &j ) const
-    {
-      j = m_pipelines.saveState();
-    }
-
-    void restoreState( nlohmann::json &j )
-    {
-      m_pipelines.restoreState( j );
-    }
-
-    void processVstEvent( const Steinberg::Vst::Event & event )
-    {
-      // forward it immediately. this should be as fast as
-      // possible because this runs on the processor thread
-
-      // WARNING:
-      // comes in on the processor thread and not on the controller thread!
-      if ( event.type != Steinberg::Vst::Event::kNoteOnEvent ) return;
-
-      // push to a non-blocking queue
-      // until the next frame gets executed by the controller thread
-      m_queue.push( {
-        .channel = event.noteOn.channel,
-        .pitch = event.noteOn.pitch,
-        .velocity = event.noteOn.velocity
-      } );
-    }
-
-    void processBPMChange( const double bpm )
-    {
-      // WARNING:
-      // comes in on the processor thread and not on the controller thread!
-      m_globalInfo.bpm = bpm;
-    }
-
-    void initialize( sf::RenderWindow & window )
-    {
-      LOG_INFO( "initializing event receiver" );
-      if ( !ImGui::SFML::Init( window ) )
-      {
-        LOG_ERROR( "failed to initialize imgui" );
-      }
-
-      onResize( window, window.getSize().x, window.getSize().y );
-    }
-
-    void shutdown( sf::RenderWindow & window )
-    {
-      LOG_INFO( "shutting down event receiver" );
-      ImGui::SFML::Shutdown( window );
-    }
-
-    bool executeFrame( sf::RenderWindow & window )
-    {
-      if ( !window.isOpen() ) return false;
-
-      while ( const std::optional event = window.pollEvent() )
-      {
-        // post events
-        ImGui::SFML::ProcessEvent( window, *event );
-
-        if ( event->getIf< sf::Event::Closed >() )
-        {
-          window.close();
-          return false;
-        }
-
-        if ( const auto * resizeEvent = event->getIf< sf::Event::Resized >() )
-          onResize( window, resizeEvent->size.x, resizeEvent->size.y );
-        else if ( const auto * mouseEvent = event->getIf< sf::Event::MouseButtonReleased >() )
-        {
-          if ( mouseEvent->button == sf::Mouse::Button::Right )
-            m_globalInfo.hideMenu = !m_globalInfo.hideMenu;
-        }
-
-        // TODO: gotta forward this differently
-        //m_channelPipeline.processEvent( event );
-      }
-
-      // update
-      {
-        const auto delta = m_clock.restart();
-
-        // synchronize the delta amounts even though it's not the absolute runtime, it's close enough
-        m_globalInfo.elapsedTimeSeconds += delta.asSeconds();
-        ++m_globalInfo.frameCount;
-
-        ImGui::SFML::Update( window, delta );
-        consumeMidiEvents();
-        m_pipelines.update( delta );
-      }
-
-      // draw
-      {
-        window.clear();
-
-        m_pipelines.draw( window );
-        drawMenu();
-        ImGui::SFML::Render( window );
-
-        window.setView( m_globalInfo.windowView );
-        window.display();
-      }
-
-      return true;
-    }
-
-    void onResize( sf::RenderWindow & window, uint32_t width, uint32_t height )
-    {
-      m_globalInfo.windowSize = { width, height };
-      m_globalInfo.windowHalfSize = { static_cast< float >(width) / 2.f, static_cast< float >(height) / 2.f };
-      window.setSize( m_globalInfo.windowSize );
-      m_globalInfo.windowView.setSize( { static_cast< float >(width), static_cast< float >(height) } );
-      m_globalInfo.windowView.setCenter( m_globalInfo.windowHalfSize );
-    }
+    void onResize( sf::RenderWindow & window, uint32_t width, uint32_t height );
 
   private:
 
-    void drawMenu()
-    {
-      if ( m_pipelineContext.globalInfo.hideMenu ) return;
-
-      m_pipelines.drawMenu();
-    }
-
-    void consumeMidiEvents()
-    {
-      // this occurs on the controller thread
-      Midi_t midiEvent;
-      while ( m_queue.try_pop( midiEvent ) )
-        m_pipelines.processMidiEvent( midiEvent );
-    }
+    void drawMenu();
+    void consumeMidiEvents();
 
   private:
 

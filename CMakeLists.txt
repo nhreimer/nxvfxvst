@@ -62,6 +62,8 @@ if ( BUILD_PLUGIN )
     vst/myplugincontroller.cpp
     vst/mypluginentry.cpp
 
+    vst/EventFacadeVst.cpp
+
     models/encoder/FFMpegEncoder.cpp
     models/encoder/RawRGBAEncoder.cpp
 
@@ -91,6 +93,23 @@ if ( BUILD_PLUGIN )
     models/ParticleBehaviorPipeline.cpp
     models/ParticleLayoutManager.cpp
     models/ShaderPipeline.cpp
+
+    models/shader/BlenderShader.cpp
+    models/shader/BlurShader.cpp
+    models/shader/ColorShader.cpp
+    models/shader/DensityHeatMapShader.cpp
+    models/shader/DualKawaseBlurShader.cpp
+    models/shader/FeedbackShader.cpp
+    models/shader/KaleidoscopeShader.cpp
+    models/shader/LayeredGlitchShader.cpp
+    models/shader/RippleShader.cpp
+    models/shader/RumbleShader.cpp
+    models/shader/ShockBloomShader.cpp
+    models/shader/SmearShader.cpp
+    models/shader/StrobeShader.cpp
+    models/shader/TransformShader.cpp
+
+    models/shader/easings/TimeEasing.cpp
   )
 
   target_include_directories( ${PROJECT_NAME}
