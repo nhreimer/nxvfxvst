@@ -1,4 +1,8 @@
 #pragma once
+#include <spdlog/common.h>
+#include <spdlog/spdlog.h>
+
+#include "models/ParticleBehaviorPipeline.hpp"
 
 namespace nx
 {
@@ -13,8 +17,9 @@ namespace nx
 
   public:
 
-    explicit ParticleLayoutBase( const GlobalInfo_t & info )
-      : m_globalInfo( info ), m_behaviorPipeline( info )
+    explicit ParticleLayoutBase( PipelineContext& context )
+      : m_ctx( context ),
+        m_behaviorPipeline( context )
     {}
 
     ~ParticleLayoutBase() override
@@ -81,13 +86,13 @@ namespace nx
       particle.setOrigin( particle.getGlobalBounds().size / 2.f );
 
       // timestamp it
-      timeParticle->spawnTime = m_globalInfo.elapsedTimeSeconds;
+      timeParticle->spawnTime = m_ctx.globalInfo.elapsedTimeSeconds;
 
       m_behaviorPipeline.applyOnSpawn( timeParticle, midiEvent );
     }
 
   protected:
-    const GlobalInfo_t &m_globalInfo;
+    PipelineContext& m_ctx;
     std::deque< TimedParticle_t * > m_particles;
 
     TParticleData m_data;

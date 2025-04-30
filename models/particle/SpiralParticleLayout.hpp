@@ -3,27 +3,45 @@
 #include <random>
 
 #include "helpers/MathHelper.hpp"
-#include "helpers/MenuHelper.hpp"
-
-#include "models/particle/ParticleConsumer.hpp"
-
-#include "shapes/TimedCursorPosition.hpp"
+#include "helpers/MidiHelper.hpp"
 
 namespace nx
 {
 
-  class SpiralParticleLayout final : public ParticleConsumer< ParticleLayoutData_t >
+  class SpiralParticleLayout final : public ParticleLayoutBase< ParticleLayoutData_t >
   {
   public:
 
-    explicit SpiralParticleLayout( const GlobalInfo_t& winfo )
-      : ParticleConsumer( winfo )
+    explicit SpiralParticleLayout( PipelineContext& context )
+      : ParticleLayoutBase( context )
     {}
 
     ~SpiralParticleLayout() override = default;
 
     [[nodiscard]]
     E_LayoutType getType() const override { return E_LayoutType::E_SpiralLayout; }
+
+    [[nodiscard]]
+    nlohmann::json serialize() const override
+    {
+      auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+      j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+      return j;
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      ParticleHelper::deserialize( m_data, j );
+      if (j.contains("behaviors"))
+        m_behaviorPipeline.loadPipeline(j.at("behaviors"));
+    }
+
+    void addMidiEvent(const Midi_t &midiEvent) override
+    {
+      auto * p = m_particles.emplace_back( new TimedParticle_t() );
+      p->shape.setPosition( getNextPosition( midiEvent ) );
+      ParticleLayoutBase::initializeParticle( p, midiEvent );
+    }
 
     void drawMenu() override
     {
@@ -38,33 +56,28 @@ namespace nx
         ImGui::TreePop();
         ImGui::Spacing();
       }
-
-      if ( !m_timedDrawing.hasExpired() )
-        m_timedDrawing.drawPosition();
     }
 
   protected:
 
 
-    sf::Vector2f getNextPosition( const Midi_t& midiNote ) override
+    sf::Vector2f getNextPosition( const Midi_t& midiNote ) const
     {
       const auto noteInfo = MidiHelper::getMidiNote( midiNote.pitch );
 
       const auto noteNumber = std::get< 0 >( noteInfo );
       const auto noteOctave = std::get< 1 >( noteInfo );
 
-      // 0. calculate the position based on the note, octave, and spread
-      return MathHelper::getAnglePosition( 12,
+      const auto position = MathHelper::getAnglePosition( 12,
                                                       noteNumber,
                                                       static_cast< float >( noteOctave ),
                                                       static_cast< float >( noteOctave ) );
+
+      return { m_ctx.globalInfo.windowHalfSize.x + position.x,
+                  m_ctx.globalInfo.windowHalfSize.y + position.y };
     }
 
   private:
-
-    std::mt19937 m_rand;
-
-    TimedCursorPosition m_timedDrawing;
 
   };
 

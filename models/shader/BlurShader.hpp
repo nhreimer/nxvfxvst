@@ -1,6 +1,7 @@
 #pragma once
 
 #include "helpers/CommonHeaders.hpp"
+#include "vst/VSTStateContext.hpp"
 
 namespace nx
 {
@@ -8,12 +9,12 @@ namespace nx
   class BlurShader final : public IShader
   {
 
-#define BLUR_SHADER_PARAMS(X)                        \
-X(sigma,             float, 7.f,     0.f,   50.f , "Amount of blurring")                    \
-X(brighten,          float, 1.f,     0.f,   5.f  , "Brightens the blurred areas")           \
-X(blurHorizontal,    float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction")     \
-X(blurVertical,      float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction")       \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+#define BLUR_SHADER_PARAMS(X)                                                                     \
+X(sigma,             float, 7.f,     0.f,   50.f , "Amount of blurring", true)                    \
+X(brighten,          float, 1.f,     0.f,   5.f  , "Brightens the blurred areas", true)           \
+X(blurHorizontal,    float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction", true)     \
+X(blurVertical,      float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction", true)       \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true) \
 
     struct BlurData_t
     {
@@ -34,8 +35,8 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
   public:
 
-    explicit BlurShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit BlurShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory(m_fragmentShader, sf::Shader::Type::Fragment) )
       {
@@ -45,6 +46,13 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       {
         LOG_INFO("loaded blur shader");
       }
+
+      EXPAND_SHADER_VST_BINDINGS(BLUR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
+
+    ~BlurShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
     }
 
     ///////////////////////////////////////////////////////
@@ -87,8 +95,8 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       if ( ImGui::TreeNode( "Gaussian Blur Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        BLUR_SHADER_PARAMS(X_SHADER_IMGUI);
+
+        EXPAND_SHADER_IMGUI(BLUR_SHADER_PARAMS, m_data)
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();
@@ -108,16 +116,19 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     }
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive && m_data.blurHorizontal + m_data.blurVertical > 0.f; }
+    bool isShaderActive() const override
+    {
+      return m_data.isActive;
+    }
 
     [[nodiscard]]
     sf::RenderTexture& applyShader(
       const sf::RenderTexture& inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != m_ctx.globalInfo.windowSize )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) ||
-             !m_intermediary.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( m_ctx.globalInfo.windowSize ) ||
+             !m_intermediary.resize( m_ctx.globalInfo.windowSize ) )
         {
           LOG_ERROR( "failed to resize blur texture" );
         }
@@ -130,10 +141,10 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       // Apply horizontal blur
       m_shader.setUniform( "texture", inputTexture.getTexture() );
       m_shader.setUniform( "direction", sf::Glsl::Vec2( 1.f, 0.f ) ); // Horizontal
-      m_shader.setUniform( "blurRadiusX", m_data.blurHorizontal );
+      m_shader.setUniform( "blurRadiusX", m_data.blurHorizontal.first );
       m_shader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
-      m_shader.setUniform( "sigma", m_data.sigma );
-      m_shader.setUniform( "brighten", m_data.brighten );
+      m_shader.setUniform( "sigma", m_data.sigma.first );
+      m_shader.setUniform( "brighten", m_data.brighten.first );
 
       m_shader.setUniform( "intensity", easing );
 
@@ -145,9 +156,9 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       m_shader.setUniform("texture", m_intermediary.getTexture());
       m_shader.setUniform("direction", sf::Glsl::Vec2(0.f, 1.f)); // Vertical
       m_shader.setUniform("blurRadiusX", 0.f); // No horizontal blur in this pass
-      m_shader.setUniform("blurRadiusY", m_data.blurVertical);
-      m_shader.setUniform( "sigma", m_data.sigma );
-      m_shader.setUniform( "brighten", m_data.brighten );
+      m_shader.setUniform("blurRadiusY", m_data.blurVertical.first);
+      m_shader.setUniform( "sigma", m_data.sigma.first );
+      m_shader.setUniform( "brighten", m_data.brighten.first );
       m_shader.setUniform( "intensity",easing );
 
       m_outputTexture.clear(sf::Color::Transparent);
@@ -156,12 +167,12 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     sf::Shader m_shader;
     sf::RenderTexture m_intermediary;

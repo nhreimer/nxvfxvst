@@ -22,8 +22,8 @@ namespace nx
     };
 
   public:
-    explicit ColorMorphBehavior(const GlobalInfo_t& info)
-      : m_globalInfo(info)
+    explicit ColorMorphBehavior(PipelineContext& context)
+      : m_ctx(context)
     {}
 
     [[nodiscard]]
@@ -104,7 +104,7 @@ namespace nx
 
     void applyBicolorMorphing( TimedParticle_t * p, const sf::Time& deltaTime ) const
     {
-      const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+      const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
       const float t = elapsed / m_data.morphDuration;
 
       const auto morphed = ColorHelper::lerpColor(p->initialColor, m_data.morphToColor, t);
@@ -113,7 +113,7 @@ namespace nx
 
     void applyBicolorMorphingReverse( TimedParticle_t * p, const sf::Time& deltaTime ) const
     {
-      const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+      const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
 
       const float t = 0.5f * (1.f + std::sin(elapsed * m_data.speed * NX_TAU));
       const auto morphed = ColorHelper::lerpColor( p->initialColor, m_data.morphToColor, t );
@@ -123,7 +123,7 @@ namespace nx
     void applySkittlesMorphing( TimedParticle_t * p, const sf::Time& deltaTime ) const
     {
       // How long the particle has existed
-      const float elapsed = m_globalInfo.elapsedTimeSeconds - p->spawnTime;
+      const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
 
       // Base hue animation based on time and speed
       const float hueBase = std::fmod(elapsed * m_data.speed * 360.f, 360.f);
@@ -165,7 +165,7 @@ namespace nx
 
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     ColorMorphData_t m_data;
   };
 }

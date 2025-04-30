@@ -11,10 +11,10 @@ namespace nx
   class FeedbackShader final : public IShader
   {
 
-#define FEEDBACK_SHADER_PARAMS(X)                                                             \
-X(trailFadeAlpha, int, 8,   0,   255,  "Alpha value subtracted from each trail frame")        \
-X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trail fading")    \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+#define FEEDBACK_SHADER_PARAMS(X)                                                                   \
+X(trailFadeAlpha, int, 8,   0,   255,  "Alpha value subtracted from each trail frame", true)        \
+X(fadeColor,      sf::Color, sf::Color::Black, 0, 0,  "Color applied during trail fading", true)    \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct FeedbackData_t
     {
@@ -34,11 +34,16 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     };
 
   public:
-    explicit FeedbackShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
-    {}
+    explicit FeedbackShader( PipelineContext& context )
+      : m_ctx( context )
+    {
+      EXPAND_SHADER_VST_BINDINGS(FEEDBACK_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
-    ~FeedbackShader() override = default;
+    ~FeedbackShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
 
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
@@ -73,8 +78,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     {
       if ( ImGui::TreeNode( "Feedback Options" ) )
       {
-        auto& STRUCT_REF = m_data;
-        FEEDBACK_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(FEEDBACK_SHADER_PARAMS, m_data)
 
         if ( ImGui::SmallButton( "Clear" ) )
           m_outputTexture.clear( sf::Color::Transparent );
@@ -99,22 +103,22 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     {
       if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR("Failed to resize feedback textures");
         }
       }
 
-      const auto targetSize = sf::Vector2f{ m_globalInfo.windowSize };
+      const auto targetSize = sf::Vector2f{ inputTexture.getSize() };
 
       const auto clampedEasing = std::clamp( m_easing.getEasing(), 0.f, 1.f );
 
       // Resize fade quad
       m_fadeQuad.setSize(targetSize);
-      m_fadeQuad.setFillColor(sf::Color(m_data.fadeColor.r,
-                                            m_data.fadeColor.g,
-                                            m_data.fadeColor.b,
-                                            static_cast<uint8_t>(m_data.trailFadeAlpha * clampedEasing)));
+      m_fadeQuad.setFillColor(sf::Color(m_data.fadeColor.first.r,
+                                            m_data.fadeColor.first.g,
+                                            m_data.fadeColor.first.b,
+                                            static_cast<uint8_t>(m_data.trailFadeAlpha.first * clampedEasing)));
 
       // Step 1: Fade out previous trail
       m_outputTexture.draw(m_fadeQuad, sf::BlendAlpha);
@@ -126,11 +130,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     FeedbackData_t m_data;
 
     sf::RectangleShape m_fadeQuad;

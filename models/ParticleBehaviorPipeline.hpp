@@ -12,11 +12,11 @@ namespace nx
   {
   public:
 
-    explicit ParticleBehaviorPipeline( const GlobalInfo_t& info )
-      : m_globalInfo( info )
+    explicit ParticleBehaviorPipeline( PipelineContext& context )
+      : m_ctx( context )
     {}
 
-    nlohmann::json saveModifierPipeline() const
+    nlohmann::json savePipeline() const
     {
       nlohmann::json j = nlohmann::json::array();
 
@@ -26,7 +26,7 @@ namespace nx
       return j;
     }
 
-    void loadModifierPipeline( const nlohmann::json& j )
+    void loadPipeline( const nlohmann::json& j )
     {
       m_particleBehaviors.clear();
       for ( const auto& data : j )
@@ -168,7 +168,7 @@ namespace nx
     IParticleBehavior * createBehavior()
     {
       auto& behavior = m_particleBehaviors.emplace_back< std::unique_ptr< T > >(
-        std::make_unique< T >( m_globalInfo ) );
+        std::make_unique< T >( m_ctx ) );
       return behavior.get();
     }
 
@@ -177,14 +177,14 @@ namespace nx
     IParticleBehavior * deserializeBehavior( const nlohmann::json& j )
     {
       auto& behavior = m_particleBehaviors.emplace_back< std::unique_ptr< T > >(
-        std::make_unique< T >( m_globalInfo ) );
+        std::make_unique< T >( m_ctx ) );
       behavior->deserialize( j );
       return behavior.get();
     }
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     std::vector< std::unique_ptr< IParticleBehavior > > m_particleBehaviors;
   };
 

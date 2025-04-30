@@ -9,12 +9,12 @@ namespace nx
   {
 
     // The BlenderShader for this one is already built in. it was the prototype example.
-#define DUALKAWASE_SHADER_PARAMS(X)                                                           \
-X(passes,      int,   4,     1,    10,    "Number of downsample/upsample passes")             \
-X(offset,      float, 1.0f,  0.0f, 10.f,  "Kernel offset per pass")                           \
-X(bloomGain,   float, 1.0f,  0.0f, 10.f,  "Gain applied to bloom texture before blending")    \
-X(brightness,  float, 1.0f,  0.0f, 3.f,   "Brightness boost for final output")                \
-X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred result")
+#define DUALKAWASE_SHADER_PARAMS(X)                                                                 \
+X(passes,      int,   4,     1,    10,    "Number of downsample/upsample passes", true)             \
+X(offset,      float, 1.0f,  0.0f, 10.f,  "Kernel offset per pass",true)                            \
+X(bloomGain,   float, 1.0f,  0.0f, 10.f,  "Gain applied to bloom texture before blending", true)    \
+X(brightness,  float, 1.0f,  0.0f, 3.f,   "Brightness boost for final output", true)                \
+X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred result", true)
 
     struct DKBlurData_t
     {
@@ -35,8 +35,8 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
   public:
 
-    explicit DualKawaseBlurShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit DualKawaseBlurShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) ||
            !m_compositeShader.loadFromMemory( m_compositeFragmentShader, sf::Shader::Type::Fragment ) )
@@ -47,6 +47,13 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       {
         LOG_INFO( "loaded dk blur shader" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(DUALKAWASE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
+
+    ~DualKawaseBlurShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
     }
 
     ///////////////////////////////////////////////////////
@@ -76,6 +83,8 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       {
         LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(DUALKAWASE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     // identify type for easier loading
@@ -88,8 +97,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       if ( ImGui::TreeNode( "Dual-Kawase Blur Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        DUALKAWASE_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(DUALKAWASE_SHADER_PARAMS, m_data)
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -137,15 +145,15 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
       const auto easing = m_easing.getEasing();
 
-      for (int i = 0; i < m_data.passes; ++i)
+      for (int i = 0; i < m_data.passes.first; ++i)
       {
         dst->clear();
 
         m_shader.setUniform("u_texture", src->getTexture());
         m_shader.setUniform("u_texelSize", sf::Glsl::Vec2(1.f / inputTexture.getSize().x, 1.f / inputTexture.getSize().y));
-        m_shader.setUniform("u_offset", m_data.offset + i); // optional increase per pass
-        m_shader.setUniform("u_bloomGain", m_data.bloomGain * easing);     // user/MIDI-driven
-        m_shader.setUniform("u_brightness", m_data.brightness * easing);   // compensate blur
+        m_shader.setUniform("u_offset", m_data.offset.first + i); // optional increase per pass
+        m_shader.setUniform("u_bloomGain", m_data.bloomGain.first * easing);     // user/MIDI-driven
+        m_shader.setUniform("u_brightness", m_data.brightness.first * easing);   // compensate blur
 
         dst->draw(sf::Sprite(src->getTexture()), &m_shader);
         dst->display();
@@ -157,7 +165,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
       m_compositeTexture.clear();
       m_compositeShader.setUniform("u_scene", inputTexture.getTexture());
       m_compositeShader.setUniform("u_bloom", src->getTexture());
-      m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor * easing);
+      m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor.first * easing);
 
       m_compositeTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_compositeShader );
       m_compositeTexture.display();
@@ -167,7 +175,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     sf::Shader m_shader;
     sf::Shader m_compositeShader;

@@ -1,19 +1,20 @@
 #pragma once
 
+#include "data/PipelineContext.hpp"
 #include "models/shader/BlenderShader.hpp"
 #include "models/shader/BlurShader.hpp"
-#include "models/shader/KaleidoscopeShader.hpp"
+#include "models/shader/ColorShader.hpp"
 #include "models/shader/DensityHeatMapShader.hpp"
 #include "models/shader/DualKawaseBlurShader.hpp"
 #include "models/shader/FeedbackShader.hpp"
+#include "models/shader/KaleidoscopeShader.hpp"
 #include "models/shader/LayeredGlitchShader.hpp"
 #include "models/shader/RippleShader.hpp"
 #include "models/shader/RumbleShader.hpp"
+#include "models/shader/ShockBloomShader.hpp"
 #include "models/shader/SmearShader.hpp"
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/TransformShader.hpp"
-#include "models/shader/ColorShader.hpp"
-#include "models/shader/ShockBloomShader.hpp"
 
 namespace nx
 {
@@ -22,8 +23,8 @@ namespace nx
   {
   public:
 
-    explicit ShaderPipeline( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit ShaderPipeline( PipelineContext& context )
+      : m_ctx( context )
     {}
 
     ~ShaderPipeline() = default;
@@ -57,7 +58,7 @@ namespace nx
 
     sf::RenderTexture& draw( const sf::RenderTexture& inTexture )
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != m_ctx.globalInfo.windowSize )
       {
         if ( !m_outputTexture.resize( inTexture.getSize() ) )
         {
@@ -199,7 +200,7 @@ namespace nx
     IShader * createShader()
     {
       auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
-        std::make_unique< T >( m_globalInfo ) );
+        std::make_unique< T >( m_ctx ) );
       return shader.get();
     }
 
@@ -207,7 +208,7 @@ namespace nx
     IShader * deserializeShader( const nlohmann::json& j )
     {
       auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
-        std::make_unique< T >( m_globalInfo ) );
+        std::make_unique< T >( m_ctx ) );
       shader->deserialize( j );
       return shader.get();
     }
@@ -335,7 +336,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     std::vector< std::unique_ptr< IShader > > m_shaders;
     sf::RenderTexture m_outputTexture;

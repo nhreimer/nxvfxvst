@@ -1,8 +1,6 @@
 #pragma once
 
-#include <unordered_map>
 #include <concurrent_queue.h>
-#include <fmt/core.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
@@ -17,8 +15,9 @@
 
 #include "log/Logger.hpp"
 
-//#include "pluginterfaces/base/ustring.h"
 #include "pluginterfaces/base/keycodes.h"
+#include "vst/VSTStateContext.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {
@@ -28,8 +27,9 @@ namespace nx
   {
   public:
 
-    EventFacadeVst()
-      : m_pipelines( m_globalInfo )
+    explicit EventFacadeVst( VSTStateContext& stateContext )
+      : m_pipelineContext( m_globalInfo, stateContext ),
+        m_pipelines( m_pipelineContext )
     {}
 
     ~EventFacadeVst() = default;
@@ -195,7 +195,6 @@ namespace nx
       {
         window.clear();
 
-        // the problem seems to be part of this!
         m_pipelines.draw( window );
         drawMenu();
         ImGui::SFML::Render( window );
@@ -220,7 +219,7 @@ namespace nx
 
     void drawMenu()
     {
-      if ( m_globalInfo.hideMenu ) return;
+      if ( m_pipelineContext.globalInfo.hideMenu ) return;
 
       m_pipelines.drawMenu();
     }
@@ -235,7 +234,11 @@ namespace nx
 
   private:
 
+    // this is the original, non-const verison that the Pipeline Context uses
     GlobalInfo_t m_globalInfo;
+
+    // this is what gets handed off to all the components
+    PipelineContext m_pipelineContext;
     MultichannelPipeline m_pipelines;
 
     sf::Clock m_clock;

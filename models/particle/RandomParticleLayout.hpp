@@ -1,16 +1,30 @@
 #pragma once
 
-#include "models/particle/ParticleConsumer.hpp"
+#include "models/particle/ParticleLayoutBase.hpp"
 
 namespace nx
 {
 
-class RandomParticleLayout final : public ParticleConsumer< ParticleLayoutData_t >
+class RandomParticleLayout final : public ParticleLayoutBase< ParticleLayoutData_t >
 {
 public:
+  [[nodiscard]]
+  nlohmann::json serialize() const override
+  {
+    auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+    j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    return j;
+  }
 
-  explicit RandomParticleLayout( const GlobalInfo_t& winfo )
-  : ParticleConsumer( winfo )
+  void deserialize(const nlohmann::json &j) override
+  {
+    ParticleHelper::deserialize( m_data, j );
+    if (j.contains("behaviors"))
+      m_behaviorPipeline.loadPipeline(j.at("behaviors"));
+  }
+
+  explicit RandomParticleLayout( PipelineContext& context )
+  : ParticleLayoutBase( context )
   {}
 
   E_LayoutType getType() const override { return E_LayoutType::E_RandomLayout; }
@@ -31,11 +45,18 @@ public:
     }
   }
 
-protected:
-  sf::Vector2f getNextPosition( const Midi_t & midiNote ) override
+  void addMidiEvent(const Midi_t &midiEvent) override
   {
-    return { static_cast< float >( m_rand() % m_globalInfo.windowSize.x ),
-                  static_cast< float >( m_rand() % m_globalInfo.windowSize.y ) };
+    auto * p = m_particles.emplace_back( new TimedParticle_t() );
+    p->shape.setPosition( getNextPosition( midiEvent ) );
+    ParticleLayoutBase::initializeParticle( p, midiEvent );
+  }
+
+protected:
+  sf::Vector2f getNextPosition( const Midi_t & midiNote )
+  {
+    return { static_cast< float >( m_rand() % m_ctx.globalInfo.windowSize.x ),
+                  static_cast< float >( m_rand() % m_ctx.globalInfo.windowSize.y ) };
   }
 
 private:

@@ -1,10 +1,16 @@
 #pragma once
 
-
 namespace nx
 {
+
   template <typename T>
-  void drawShaderParamImGui(const char* label, T& value, float min, float max, const char* tooltip)
+  void drawShaderParamImGui(const char* label,
+                            T& value,
+                            const int32_t paramId,
+                            const float min,
+                            const float max,
+                            const char* tooltip,
+                            const bool allowVSTBinding)
   {
     if constexpr (std::is_same_v<T, float>)
     {
@@ -33,63 +39,122 @@ namespace nx
       MenuHelper::drawBlendOptions( value );
     }
 
+    if ( allowVSTBinding )
+    {
+      ImGui::SameLine();
+      ImGui::Text( " (%d)", paramId );
+    }
+
     if (tooltip && ImGui::IsItemHovered())
       ImGui::SetTooltip("%s", tooltip);
   }
 }
 
-// ========== ImGui Menu Drawing ==========
-#define DRAW_FIELD(name, type, defaultVal, minVal, maxVal, tooltip) \
-nx::drawShaderParamImGui<type>(#name, m_data.name, minVal, maxVal, tooltip);
-#define DRAW_FIELDS_IMGUI(PARAMS) PARAMS(DRAW_FIELD)
+////////////////////////////////////////////////////////////////////////////////////////////
 
-// =========================================
-// Dispatcher Macro (must be called after binding STRUCT_REF)
-// =========================================
+// ========== ImGui Menu Drawing ===========
 
-#define DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip) \
-nx::drawShaderParamImGui<type>(#name, STRUCT_REF.name, minVal, maxVal, tooltip);
+#define DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip, allowVSTBinding) \
+nx::drawShaderParamImGui<type>(#name, STRUCT_REF.name.first, STRUCT_REF.name.second, minVal, maxVal, tooltip, allowVSTBinding);
 
-// =========================================
-// Expansion Macro
-// Must call from within a drawMenu() function or similar:
-//     auto& STRUCT_REF = yourStruct;
-//     PARAM_MACRO(X_SHADER_IMGUI);
-// =========================================
+#define X_SHADER_IMGUI(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
+DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip, allowVSTBinding)
 
-#define X_SHADER_IMGUI(name, type, defaultVal, minVal, maxVal, tooltip) \
-DISPATCH_IMGUI_FIELD(name, type, STRUCT_REF, minVal, maxVal, tooltip)
+#define EXPAND_SHADER_IMGUI(PARAM_MACRO, DATA_STRUCT) \
+auto& STRUCT_REF = DATA_STRUCT;                       \
+PARAM_MACRO(X_SHADER_IMGUI)
 
+////////////////////////////////////////////////////////////////////////////////////////////
 
 // FOR STRUCTS
-#define GEN_STRUCT_FIELD(name, type, defaultVal, minVal, maxVal, tooltip) type name = defaultVal;
+#define GEN_STRUCT_FIELD(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
+std::pair<type, int32_t> name = { defaultVal, -1 };
+
 #define EXPAND_SHADER_PARAMS_FOR_STRUCT(PARAM_MACRO)     \
-PARAM_MACRO(GEN_STRUCT_FIELD)                            \
-/* optionally undef here if you care */                  \
-/**/
+PARAM_MACRO(GEN_STRUCT_FIELD)
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
 // FOR ENUM
-#define GEN_ENUM_FIELD(name, type, defaultVal, minVal, maxVal, tooltip) name,
+#define GEN_ENUM_FIELD(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) name,
 #define EXPAND_SHADER_PARAMS_FOR_ENUM(PARAM_MACRO)       \
 PARAM_MACRO(GEN_ENUM_FIELD)
 
-// FOR IMGUI
-#define GEN_IMGUI_FLOATS(name, type, defaultVal, minVal, maxVal) \
-ImGui::SliderFloat(#name, &m_data.name, minVal, maxVal);
-#define EXPAND_SHADER_PARAMS_FOR_IMGUI(PARAM_MACRO)      \
-PARAM_MACRO(GEN_IMGUI_FLOATS)
+////////////////////////////////////////////////////////////////////////////////////////////
 
-// FOR IMGUI CONTROLS
-#define GEN_TO_JSON(name, type, defaultVal, minVal, maxVal, tooltip) \
-j[#name] = m_data.name;
+// FOR SERIALIZATION
+#define GEN_TO_JSON(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
+j[#name] = m_data.name.first;
 #define EXPAND_SHADER_PARAMS_TO_JSON(PARAM_MACRO) \
 PARAM_MACRO(GEN_TO_JSON)
 
-#define GEN_FROM_JSON(name, type, defaultVal, minVal, maxVal, tooltip) \
-if (j.contains(#name)) j.at(#name).get_to(m_data.name);
+#define GEN_FROM_JSON(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
+if (j.contains(#name)) j.at(#name).get_to(m_data.name.first);
 #define EXPAND_SHADER_PARAMS_FROM_JSON(PARAM_MACRO) \
 PARAM_MACRO(GEN_FROM_JSON)
 
-#define GEN_LABEL_STRING(name, type, defaultVal, minVal, maxVal, tooltip) #name,
+#define GEN_LABEL_STRING(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) #name,
 #define EXPAND_SHADER_PARAM_LABELS(PARAM_MACRO) \
 PARAM_MACRO(GEN_LABEL_STRING)
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace nx
+{
+  template <typename T>
+  float updateParamValue(const float normalizedValue, T& value, const float min, const float max)
+  {
+    if constexpr (std::is_same_v<T, float>)
+    {
+      value = normalizedValue * ( max - min ) + min;
+      return value;
+    }
+    else if constexpr (std::is_same_v<T, bool>)
+    {
+      value = ( normalizedValue > 0.f ? 1.f : 0.f );
+      return value;
+    }
+    else if constexpr (std::is_same_v<T, sf::Vector2f>)
+    {
+      // NOT SUPPORTED
+      return 0.f;
+    }
+    else if constexpr (std::is_same_v<T, sf::Glsl::Vec3>)
+    {
+      // NOT SUPPORTED
+      return 0.f;
+    }
+    else if constexpr (std::is_same_v<T, sf::Color>)
+    {
+      // NOT SUPPORTED
+      return 0.f;
+    }
+    else if constexpr (std::is_same_v<T, sf::BlendMode>)
+    {
+      // NOT SUPPORTED
+      return 0.f;
+    }
+
+    return 0.f;
+  }
+}
+
+// generates our VST Parameter bindings
+#define GEN_VST_BINDING(name, type, defaultVal, minVal, maxVal, tooltip, allowVSTBinding) \
+if constexpr (allowVSTBinding)                                                            \
+{                                                                                         \
+    auto paramId = bindingManagerRef.registerBindableControl(                             \
+        this,                                                                             \
+        #name,                                                                            \
+        minVal,                                                                           \
+        maxVal,                                                                           \
+        [this](float normalizedValue) {                                                   \
+           return nx::updateParamValue<type>(normalizedValue, m_data.name.first, minVal, maxVal); \
+       });                                                                                \
+     m_data.name.second = paramId;                                                        \
+     bindingManagerRef.setValue<type>(paramId, m_data.name.first);                        \
+}
+
+#define EXPAND_SHADER_VST_BINDINGS(PARAM_MACRO, bindingManager) \
+auto& bindingManagerRef = bindingManager; \
+PARAM_MACRO(GEN_VST_BINDING)

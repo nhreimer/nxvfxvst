@@ -12,6 +12,7 @@
 
 #include "log/Logger.hpp"
 #include "vst/EventFacadeVst.hpp"
+#include "vst/VSTStateContext.hpp"
 
 namespace nx
 {
@@ -138,10 +139,13 @@ namespace priv
     void restoreState(nlohmann::json &j) override { m_eventFacade.restoreState( j ); }
 
     ////////////////////////////////////////////////////////////////////////////////
-    explicit Win32View( const Steinberg::ViewRect windowSize,
+    explicit Win32View( VSTStateContext& stateContext,
+                        const Steinberg::ViewRect windowSize,
                         std::function< void( IVSTView * ) >&& onRemoved )
-      : m_rect( windowSize ),
-        m_onRemoved( onRemoved )
+      : m_stateContext( stateContext ),
+        m_rect( windowSize ),
+        m_onRemoved( onRemoved ),
+        m_eventFacade( stateContext )
     {}
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -434,6 +438,8 @@ private:
   }
 
 private:
+
+  VSTStateContext& m_stateContext;
 
   // used for the initial size only
   Steinberg::ViewRect m_rect;

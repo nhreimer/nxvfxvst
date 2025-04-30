@@ -2,20 +2,23 @@
 
 #include "helpers/SerialHelper.hpp"
 
+#include "vst/params/VSTParamBindingManager.hpp"
+
 namespace nx
 {
 
   class ColorShader final : public IShader
   {
+  public:
 
-#define COLOR_SHADER_PARAMS(X)                                                                \
-X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness")              \
-X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors")                   \
-X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation")               \
-X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians")                     \
-X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB") \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")   \
-X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
+  private:
+#define COLOR_SHADER_PARAMS(X)                                                                       \
+X(brightness, float,        1.0f,   0.0f, 5.0f,   "Controls overall brightness", true)               \
+X(saturation, float,        1.0f,   0.0f, 5.0f,   "Vibrancy of the colors", true)                    \
+X(contrast,   float,        1.0f,   0.0f, 5.0f,   "Increases color separation", true)                \
+X(hueShift,   float,        0.0f,  -NX_PI, NX_PI, "Hue shift in radians", true)                      \
+X(colorGain,  sf::Glsl::Vec3, sf::Glsl::Vec3(1.f,1.f,1.f), 0.f, 10.0f, "Multipliers per RGB", false) \
+X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effects result", true)
 
     struct ColorData_t
     {
@@ -36,8 +39,8 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
 
   public:
 
-    explicit ColorShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit ColorShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -47,6 +50,13 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       {
         LOG_DEBUG( "Color fragment shader loaded successfully" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(COLOR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
+
+    ~ColorShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
     }
 
     [[nodiscard]]
@@ -91,8 +101,7 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       if ( ImGui::TreeNode( "Color Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        COLOR_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(COLOR_SHADER_PARAMS, m_data)
 
         ImGui::SeparatorText( "Easings" );
         m_easing.drawMenu();
@@ -127,29 +136,25 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       const auto easing = m_easing.getEasing();
 
       m_shader.setUniform("u_texture", inputTexture.getTexture());
-      m_shader.setUniform( "u_brightness", m_data.brightness * easing );
-      m_shader.setUniform( "u_saturation", m_data.saturation * easing );
-      m_shader.setUniform( "u_contrast", m_data.contrast );
-      m_shader.setUniform( "u_hueShift", m_data.hueShift );
-      m_shader.setUniform( "u_gain", m_data.colorGain );
-
-      // Draw with optional blend mode
-      sf::RenderStates states;
-      states.shader = &m_shader;
-      states.blendMode = m_data.BlendInput;
+      m_shader.setUniform( "u_brightness", m_data.brightness.first * easing );
+      m_shader.setUniform( "u_saturation", m_data.saturation.first * easing );
+      m_shader.setUniform( "u_contrast", m_data.contrast.first );
+      m_shader.setUniform( "u_hueShift", m_data.hueShift.first );
+      m_shader.setUniform( "u_gain", m_data.colorGain.first );
 
       m_outputTexture.clear(sf::Color::Transparent);
-      m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), states);
+      m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), &m_shader);
       m_outputTexture.display();
 
       //return m_outputTexture;
       return m_blender.applyShader( inputTexture,
                                     m_outputTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
+
     ColorData_t m_data;
 
     sf::Shader m_shader;

@@ -14,8 +14,8 @@ namespace nx
     };
 
   public:
-    explicit FreeFallBehavior(const GlobalInfo_t& info)
-      : m_globalInfo(info)
+    explicit FreeFallBehavior(PipelineContext& context)
+      : m_ctx(context)
     {}
 
     [[nodiscard]]
@@ -55,7 +55,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     FreeFallData_t m_data;
   };
 }

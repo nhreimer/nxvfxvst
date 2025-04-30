@@ -13,6 +13,7 @@
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/MultichannelPipeline.hpp"
 
+#include "models/data/PipelineContext.hpp"
 #include "MidiGenerator.hpp"
 
 namespace nx
@@ -24,7 +25,8 @@ namespace nx
   public:
 
     EventFacadeApp()
-      : m_pipelines( m_globalInfo )
+      : m_ctx( m_globalInfo, m_stateContext ),
+        m_pipelines( m_ctx )
     {
       for ( int i = 1; i < m_midiGen.size(); ++i ) m_midiGen[ i ].toggleMute();
     }
@@ -200,10 +202,21 @@ namespace nx
       test::MidiGenerator { 2, 5000, m_onEvent },
       test::MidiGenerator { 3, 500, m_onEvent } };
 
+    // the following two are dummy vars for the app since there is no automation to perform
+    VSTParamBindingManager m_paramBindingManager
+    {
+      []( const int32_t paramId, const float normalizedValue ) {}
+    };
+
+    VSTStateContext m_stateContext { m_paramBindingManager };
+
     GlobalInfo_t m_globalInfo
     {
       .bpm = 120.f
     };
+
+    // this is what gets handed off to all the components
+    PipelineContext m_ctx;
 
     sf::Clock m_timer;
 

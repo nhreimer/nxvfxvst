@@ -6,21 +6,21 @@ namespace nx
   class SmearShader final : public IShader
   {
 #define SMEAR_SHADER_PARAMS(X)                                                                       \
-X(directionAngleInRadians, float, 0.f,  -NX_PI, NX_PI,  "Angle of smear direction (in radians)")     \
-X(length,                 float, 0.2f,  0.f,  1.f,     "Length of smear trail (0 = off, 1 = full)")  \
-X(intensity,              float, 0.5f,  0.f,  1.f,     "Blend amount with previous frame")           \
-X(tint,                   sf::Color, sf::Color(255,255,255), 0.f, 0.f, "Optional color overlay")     \
-X(sampleCount,            int,   32,    1,   128,      "Number of smear samples (quality vs speed)") \
-X(jitterAmount,           float, 0.f,   0.f,  1.f,     "Randomness in smear direction per sample")   \
-X(brightnessBoost,        float, 1.f,   0.f,  10.f,    "Overall brightness multiplier")              \
-X(brightnessPulse,        float, 1.f,   0.f,  5.f,     "Brightness wave amount during pulses")       \
-X(falloffPower,           float, 1.f,   0.1f, 10.f,    "Exponential falloff on smear fade")          \
-X(wiggleAmplitude,        float, 0.f,   0.f,  NX_PI,   "Wiggle amount (radians) per sample")         \
-X(wiggleFrequency,        float, 0.f,   0.f,  50.f,    "Wiggle speed (Hz)")                          \
-X(feedbackFade,           float, 0.05f, 0.f,  1.f,     "Fadeout amount for feedback trail")          \
-X(feedbackBlendMode,      sf::BlendMode, sf::BlendAdd, 0, 0, "Blend mode used for feedback drawing") \
-X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added to feedback frame")  \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+X(directionAngleInRadians, float, 0.f,  -NX_PI, NX_PI,  "Angle of smear direction (in radians)", true)     \
+X(length,                 float, 0.2f,  0.f,  1.f,     "Length of smear trail (0 = off, 1 = full)", true)  \
+X(intensity,              float, 0.5f,  0.f,  1.f,     "Blend amount with previous frame", true)           \
+X(tint,                   sf::Color, sf::Color(255,255,255), 0.f, 0.f, "Optional color overlay", false)     \
+X(sampleCount,            int,   32,    1,   128,      "Number of smear samples (quality vs speed)", true) \
+X(jitterAmount,           float, 0.f,   0.f,  1.f,     "Randomness in smear direction per sample", true)   \
+X(brightnessBoost,        float, 1.f,   0.f,  10.f,    "Overall brightness multiplier", true)              \
+X(brightnessPulse,        float, 1.f,   0.f,  5.f,     "Brightness wave amount during pulses", true)       \
+X(falloffPower,           float, 1.f,   0.1f, 10.f,    "Exponential falloff on smear fade", true)          \
+X(wiggleAmplitude,        float, 0.f,   0.f,  NX_PI,   "Wiggle amount (radians) per sample", true)         \
+X(wiggleFrequency,        float, 0.f,   0.f,  50.f,    "Wiggle speed (Hz)", true)                          \
+X(feedbackFade,           float, 0.05f, 0.f,  1.f,     "Fadeout amount for feedback trail", true)          \
+X(feedbackBlendMode,      sf::BlendMode, sf::BlendAdd, 0, 0, "Blend mode used for feedback drawing", false) \
+X(feedbackRotation,       float, 0.f,   -360.f, 360.f, "Rotational offset added to feedback frame", true)  \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct SmearData_t
     {
@@ -41,16 +41,25 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
   public:
 
-    explicit SmearShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit SmearShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
         LOG_ERROR( "Failed to load smear fragment shader" );
       }
+      else
+      {
+        LOG_INFO( "Smear fragment shader loaded" );
+      }
+
+      EXPAND_SHADER_VST_BINDINGS(SMEAR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
-    ~SmearShader() override = default;
+    ~SmearShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override
@@ -97,11 +106,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       if ( ImGui::TreeNode( "Smear Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        SMEAR_SHADER_PARAMS(X_SHADER_IMGUI);
-
-        ImGui::Separator();
-        MenuHelper::drawBlendOptions( m_data.feedbackBlendMode );
+        EXPAND_SHADER_IMGUI(SMEAR_SHADER_PARAMS, m_data)
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -140,25 +145,25 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize() ) );
-      m_shader.setUniform("smearLength", m_data.length);
-      m_shader.setUniform("smearIntensity", m_data.intensity);
-      m_shader.setUniform("sampleCount", m_data.sampleCount);
+      m_shader.setUniform("smearLength", m_data.length.first);
+      m_shader.setUniform("smearIntensity", m_data.intensity.first);
+      m_shader.setUniform("sampleCount", m_data.sampleCount.first);
 
       m_shader.setUniform("time", m_clock.getElapsedTime().asSeconds());
-      m_shader.setUniform("jitterAmount", m_data.jitterAmount);         // 0.0–0.2
-      m_shader.setUniform("brightnessBoost", m_data.brightnessBoost);   // 1.0–3.0
+      m_shader.setUniform("jitterAmount", m_data.jitterAmount.first);         // 0.0–0.2
+      m_shader.setUniform("brightnessBoost", m_data.brightnessBoost.first);   // 1.0–3.0
       m_shader.setUniform("pulseValue", easing);
-      m_shader.setUniform("falloffPower", m_data.falloffPower);         // e.g. 1.0 = linear, >1 = tighter fade
+      m_shader.setUniform("falloffPower", m_data.falloffPower.first);         // e.g. 1.0 = linear, >1 = tighter fade
       m_shader.setUniform("brightnessPulse", easing);
 
-      m_shader.setUniform("directionAngle", m_data.directionAngleInRadians);
-      m_shader.setUniform("wiggleAmplitude", m_data.wiggleAmplitude);
-      m_shader.setUniform("wiggleFrequency", m_data.wiggleFrequency);
+      m_shader.setUniform("directionAngle", m_data.directionAngleInRadians.first);
+      m_shader.setUniform("wiggleAmplitude", m_data.wiggleAmplitude.first);
+      m_shader.setUniform("wiggleFrequency", m_data.wiggleFrequency.first);
 
        const auto tintVec = sf::Glsl::Vec3(
-           static_cast< float >(m_data.tint.r) / 255.f,
-           static_cast< float >(m_data.tint.g) / 255.f,
-           static_cast< float >(m_data.tint.b) / 255.f
+           static_cast< float >(m_data.tint.first.r) / 255.f,
+           static_cast< float >(m_data.tint.first.g) / 255.f,
+           static_cast< float >(m_data.tint.first.b) / 255.f
        );
 
       m_shader.setUniform("smearTint", tintVec);
@@ -174,13 +179,13 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       // 3. Fade feedback with a semi-transparent black quad to prevent infinite trails
       m_feedbackFadeShape.setFillColor(
         sf::Color(0, 0, 0,
-                    static_cast< uint8_t >( 255 * m_data.feedbackFade ) ) );
+                    static_cast< uint8_t >( 255 * m_data.feedbackFade.first ) ) );
 
       m_feedbackTexture.draw(m_feedbackFadeShape, sf::BlendAlpha);
 
       // 4. Add current smeared frame into feedback buffer
       const sf::Sprite smearedFrame(m_outputTexture.getTexture());
-      m_feedbackTexture.draw(smearedFrame, m_data.feedbackBlendMode);
+      m_feedbackTexture.draw(smearedFrame, m_data.feedbackBlendMode.first);
 
       // 5. Display feedback buffer
       m_feedbackTexture.display();
@@ -189,11 +194,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       //return m_feedbackTexture;
       return m_blender.applyShader( inputTexture,
                               m_feedbackTexture,
-                                    m_data.mixFactor );
+                                    m_data.mixFactor.first );
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     SmearData_t m_data;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/particle/ParticleConsumer.hpp"
+#include "models/particle/ParticleLayoutBase.hpp"
 
 namespace nx
 {
@@ -28,9 +28,9 @@ namespace nx
     };
 
   public:
-    explicit LSystemCurveLayout(const GlobalInfo_t &globalInfo)
-      : m_globalInfo( globalInfo ),
-        m_behaviorPipeline( globalInfo )
+    explicit LSystemCurveLayout(PipelineContext& context)
+      : m_ctx( context ),
+        m_behaviorPipeline( context )
     {}
 
     ~LSystemCurveLayout() override
@@ -47,7 +47,7 @@ namespace nx
       j[ "turnAngle" ] = m_data.turnAngle;
       j[ "segmentLength" ] = m_data.segmentLength;
       j[ "initialAngleDeg" ] = m_data.initialAngleDeg;
-      j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
+      j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
       return j;
     }
 
@@ -67,7 +67,7 @@ namespace nx
       }
 
       if ( j.contains( "behaviors" ) )
-        m_behaviorPipeline.loadModifierPipeline( j["behaviors"] );
+        m_behaviorPipeline.loadPipeline( j["behaviors"] );
     }
 
     E_LayoutType getType() const override { return E_LayoutType::E_LSystemCurveLayout; }
@@ -114,8 +114,8 @@ namespace nx
     {
       // 127 - 21 = full pitch range
       const auto offsetX = midiEvent.pitch / 106.f;
-      const sf::Vector2f position = { m_globalInfo.windowSize.x * offsetX,
-                                        m_globalInfo.windowSize.y * offsetX };
+      const sf::Vector2f position = { m_ctx.globalInfo.windowSize.x * offsetX,
+                                      m_ctx.globalInfo.windowSize.y * offsetX };
 
       drawLSystem( position, // m_globalInfo.windowHalfSize,
                    m_data.initialAngleDeg,
@@ -177,7 +177,7 @@ namespace nx
 
         p->shape.setOrigin( p->shape.getGlobalBounds().size / 2.f );
         p->shape.setPosition(position);
-        p->spawnTime = m_globalInfo.elapsedTimeSeconds;
+        p->spawnTime = m_ctx.globalInfo.elapsedTimeSeconds;
         p->initialColor = m_data.startColor;
         m_behaviorPipeline.applyOnSpawn( p, midiNote );
         return;
@@ -224,7 +224,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t & m_globalInfo;
+    PipelineContext& m_ctx;
     LSystemCurveLayoutData_t m_data;
     ParticleBehaviorPipeline m_behaviorPipeline;
 

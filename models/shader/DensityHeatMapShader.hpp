@@ -6,36 +6,41 @@
 
 namespace nx
 {
-
   class DensityHeatMapShader final : public IShader
   {
+
+#define DENSITY_HEATMAP_SHADER_PARAMS(X)                                                                 \
+X(falloff,        float,     0.2f,   0.0f, 1.0f,   "Falloff intensity over distance", true)              \
+X(colorCoolStart, sf::Color, sf::Color(0, 0, 0),        0, 255, "Gradient: Cool start color", false)     \
+X(colorCoolEnd,   sf::Color, sf::Color(0, 0, 255),      0, 255, "Gradient: Cool end color", false)       \
+X(colorWarmStart, sf::Color, sf::Color(0, 0, 255),      0, 255, "Gradient: Warm start color", false)     \
+X(colorWarmEnd,   sf::Color, sf::Color(0, 255, 255),    0, 255, "Gradient: Warm end color", false)       \
+X(colorHotStart,  sf::Color, sf::Color(0, 255, 255),    0, 255, "Gradient: Hot start color", false)      \
+X(colorHotEnd,    sf::Color, sf::Color(255, 255, 0),    0, 255, "Gradient: Hot end color", false)        \
+X(colorMaxStart,  sf::Color, sf::Color(255, 255, 0),    0, 255, "Gradient: Max start color", false)      \
+X(colorMaxEnd,    sf::Color, sf::Color(255, 0, 0),      0, 255, "Gradient: Max end color", false)        \
+X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effects result", true)
 
     struct DensityHeatMapData_t
     {
       bool isActive { true };
-      float falloff { 0.2f };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(DENSITY_HEATMAP_SHADER_PARAMS)
+    };
 
-      // 0    -> trail never fades (fully persistent)
-      // 255  -> instant erase (same as normal clear)
-      // 8–32 -> sweet spot for glowy echoes
-      // int32_t trailFadeAlpha { 8 };
+    enum class E_DensityHeatMapParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(DENSITY_HEATMAP_SHADER_PARAMS)
+      LastItem
+    };
 
-      sf::Color colorCoolStart { 0, 0, 0 };
-      sf::Color colorCoolEnd { 0, 0, 255 };
-
-      sf::Color colorWarmStart { 0, 0, 255 };
-      sf::Color colorWarmEnd { 0, 255, 255 };
-
-      sf::Color colorHotStart { 0, 255, 255 };
-      sf::Color colorHotEnd { 255, 255, 0 };
-
-      sf::Color colorMaxStart { 255, 255, 0 };
-      sf::Color colorMaxEnd { 255, 0, 0 };
+    static inline const std::array<std::string, static_cast<size_t>(E_DensityHeatMapParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(DENSITY_HEATMAP_SHADER_PARAMS)
     };
 
   public:
-    explicit DensityHeatMapShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit DensityHeatMapShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -45,6 +50,8 @@ namespace nx
       {
         LOG_INFO( "Loaded density heat map fragment shader" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(DENSITY_HEATMAP_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
     ~DensityHeatMapShader() override = default;
@@ -55,36 +62,19 @@ namespace nx
 
     nlohmann::json serialize() const override
     {
-      return
-      {
-          { "type", SerialHelper::serializeEnum( getType() ) },
-          { "isActive", m_data.isActive },
-          { "falloff", m_data.falloff },
-          { "colorCoolStart", SerialHelper::convertColorToJson( m_data.colorCoolStart ) },
-          { "colorCoolEnd", SerialHelper::convertColorToJson( m_data.colorCoolEnd ) },
-          { "colorWarmStart", SerialHelper::convertColorToJson( m_data.colorWarmStart ) },
-          { "colorWarmEnd", SerialHelper::convertColorToJson( m_data.colorWarmEnd ) },
-          { "colorHotStart", SerialHelper::convertColorToJson( m_data.colorHotStart ) },
-          { "colorHotEnd", SerialHelper::convertColorToJson( m_data.colorHotEnd ) },
-          { "colorMaxStart", SerialHelper::convertColorToJson( m_data.colorMaxStart ) },
-          { "colorMaxEnd", SerialHelper::convertColorToJson( m_data.colorMaxEnd ) },
-      };
+      nlohmann::json j;
+      j[ "type" ] = SerialHelper::serializeEnum(getType());
+      EXPAND_SHADER_PARAMS_TO_JSON(DENSITY_HEATMAP_SHADER_PARAMS)
+      j[ "easing" ] = m_easing.serialize();
+      return j;
     }
 
     void deserialize(const nlohmann::json& j) override
     {
       if ( SerialHelper::isTypeGood( j, getType() ) )
       {
-        m_data.isActive = j.value("isActive", false);
-        m_data.falloff = j.value("falloff", 0.2f);
-        m_data.colorCoolStart = SerialHelper::convertColorFromJson( j.at( "colorCoolStart" ) );
-        m_data.colorCoolEnd = SerialHelper::convertColorFromJson( j.at( "colorCoolEnd" ) );
-        m_data.colorWarmStart = SerialHelper::convertColorFromJson( j.at( "colorWarmStart" ) );
-        m_data.colorWarmEnd = SerialHelper::convertColorFromJson( j.at( "colorWarmEnd" ) );
-        m_data.colorHotStart = SerialHelper::convertColorFromJson( j.at( "colorHotStart" ) );
-        m_data.colorHotEnd = SerialHelper::convertColorFromJson( j.at( "colorHotEnd" ) );
-        m_data.colorMaxStart = SerialHelper::convertColorFromJson( j.at( "colorMaxStart" ) );
-        m_data.colorMaxEnd = SerialHelper::convertColorFromJson( j.at( "colorMaxEnd" ) );
+        EXPAND_SHADER_PARAMS_FROM_JSON(DENSITY_HEATMAP_SHADER_PARAMS)
+        m_easing.deserialize( j[ "easing" ] );
       }
       else
       {
@@ -98,20 +88,11 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Density Heat Map" ) )
       {
-        ImGui::Checkbox( "Heat Map Active##1", &m_data.isActive );
-        ImGui::SliderFloat("Density Falloff", &m_data.falloff, 0.1f, 5.0f);
+        ImGui::Checkbox( "Is Active##1", &m_data.isActive );
+        EXPAND_SHADER_IMGUI(DENSITY_HEATMAP_SHADER_PARAMS, m_data)
 
-        ColorHelper::drawImGuiColorEdit3( "Cool Start", m_data.colorCoolStart );
-        ColorHelper::drawImGuiColorEdit3( "Cool End", m_data.colorCoolEnd );
-
-        ColorHelper::drawImGuiColorEdit3( "Warm Start", m_data.colorWarmStart );
-        ColorHelper::drawImGuiColorEdit3( "Warm End", m_data.colorWarmEnd );
-
-        ColorHelper::drawImGuiColorEdit3( "Hot Start", m_data.colorHotStart );
-        ColorHelper::drawImGuiColorEdit3( "Hot End", m_data.colorHotEnd );
-
-        ColorHelper::drawImGuiColorEdit3( "Max Start", m_data.colorMaxStart );
-        ColorHelper::drawImGuiColorEdit3( "Max End", m_data.colorMaxEnd );
+        ImGui::SeparatorText( "Easings" );
+        m_easing.drawMenu();
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -131,46 +112,47 @@ namespace nx
     [[nodiscard]]
     sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "failed to resize density heat map texture" );
         }
       }
 
-      // auto screenSize = sf::Vector2f { inputTexture.getSize() };
-
       m_shader.setUniform("u_densityTexture", inputTexture.getTexture());
       m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
-      m_shader.setUniform("u_falloff", m_data.falloff * m_easing.getEasing() );
+      m_shader.setUniform("u_falloff", m_data.falloff.first * m_easing.getEasing() );
 
       m_outputTexture.clear( sf::Color::Transparent );
 
-      m_shader.setUniform( "u_colorCoolStart", ColorHelper::convertFromVec4( m_data.colorCoolStart ) );
-      m_shader.setUniform( "u_colorCoolEnd", ColorHelper::convertFromVec4( m_data.colorCoolEnd ) );
+      m_shader.setUniform( "u_colorCoolStart", ColorHelper::convertFromVec4( m_data.colorCoolStart.first ) );
+      m_shader.setUniform( "u_colorCoolEnd", ColorHelper::convertFromVec4( m_data.colorCoolEnd.first ) );
 
-      m_shader.setUniform( "u_colorWarmStart", ColorHelper::convertFromVec4( m_data.colorWarmStart ) );
-      m_shader.setUniform( "u_colorWarmEnd", ColorHelper::convertFromVec4( m_data.colorWarmEnd ) );
+      m_shader.setUniform( "u_colorWarmStart", ColorHelper::convertFromVec4( m_data.colorWarmStart.first ) );
+      m_shader.setUniform( "u_colorWarmEnd", ColorHelper::convertFromVec4( m_data.colorWarmEnd.first ) );
 
-      m_shader.setUniform( "u_colorHotStart", ColorHelper::convertFromVec4( m_data.colorHotStart ) );
-      m_shader.setUniform( "u_colorHotEnd", ColorHelper::convertFromVec4( m_data.colorHotEnd ) );
+      m_shader.setUniform( "u_colorHotStart", ColorHelper::convertFromVec4( m_data.colorHotStart.first ) );
+      m_shader.setUniform( "u_colorHotEnd", ColorHelper::convertFromVec4( m_data.colorHotEnd.first ) );
 
-      m_shader.setUniform( "u_colorMaxStart", ColorHelper::convertFromVec4( m_data.colorMaxStart ) );
-      m_shader.setUniform( "u_colorMaxEnd", ColorHelper::convertFromVec4( m_data.colorMaxEnd ) );
+      m_shader.setUniform( "u_colorMaxStart", ColorHelper::convertFromVec4( m_data.colorMaxStart.first ) );
+      m_shader.setUniform( "u_colorMaxEnd", ColorHelper::convertFromVec4( m_data.colorMaxEnd.first ) );
 
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
       m_outputTexture.display();
 
-      return m_outputTexture;
+      return m_blender.applyShader( inputTexture,
+                              m_outputTexture,
+                              m_data.mixFactor.first );
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     DensityHeatMapData_t m_data;
 
     sf::Shader m_shader;
     sf::RenderTexture m_outputTexture;
+    BlenderShader m_blender;
 
     TimeEasing m_easing;
 

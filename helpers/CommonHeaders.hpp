@@ -12,6 +12,7 @@
 #include "models/data/ParticleLayoutData_t.hpp"
 #include "models/data/TimedParticle_t.hpp"
 #include "models/data/Midi_t.hpp"
+#include "models/data/PipelineContext.hpp"
 
 #include "models/InterfaceTypes.hpp"
 #include "models/IShader.hpp"

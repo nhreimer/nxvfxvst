@@ -1,6 +1,5 @@
 #pragma once
 
-#include "models/particle/ParticleConsumer.hpp"
 #include "models/particle/ParticleLayoutBase.hpp"
 
 namespace nx
@@ -27,8 +26,8 @@ namespace nx
   class GoldenSpiralLayout final : public ParticleLayoutBase< GoldenSpiralLayoutData_t >
   {
   public:
-    explicit GoldenSpiralLayout(const GlobalInfo_t &globalInfo)
-        : ParticleLayoutBase(globalInfo)
+    explicit GoldenSpiralLayout(PipelineContext& context)
+        : ParticleLayoutBase(context)
     {}
 
     [[nodiscard]]
@@ -44,7 +43,7 @@ namespace nx
       j[ "useRadiusFalloff" ] = m_data.useRadiusFalloff;
       j[ "radiusFalloff" ] = m_data.radiusFalloff;
       j[ "spiralInward" ] = m_data.spiralInward;
-      j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
+      j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
       return j;
     }
 
@@ -71,7 +70,7 @@ namespace nx
       }
 
       if (j.contains("behaviors"))
-        m_behaviorPipeline.loadModifierPipeline(j.at("behaviors"));
+        m_behaviorPipeline.loadPipeline(j.at("behaviors"));
     }
 
     [[nodiscard]]
@@ -135,7 +134,7 @@ namespace nx
       if ( m_data.useClamp )
       {
         radius = m_data.baseRadius * std::pow(m_data.scaleFactor, index);
-        const float maxR = m_globalInfo.windowSize.x * 0.45f;
+        const float maxR = m_ctx.globalInfo.windowSize.x * 0.45f;
 
         if ( radius > maxR )
         {
@@ -148,8 +147,8 @@ namespace nx
 
       return
       {
-        m_globalInfo.windowHalfSize.x + std::cos( angleRad ) * radius,
-        m_globalInfo.windowHalfSize.y + std::sin( angleRad ) * radius
+        m_ctx.globalInfo.windowHalfSize.x + std::cos( angleRad ) * radius,
+        m_ctx.globalInfo.windowHalfSize.y + std::sin( angleRad ) * radius
       };
     }
 

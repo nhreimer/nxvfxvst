@@ -2,7 +2,7 @@
 
 ## Description
 
-A highly configurable and modular Video Effects Engine VST3 Plugin for midi events. 
+A flexible and modular Video Effects Engine VST3 Plugin for midi events. 
 
 ## Goal
 
@@ -18,6 +18,7 @@ Synchronize midi events to highly customizable visuals.
   * Route midi output to independent VFX chains
   * Infinite shader and modifier chaining per channel
 * Each effect can be assigned user-specified midi notes for triggers
+* DAW Automation controls for effects 
 * JSON serialization for importing/exporting (via clipboard at the moment)
 * Real-time VFX Engine that synchronize to midi events
   * Effects
@@ -29,7 +30,7 @@ Synchronize midi events to highly customizable visuals.
 
 ---
 
-# Design
+# Architecture
 
 ```text
 +---------------------+
@@ -86,9 +87,63 @@ Synchronize midi events to highly customizable visuals.
 
 ```
 
+## VST Controller and VST Processor
+
+
+### VST3 Design Overview 
+
+The VST3 API is composed of two components: the controller and the processor. 
+Each one runs on a different thread and communication is handled through a message-passing 
+interface.
+
+The controller handles the user interface side (window creation, user controls, parameters)
+while the processor handles signal processing (operates on audio and midi data).
+
+Do __NOT__ create static variables unless you want all instantiations of the plugin to be identical.
+
+### Communication pattern between the two
+
+__TL;DR__:
+
+Consumer-Producer pattern used for communication between the two components.
+
+__DETAILS__:
+
+For the purposes of this plugin, communication flows only from the Processor to the Controller, 
+because we only need to inform the UI of a midi event or a BPM change.
+
+Thread switching does not occur on a message event, i.e., the processor thread runs inside the 
+controller side whenever the controller receives a message. 
+
+so we utilize a simple producer-consumer pattern 
+for immediately pushing events from the Processor thread into a concurrent queue in the controller, 
+and then we allow the Controller thread to consume events on every frame.
+
+### Limitations of VST3 that affect this plugin
+
+__TL;DR__:
+
+Parameters are limited to 128 slots. Parameter names in DAW show as "Param_N". Parameters 
+are limited to 0 - 1.
+
+__DETAILS__:
+
+VST3 requires all parameters, i.e, user controls, to be defined during instantiation. The plugin, 
+however, creates dynamic effects and each effect has a number of controls. There's no reliable way
+(that I can tell) to change the VST parameter type or parameter name after creation. As a result, 
+the plugin registers a block of parameters during plugin instantiation, which is why you'll see 
+"Param_0" to "Param_127" appear as parameters. Those parameters get assigned dynamically whenever 
+an effect is created but the name does not change.
+
+Additionally, all parameters are of the same Ranged Type, where the values are normalized between 
+0 and 1 because we cannot change the parameter type. 
+
+As a workaround, the user interface, shows the parameter ID that belongs to each control. Additionally, 
+whenever using automation, we can adjust the name and the denormalized value for clarity. 
+
 ## EventFacadeVST
 
-Created by the Win32View, which is an implementation of the VST View interface
+Created by the Win32View, which is an implementation of the VST View interface by the VST Controller
 
     Handles the event frame, i.e., everything required in a UI loop
     Forwards events from the VST Controller
@@ -181,6 +236,9 @@ Applies post-processing shaders to the result of the modifier stack.
 | Strobe           |             |
 | Transform        |             |
 
+In the code base, there's an additional shader called "BlenderShader" which is 
+added to almost all shaders to provide mixing between the original input and the output.
+
 ## Video Encoder
 
 There are two video encoders:
@@ -193,36 +251,30 @@ You can use ffmpeg on the command line to convert it, e.g.,
 
 Be sure to look at the JSON metadata file for the actual width and height.
 
-2. MP4 using the ffmpeg library. It will run through a few options to find an encoder in case of failure.  
+2. MP4 using the ffmpeg library. It will run through a few options to find an encoder in case of failure.
 
-## GlobalInfo
+* h264 nvenc (hardware encoder)
+* h264 (on windows this is most likely the multimedia foundation version)
+* mpeg4 (should be available on nearly all systems)
 
-A shared read-only context passed throughout all components that help:
+If it fails, be sure to check the logs. In a debug build, you can call FFMpegEncoder::printAllCodecs()
+to get a list of all the available video encoders on your system.
+
+## Pipeline Context
+
+A pipeline context is passed down through every single component:
 
 ```c++
-struct GlobalInfo_t 
-{
-  sf::Vector2u windowSize;
-  sf::View windowView;
-  sf::Vector2f windowHalfSize;
-  bool hideMenu = false;
-  double bpm = 0.0;                 // in standalone mode this is always zero
-  float elapsedTimeSeconds = 0.0f;  // runtime
-  std::uint64_t frameCount = 0;
-};
+    const GlobalInfo_t& globalInfo; // read-only info related to window, view, and time
+    VSTStateContext& vstContext; // writable info related to VST Parameters 
 ```
-
-Used for:
-
-    Time-based animation
-    Rhythm-driven effects (via BPM)
-    Window information
 
 ## Serialization
 
 MultichannelPipeline supports full JSON serialization:
 
     - Global State
+        - VST Parameter binding 
     - Channel Serialization
         - Layout
             - Behaviors
@@ -234,9 +286,15 @@ This enables saving and restoring complex visual setups per channel.
 
 ## Easing Functions
 
-Easing functions shape how visual effects change over time — they control intensity, scale, opacity, distortion, or any other effect parameter in a way that feels natural, expressive, or rhythmic. Instead of effects snapping on or fading linearly, easings let us inject emotion, timing, and energy into each animation.
+Easing functions shape how visual effects change over time — they control intensity, scale, 
+opacity, distortion, or any other effect parameter in a way that feels natural, expressive, 
+or rhythmic. Instead of effects snapping on or fading linearly, easings let us inject emotion, 
+timing, and energy into each animation.
 
 Each easing function takes a normalized time value t in the range [0.0, 1.0] and returns a value that modulates the strength or visibility of an effect at that point in time.
+
+At the moment, the easings are either built into the Shader code or assigned manually to certain shader controls. 
+In the future, it would be nice to have these specified by the user.
 
 ### Use Cases:
 
@@ -250,7 +308,7 @@ Available Easing Types
 Name	          Description
 -----------------------------------------------------------------------------------------------
 Disabled          Uses 1.f, i.e., no change
-Fixed             Uses a predetermined value that doesn't change
+Fixed             Uses a user-assigned value that doesn't change over time
 Time Continuous   Uses elapsed time without resetting
 Time Intervallic  Uses elapsed time with resetting
 Linear	          Constant rate of change. No curve — useful for mechanical or unstyled fades.
@@ -289,7 +347,6 @@ The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 ## Feature Roadmap
 
 * Save and load to/from files instead of copy/paste
-* Add parameters for VST3 for automation
 * Add OS support for Linux and Mac
 * Better UI design
   * Better layout
@@ -390,7 +447,7 @@ target_link_libraries( ${PROJECT_NAME}
 
 ## Contributing
 
-Contributions, ideas, and suggestions are welcome! 
+Contributions, ideas, bug reports, and suggestions are welcome!
 
 ## Media
 

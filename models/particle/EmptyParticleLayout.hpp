@@ -1,47 +1,57 @@
 #pragma once
 
-#include "models/particle/ParticleConsumer.hpp"
+#include "models/particle/ParticleLayoutBase.hpp"
 
 namespace nx
 {
 
   /// this is useful for adding time-based effects to a screen without
   /// having particles on the screen.
-  class EmptyParticleLayout final : public ParticleConsumer< ParticleLayoutData_t >
+  class EmptyParticleLayout final : public IParticleLayout
   {
   public:
-    explicit EmptyParticleLayout( const GlobalInfo_t& globalInfo )
-      : ParticleConsumer( globalInfo )
+
+    explicit EmptyParticleLayout( PipelineContext& )
     {}
 
-    ~EmptyParticleLayout() override = default;
+    [[nodiscard]] nlohmann::json serialize() const override
+    {
+      return
+      {
+        { "type", SerialHelper::serializeEnum( getType() ) }
+      };
+    }
 
-    E_LayoutType getType() const override { return E_LayoutType::E_EmptyLayout; }
+    void deserialize(const nlohmann::json &j) override
+    {}
 
+    [[nodiscard]] E_LayoutType getType() const override { return E_LayoutType::E_EmptyLayout; }
+    void addMidiEvent(const Midi_t &midiEvent) override {}
+    void update(const sf::Time &deltaTime) override {}
     void drawMenu() override
     {
-      ImGui::Text( "Particles: %d", m_particles.size() );
-      ImGui::Separator();
-      if ( ImGui::TreeNode( "Particle Layout" ) )
+      if ( ImGui::TreeNode( "Empty Layout" ) )
       {
+        ImGui::Text( "No Options Available" );
         ImGui::TreePop();
         ImGui::Spacing();
       }
     }
-
-    void addMidiEvent( const Midi_t &midiEvent ) override {}
-    void update( const sf::Time &deltaTime ) override {}
-
-  protected:
-
-    sf::Vector2f getNextPosition( const Midi_t & midiNote ) override
+    [[nodiscard]] const ParticleLayoutData_t &getParticleOptions() const override
     {
-      return { 0.f, 0.f };
+      return m_data;
+    }
+
+    [[nodiscard]]
+    std::deque< TimedParticle_t * > &getParticles() override
+    {
+      return m_particles;
     }
 
   private:
 
-
+    ParticleLayoutData_t m_data;
+    std::deque< TimedParticle_t * > m_particles;
   };
 
 }

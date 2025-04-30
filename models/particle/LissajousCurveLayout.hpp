@@ -21,12 +21,12 @@ namespace nx
   /// b = velocity-based frequency
   /// t = time or phase (based on global time)
   /// δ = offset to prevent overlap or to animate drift
-  class LissajousCurveLayout final : public ParticleConsumer< LissajousCurveLayoutData_t >
+  class LissajousCurveLayout final : public ParticleLayoutBase< LissajousCurveLayoutData_t >
   {
   public:
 
-    explicit LissajousCurveLayout( const GlobalInfo_t& globalInfo )
-      : ParticleConsumer( globalInfo )
+    explicit LissajousCurveLayout( PipelineContext& context )
+      : ParticleLayoutBase( context )
     {}
 
     [[nodiscard]]
@@ -59,7 +59,7 @@ namespace nx
       }
 
       if (j.contains("behaviors"))
-        m_behaviorPipeline.loadModifierPipeline(j.at("behaviors"));
+        m_behaviorPipeline.loadPipeline(j.at("behaviors"));
     }
 
     [[nodiscard]]
@@ -87,31 +87,32 @@ namespace nx
 
     void addMidiEvent( const Midi_t &midiEvent ) override
     {
-      ParticleConsumer::addMidiEvent( midiEvent );
+      //ParticleConsumer::addMidiEvent( midiEvent );
 
       const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
       const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
 
-      const float localT = m_globalInfo.elapsedTimeSeconds;
+      const float localT = m_ctx.globalInfo.elapsedTimeSeconds;
 
-      const float x = ( static_cast< float >( m_globalInfo.windowSize.x ) * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
-      const float y = ( static_cast< float >( m_globalInfo.windowSize.y ) * m_data.phaseSpread ) * sin(b * localT);
+      const float x = ( static_cast< float >( m_ctx.globalInfo.windowSize.x ) * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
+      const float y = ( static_cast< float >( m_ctx.globalInfo.windowSize.y ) * m_data.phaseSpread ) * sin(b * localT);
 
       auto * p = m_particles.emplace_back( new TimedParticle_t() );
       p->shape.setPosition( { x, y } );
+      ParticleLayoutBase::initializeParticle( p, midiEvent );
     }
 
   protected:
-    sf::Vector2f getNextPosition( const Midi_t & midiEvent ) override
+    sf::Vector2f getNextPosition( const Midi_t & midiEvent ) const
     {
       const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
       const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
 
       // this is also the phase
-      const float t = m_globalInfo.elapsedTimeSeconds;
+      const float t = m_ctx.globalInfo.elapsedTimeSeconds;
 
-      const float x = ( m_globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * t + m_data.phaseDelta);
-      const float y = ( m_globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * t);
+      const float x = ( m_ctx.globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * t + m_data.phaseDelta);
+      const float y = ( m_ctx.globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * t);
 
       return { x, y };
     }

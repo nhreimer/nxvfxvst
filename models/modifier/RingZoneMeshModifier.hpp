@@ -23,7 +23,9 @@ namespace nx
     };
 
   public:
-    explicit RingZoneMeshModifier(const GlobalInfo_t &info) : m_globalInfo(info) {}
+    explicit RingZoneMeshModifier(PipelineContext& context)
+      : m_ctx(context)
+    {}
 
     E_ModifierType getType() const override { return E_ModifierType::E_RingZoneMeshModifier; }
 
@@ -127,7 +129,7 @@ namespace nx
 
       if (m_data.enablePulse)
       {
-        float time = m_globalInfo.elapsedTimeSeconds;
+        float time = m_ctx.globalInfo.elapsedTimeSeconds;
         float t = std::sin(time * m_data.pulseSpeed * NX_TAU); // [-1, 1]
         float normalized = 0.5f * (t + 1.f); // [0, 1]
         alpha = m_data.minAlpha + (m_data.maxAlpha - m_data.minAlpha) * normalized;
@@ -141,7 +143,7 @@ namespace nx
 
       //auto *lines = new sf::VertexArray(sf::PrimitiveType::Lines);
       //auto * lines = static_cast< GradientLine * >(outArtifacts.emplace_back(new GradientLine()));
-      const sf::Vector2f &center = m_globalInfo.windowHalfSize;
+      const sf::Vector2f &center = m_ctx.globalInfo.windowHalfSize;
 
       // Step 1: Group particles into rings
       std::map< int, std::vector< TimedParticle_t * > > rings;
@@ -252,7 +254,7 @@ namespace nx
     }
 
   private:
-    const GlobalInfo_t &m_globalInfo;
+    PipelineContext& m_ctx;
     RingZoneMeshData_t m_data;
 
   };

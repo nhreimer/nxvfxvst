@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstream>
+
 namespace nx
 {
   // struct EventRecord_t

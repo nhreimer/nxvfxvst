@@ -1,4 +1,6 @@
 #pragma once
+
+#include "../data/PipelineContext.hpp"
 #include "models/InterfaceTypes.hpp"
 
 namespace nx
@@ -24,8 +26,8 @@ namespace nx
     };
 
   public:
-    explicit MirrorModifier( const GlobalInfo_t& info )
-      : m_globalInfo( info )
+    explicit MirrorModifier( PipelineContext& context )
+      : m_ctx( context )
     {}
 
     E_ModifierType getType() const override { return E_ModifierType::E_MirrorModifier; }
@@ -108,7 +110,8 @@ namespace nx
       for (const auto* p : particles)
       {
         const sf::Vector2f origin = p->shape.getPosition();
-        const float baseAngle = std::atan2(origin.y - m_globalInfo.windowHalfSize.y, origin.x - m_globalInfo.windowHalfSize.x);
+        const float baseAngle =
+          std::atan2(origin.y - m_ctx.globalInfo.windowHalfSize.y, origin.x - m_ctx.globalInfo.windowHalfSize.x);
         const float angleOffsetRad = m_data.angleOffsetDegrees * NX_D2R;
 
         const float radius = ( m_data.useDynamicRadius )
@@ -149,9 +152,7 @@ namespace nx
     }
 
   private:
-
-  private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     MirrorData_t m_data;
 

@@ -8,10 +8,10 @@ namespace nx
   class StrobeShader final : public IShader
   {
 
-#define STROBE_SHADER_PARAMS(X)                                                                \
-X(flashAmount,  float, 20.f, 1.f, 100.f, "Speed of strobe pulses (Hz)")                        \
-X(flashColor,   sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during strobe")    \
-X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+#define STROBE_SHADER_PARAMS(X)                                                                      \
+X(flashAmount,  float, 20.f, 1.f, 100.f, "Speed of strobe pulses (Hz)", true)                        \
+X(flashColor,   sf::Color, sf::Color::White, 0.f, 0.f, "Flash color applied during strobe", true)    \
+X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct StrobeData_t
     {
@@ -31,8 +31,8 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
     };
 
   public:
-    explicit StrobeShader( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit StrobeShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -42,9 +42,14 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
       {
         LOG_INFO( "Strobe shader loaded successfully" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(STROBE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
-    ~StrobeShader() override = default;
+    ~StrobeShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
 
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
@@ -83,8 +88,7 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
       if ( ImGui::TreeNode( "Strobe Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        STROBE_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(STROBE_SHADER_PARAMS, m_data)
 
         ImGui::Separator();
         m_easing.drawMenu();
@@ -111,9 +115,9 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
     [[nodiscard]]
     sf::RenderTexture &applyShader( const sf::RenderTexture &inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "failed to resize strobe texture" );
         }
@@ -124,8 +128,8 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
       }
 
       m_shader.setUniform( "texture", inputTexture.getTexture() );
-      m_shader.setUniform("flashAmount", m_data.flashAmount * m_easing.getEasing()); // or assigned easing
-      m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor));
+      m_shader.setUniform("flashAmount", m_data.flashAmount.first * m_easing.getEasing()); // or assigned easing
+      m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor.first));
 
       m_outputTexture.clear( sf::Color::Transparent );
       m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
@@ -133,11 +137,11 @@ X(mixFactor,    float, 1.0f,    0.f,   1.f, "Mix between original and effects re
 
       return m_blender.applyShader( inputTexture,
                               m_outputTexture,
-                              m_data.mixFactor );
+                              m_data.mixFactor.first );
     }
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     StrobeData_t m_data;
 
     sf::Shader m_shader;

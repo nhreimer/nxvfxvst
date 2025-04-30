@@ -1,4 +1,6 @@
 #pragma once
+
+#include "models/data/PipelineContext.hpp"
 #include "models/IShader.hpp"
 
 namespace nx
@@ -7,16 +9,16 @@ namespace nx
   class ShockBloomShader final : public IShader
   {
 
-#define SHOCK_BLOOM_SHADER_PARAMS(X)                                                                  \
-X(center,            sf::Vector2f, sf::Vector2f(0.5f, 0.5f), 0.f, 0.f, "Center of the ring (UV)")     \
-X(color,             sf::Glsl::Vec3, sf::Glsl::Vec3(1.f, 1.f, 1.f), 0.f, 0.f, "Shock ring RGB color") \
-X(maxRadius,         float, 0.6f,   0.1f, 1.5f,  "Maximum radius of the ring")                        \
-X(thickness,         float, 0.05f,  0.01f, 0.2f, "Ring thickness (falloff)")                          \
-X(intensity,         float, 2.0f,   0.0f, 5.0f,  "Glow strength of the ring")                         \
-X(easingMultiplier,  float, 1.0f,   0.0f, 5.0f,  "How strongly the easing drives visibility")         \
-X(innerTransparency, float, 1.0f, 0.f, 1.f, "Transparency multiplier for the center of the ring")     \
-X(mixFactor,         float, 1.0f, 0.f, 1.f, "Mix between original and effects result")                \
-X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
+#define SHOCK_BLOOM_SHADER_PARAMS(X)                                                                         \
+X(center,            sf::Vector2f, sf::Vector2f(0.5f, 0.5f), 0.f, 0.f, "Center of the ring (UV)", false)     \
+X(color,             sf::Glsl::Vec3, sf::Glsl::Vec3(1.f, 1.f, 1.f), 0.f, 0.f, "Shock ring RGB color", false) \
+X(maxRadius,         float, 0.6f,   0.1f, 1.5f,  "Maximum radius of the ring", true)                        \
+X(thickness,         float, 0.05f,  0.01f, 0.2f, "Ring thickness (falloff)", true)                          \
+X(intensity,         float, 2.0f,   0.0f, 5.0f,  "Glow strength of the ring", true)                         \
+X(easingMultiplier,  float, 1.0f,   0.0f, 5.0f,  "How strongly the easing drives visibility", true)         \
+X(innerTransparency, float, 1.0f, 0.f, 1.f, "Transparency multiplier for the center of the ring", true)     \
+X(mixFactor,         float, 1.0f, 0.f, 1.f, "Mix between original and effects result", true)                \
+X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
 
     struct ShockBloomData_t
     {
@@ -37,8 +39,8 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
 
   public:
 
-    explicit ShockBloomShader(const GlobalInfo_t& globalInfo)
-      : m_globalInfo( globalInfo )
+    explicit ShockBloomShader(PipelineContext& context)
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
@@ -48,6 +50,13 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       {
         LOG_INFO( "Shock bloom shader loaded successfully" );
       }
+
+      EXPAND_SHADER_VST_BINDINGS(SHOCK_BLOOM_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
+
+    ~ShockBloomShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
     }
 
     [[nodiscard]]
@@ -95,16 +104,15 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       {
         ImGui::Checkbox( "Strobe Active##1", &m_data.isActive );
 
-        const float oldCenterX = m_data.center.x;
-        const float oldCenterY = m_data.center.y;
+        const float oldCenterX = m_data.center.first.x;
+        const float oldCenterY = m_data.center.first.y;
 
-        auto& STRUCT_REF = m_data;
-        SHOCK_BLOOM_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(SHOCK_BLOOM_SHADER_PARAMS, m_data)
 
-        if ( oldCenterX != m_data.center.x || oldCenterY != m_data.center.y )
+        if ( oldCenterX != m_data.center.first.x || oldCenterY != m_data.center.first.y )
         {
-          const sf::Vector2f calibrated { m_data.center.x * static_cast< float >(m_globalInfo.windowSize.x),
-                                          m_data.center.y * static_cast< float >(m_globalInfo.windowSize.y) };
+          const sf::Vector2f calibrated { m_data.center.first.x * static_cast< float >(m_ctx.globalInfo.windowSize.x),
+                                          m_data.center.first.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
           m_timedCursor.setPosition( calibrated );
         }
 
@@ -125,9 +133,9 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
     [[nodiscard]]
     sf::RenderTexture& applyShader( const sf::RenderTexture& inputTexture ) override
     {
-      if ( m_outputTexture.getSize() != m_globalInfo.windowSize )
+      if ( m_outputTexture.getSize() != inputTexture.getSize() )
       {
-        if ( !m_outputTexture.resize( m_globalInfo.windowSize ) )
+        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
         {
           LOG_ERROR( "failed to resize shock bloom texture" );
         }
@@ -138,17 +146,17 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       }
 
       const float easing = m_easing.getEasing();
-      const float radius = m_data.maxRadius * easing;
-      const float alpha = easing * m_data.easingMultiplier;
+      const float radius = m_data.maxRadius.first * easing;
+      const float alpha = easing * m_data.easingMultiplier.first;
 
       // Update uniforms
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
-      m_shader.setUniform("center", m_data.center);
+      m_shader.setUniform("center", m_data.center.first);
       m_shader.setUniform("radius", radius);
-      m_shader.setUniform("thickness", m_data.thickness);
-      m_shader.setUniform("color", m_data.color);
-      m_shader.setUniform("intensity", m_data.intensity * alpha);
-      m_shader.setUniform("innerTransparency", m_data.innerTransparency);
+      m_shader.setUniform("thickness", m_data.thickness.first);
+      m_shader.setUniform("color", m_data.color.first);
+      m_shader.setUniform("intensity", m_data.intensity.first * alpha);
+      m_shader.setUniform("innerTransparency", m_data.innerTransparency.first);
 
       // Fullscreen quad
       sf::RectangleShape fullscreen(sf::Vector2f(inputTexture.getSize()));
@@ -158,12 +166,12 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr )
       m_outputTexture.draw(fullscreen, &m_shader);
       m_outputTexture.display();
 
-      return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor );
+      return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor.first );
     }
 
   private:
 
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
     ShockBloomData_t m_data;
 
     sf::Shader m_shader;

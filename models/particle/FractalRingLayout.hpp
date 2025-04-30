@@ -19,9 +19,9 @@ class FractalRingLayout final : public IParticleLayout
 {
 public:
 
-  explicit FractalRingLayout( const GlobalInfo_t& globalInfo )
-    : m_globalInfo( globalInfo ),
-      m_behaviorPipeline( globalInfo )
+  explicit FractalRingLayout( PipelineContext& context )
+    : m_ctx( context ),
+      m_behaviorPipeline( context )
   {}
 
   [[nodiscard]]
@@ -34,7 +34,7 @@ public:
     j[ "radiusAdjustment" ] = m_data.radiusAdjustment;
     j[ "delayFractalFadesMultiplier" ] = m_data.delayFractalFadesMultiplier;
     j[ "enableFractalFades" ] = m_data.enableFractalFades;
-    j[ "behaviors" ] = m_behaviorPipeline.saveModifierPipeline();
+    j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     return j;
   }
 
@@ -56,7 +56,7 @@ public:
     }
 
     if ( j.contains( "behaviors" ) )
-      m_behaviorPipeline.loadModifierPipeline( j["behaviors"] );
+      m_behaviorPipeline.loadPipeline( j["behaviors"] );
   }
 
   [[nodiscard]]
@@ -70,8 +70,8 @@ public:
     {
       // m_globalInfo.windowHalfSize.x + std::cos( angle ) * m_data.radius,
       // m_globalInfo.windowHalfSize.y + std::sin( angle ) * m_data.radius
-      m_globalInfo.windowHalfSize.x,
-      m_globalInfo.windowHalfSize.y
+      m_ctx.globalInfo.windowHalfSize.x,
+      m_ctx.globalInfo.windowHalfSize.y
     };
 
     auto * p = createParticle( midiEvent, pos, m_data.radius );
@@ -178,7 +178,7 @@ private:
                                    const float adjustedRadius )
   {
     auto * p = m_particles.emplace_back( new TimedParticle_t() );
-    p->spawnTime = m_globalInfo.elapsedTimeSeconds;
+    p->spawnTime = m_ctx.globalInfo.elapsedTimeSeconds;
 
     p->initialColor = ColorHelper::getColorPercentage(
         m_data.startColor,
@@ -197,7 +197,7 @@ private:
   }
 
 private:
-  const GlobalInfo_t& m_globalInfo;
+  PipelineContext& m_ctx;
   std::deque< TimedParticle_t * > m_particles;
   FractalRingLayoutData_t m_data;
 

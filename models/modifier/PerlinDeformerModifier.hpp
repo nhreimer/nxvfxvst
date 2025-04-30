@@ -23,8 +23,8 @@ namespace nx
 
   public:
 
-    explicit PerlinDeformerModifier( const GlobalInfo_t& globalInfo )
-      : m_globalInfo( globalInfo )
+    explicit PerlinDeformerModifier( PipelineContext& context )
+      : m_ctx( context )
     {}
 
     ~PerlinDeformerModifier() override = default;
@@ -200,7 +200,7 @@ namespace nx
 
 
   private:
-    const GlobalInfo_t& m_globalInfo;
+    PipelineContext& m_ctx;
 
     PerlinDeformerData_t m_data;
 

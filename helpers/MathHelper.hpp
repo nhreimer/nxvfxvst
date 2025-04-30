@@ -77,23 +77,23 @@ constexpr float NX_D2R  = 0.017453293f;
      * @param yDistance distance from center (1 = default)
      * @return x and y in degrees
      */
-    static sf::Vector2f getAnglePosition( uint32_t partitions,
-                                          uint32_t partitionIndex,
-                                          float xDistance = 1.f,
-                                          float yDistance = 1.f )
+    static sf::Vector2f getAnglePosition( const uint32_t partitions,
+                                          const uint32_t partitionIndex,
+                                          const float xDistance = 1.f,
+                                          const float yDistance = 1.f )
     {
       const float anglePartitions = NX_TAU / static_cast< float >( partitions );
       const float angle = static_cast< float >( anglePartitions ) * static_cast< float >( partitionIndex );
       return sf::Vector2f { std::cos( angle ) * NX_R2D * xDistance, std::sin( angle ) * NX_R2D * yDistance };
     }
 
-    static sf::Vector2f getPositionFromNote( int32_t noteNumber,
-                                             int32_t octave,
-                                             float octaveAmplifier )
+    static sf::Vector2f getPositionFromNote( const int32_t noteNumber,
+                                             const int32_t octave,
+                                             const float octaveAmplifier )
     {
-      float angle = ( float )noteNumber / 12.f;
-      return sf::Vector2f { std::cos( angle ) * ( float )octave * octaveAmplifier,
-                            std::sin( angle ) * ( float )octave * octaveAmplifier };
+      const float angle = static_cast< float >(noteNumber) / 12.f;
+      return sf::Vector2f { std::cos( angle ) * static_cast< float >(octave) * octaveAmplifier,
+                            std::sin( angle ) * static_cast< float >(octave) * octaveAmplifier };
     }
 
     /***

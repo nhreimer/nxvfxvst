@@ -15,16 +15,16 @@ namespace nx
 // easings:    glitchBaseStrength, glitchAmount, and pixelJumpAmount
 
 #define GLITCH_SHADER_PARAMS(X)                                                               \
-X(applyOnlyOnEvents, bool,  false, 0, 0,  "Pause rendering between glitches until retrigger") \
-X(glitchBaseStrength, float, 0.1f, 0.f, 5.f, "Base glitch strength when idle")                \
-X(glitchStrength, float,     1.f,   0.f, 5.f, "[CALC] Final glitch strength from pulse")      \
-X(glitchAmount, float,       0.1f,  0.f, 1.f, "Glitch frequency (0 = off, 1 = constant)")     \
-X(chromaFlickerAmount, float, 0.4f, 0.f, 1.f, "Chance of heavy RGB flicker per frame")        \
-X(pixelJumpAmount, float,    0.1f,  0.f, 1.f, "Chance of randomized blocky pixel jumps")      \
-X(glitchPulseDecay, float,  -0.5f, -10.f, 0.0f, "Rate at which glitch bursts decay")          \
-X(glitchPulseBoost, float,   1.f,   0.f, 5.f, "How much glitch intensity is added per burst") \
-X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (low = big)")  \
-X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result")
+X(applyOnlyOnEvents, bool,  false, 0, 0,  "Pause rendering between glitches until retrigger", true) \
+X(glitchBaseStrength, float, 0.1f, 0.f, 5.f, "Base glitch strength when idle", true)                \
+X(glitchStrength, float,     1.f,   0.f, 5.f, "[CALC] Final glitch strength from pulse", true)      \
+X(glitchAmount, float,       0.1f,  0.f, 1.f, "Glitch frequency (0 = off, 1 = constant)", true)     \
+X(chromaFlickerAmount, float, 0.4f, 0.f, 1.f, "Chance of heavy RGB flicker per frame", true)        \
+X(pixelJumpAmount, float,    0.1f,  0.f, 1.f, "Chance of randomized blocky pixel jumps", true)      \
+X(glitchPulseDecay, float,  -0.5f, -10.f, 0.0f, "Rate at which glitch bursts decay", true)          \
+X(glitchPulseBoost, float,   1.f,   0.f, 5.f, "How much glitch intensity is added per burst", true) \
+X(bandCount, float,         20.f,   2.f, 60.f, "Blockiness of glitch scanlines (low = big)", true)  \
+X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true)
 
     struct LayeredGlitchData_t
     {
@@ -44,16 +44,25 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     };
 
   public:
-    explicit LayeredGlitchShader( const GlobalInfo_t& winfo )
-      : m_winfo( winfo )
+    explicit LayeredGlitchShader( PipelineContext& context )
+      : m_ctx( context )
     {
       if ( !m_shader.loadFromMemory( m_fragmentShader, sf::Shader::Type::Fragment ) )
       {
         LOG_ERROR( "Failed to load glitch fragment shader" );
       }
+      else
+      {
+        LOG_INFO( "Loaded glitch fragment shader" );
+      }
+
+      EXPAND_SHADER_VST_BINDINGS(GLITCH_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
-    ~LayeredGlitchShader() override = default;
+    ~LayeredGlitchShader() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
 
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
@@ -96,8 +105,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       if ( ImGui::TreeNode( "Glitch Options" ) )
       {
         ImGui::Checkbox( "Is Active##1", &m_data.isActive );
-        auto& STRUCT_REF = m_data;
-        GLITCH_SHADER_PARAMS(X_SHADER_IMGUI);
+        EXPAND_SHADER_IMGUI(GLITCH_SHADER_PARAMS, m_data)
 
         ImGui::Separator();
         m_burstManager.drawMenu();
@@ -129,28 +137,28 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     }
 
     [[nodiscard]]
-    bool isShaderActive() const override { return m_data.isActive && m_data.glitchStrength > 0.f; }
+    bool isShaderActive() const override { return m_data.isActive; }
 
     [[nodiscard]]
     sf::RenderTexture& applyShader( const sf::RenderTexture &inputTexture ) override
     {
-      if (m_outputTexture.getSize() != m_winfo.windowSize)
+      if (m_outputTexture.getSize() != inputTexture.getSize())
       {
-        if (!m_outputTexture.resize(m_winfo.windowSize))
+        if (!m_outputTexture.resize(inputTexture.getSize()))
         {
           LOG_ERROR("failed to resize glitch texture");
         }
       }
 
       const float cumulative = m_burstManager.getEasing();
-      const float boostedStrength = m_data.glitchBaseStrength + cumulative * m_data.glitchPulseBoost;
+      const float boostedStrength = m_data.glitchBaseStrength.first + cumulative * m_data.glitchPulseBoost.first;
 
       m_shader.setUniform("glitchStrength", boostedStrength);
       //m_shader.setUniform("easingValue", cumulative); // optional, for shader-side sync
 
       // determine whether to apply cumulative triggers only, which provides a staccato feel, especially
       // on fast beats, but it can be weird on slower events
-      if ( !m_data.applyOnlyOnEvents )
+      if ( !m_data.applyOnlyOnEvents.first )
         m_shader.setUniform("easedTime", m_clock.getElapsedTime().asSeconds() );
       else
         m_shader.setUniform("easedTime", m_burstManager.getLastTriggeredInSeconds() );
@@ -160,11 +168,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
       m_shader.setUniform("texture", inputTexture.getTexture());
       m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
 
-      m_shader.setUniform("glitchAmount", m_data.glitchAmount);
+      m_shader.setUniform("glitchAmount", m_data.glitchAmount.first);
       // m_shader.setUniform("scanlineIntensity", m_data.scanlineIntensity);
-      m_shader.setUniform("chromaFlickerAmount", m_data.chromaFlickerAmount);
-      m_shader.setUniform("pixelJumpAmount", m_data.pixelJumpAmount);
-      m_shader.setUniform("bandCount", m_data.bandCount);
+      m_shader.setUniform("chromaFlickerAmount", m_data.chromaFlickerAmount.first);
+      m_shader.setUniform("pixelJumpAmount", m_data.pixelJumpAmount.first);
+      m_shader.setUniform("bandCount", m_data.bandCount.first);
 
       m_outputTexture.clear();
       m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
@@ -172,11 +180,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
       return m_blender.applyShader( inputTexture,
                               m_outputTexture,
-                              m_data.mixFactor );
+                              m_data.mixFactor.first );
     }
 
   private:
-    const GlobalInfo_t& m_winfo;
+    PipelineContext& m_ctx;
 
     LayeredGlitchData_t m_data;
 
