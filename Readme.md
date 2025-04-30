@@ -344,15 +344,6 @@ Additionally, there is a Cumulative Easing, that can combine multiple easings, b
 
 The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 
-## Feature Roadmap
-
-* Save and load to/from files instead of copy/paste
-* Add OS support for Linux and Mac
-* Better UI design
-  * Better layout
-  * More information/intuitive control naming
-  * Controls work directly with BPM
-
 # Getting Started
 
 Regardless of which version you build, you will need to specify where the 
@@ -445,13 +436,26 @@ target_link_libraries( ${PROJECT_NAME}
 )
 ```
 
-## Contributing
+# Contributing
 
 Contributions, ideas, bug reports, and suggestions are welcome!
 
-## Media
+## Feature Roadmap
 
-### Reaper v7.28. nxvfxvst v1.0.1.0a. 1 channel, 2 effects
+* Save custom load to/from files instead of copy/paste
+* Add default presets
+* Add OS support for Linux and Mac
+* Better UI design
+  * Better layout
+  * More information/intuitive control naming
+  * Controls work directly with BPM
+* Rehydrate dynamically assigned parameters
+* Save audio with video for full A/V synchronization
+* Multithreaded rendering by channel
+
+# Media
+
+### Reaper v7.28. nxvfxvst v1.0.1.0 pre-alpha. 1 channel, 2 effects
 ![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWd1ZXEwMHl0NDJlczVmYnQ3YzAzY2w3bGU3dDE1M3QwZjloY3JiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJvrv2p5RFCdWlpItl/giphy.gif)
 
 ---

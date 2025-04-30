@@ -69,16 +69,16 @@ namespace nx
         const auto point = u * u * m_start + 2.f * u * t * control + t * t * m_end;
 
         // Tangent for direction
-        sf::Vector2f tangent =
+        const sf::Vector2f tangent =
             2.f * (1.f - t) * (control - m_start) +
             2.f * t * (m_end - control);
 
-        sf::Vector2f normal(-tangent.y, tangent.x);
-        float nLen = std::sqrt(normal.x * normal.x + normal.y * normal.y);
+        sf::Vector2f normal2(-tangent.y, tangent.x);
+        float nLen = std::sqrt(normal2.x * normal2.x + normal2.y * normal2.y);
         if (nLen != 0.f)
-          normal /= nLen;
+          normal2 /= nLen;
 
-        const auto offset = normal * (m_width * 0.5f);
+        const auto offset = normal2 * (m_width * 0.5f);
 
         // Interpolated color
         const auto color = sf::Color(

@@ -11,8 +11,8 @@ namespace nx
   MultichannelPipeline::MultichannelPipeline( PipelineContext& context )
     : m_ctx( context )
   {
-    for ( int i = 0; i < m_channels.size(); ++i )
-      m_channels[ i ] = std::make_unique< ChannelPipeline >( context );
+    for ( int32_t i = 0; i < m_channels.size(); ++i )
+      m_channels[ i ] = std::make_unique< ChannelPipeline >( context, i );
   }
 
   [[nodiscard]]
@@ -44,9 +44,28 @@ namespace nx
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
   {
+    // get data from each channel and store it in a Priority Queue, so we
+    // know the drawing order
     for ( const auto& channel: m_channels )
-      channel->draw( window );
+    {
+      m_drawingPrioritizer.push(
+        ChannelDrawingData_t
+        {
+          .priority = channel->getDrawPriority(),
+          .texture = channel->draw(),
+          .blendMode = channel->getChannelBlendMode()
+        });
+    }
 
+    // draw each item in order
+    while ( !m_drawingPrioritizer.empty() )
+    {
+      auto& top = m_drawingPrioritizer.top();
+      window.draw( sf::Sprite( top.texture.getTexture() ), top.blendMode );
+      m_drawingPrioritizer.pop();
+    }
+
+    // now that we have a final image, send it to the video encoder
     if ( m_encoder )
     {
       if ( m_encoder->isRecording() ) m_encoder->writeFrame( window );

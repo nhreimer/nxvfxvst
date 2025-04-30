@@ -1,5 +1,7 @@
 #include "models/ChannelPipeline.hpp"
 
+#include "helpers/Definitions.hpp"
+
 namespace nx
 {
 
@@ -65,14 +67,23 @@ namespace nx
     m_shaderPipeline.update( deltaTime );
   }
 
-  void ChannelPipeline::draw( sf::RenderWindow& window )
+  // void ChannelPipeline::draw( sf::RenderWindow& window )
+  // {
+  //   const auto& modifierTexture = m_modifierPipeline.applyModifiers(
+  //     m_particleLayout.getParticleOptions(),
+  //     m_particleLayout.getParticles() );
+  //
+  //   const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
+  //   window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
+  // }
+
+  const sf::RenderTexture& ChannelPipeline::draw()
   {
     const auto& modifierTexture = m_modifierPipeline.applyModifiers(
       m_particleLayout.getParticleOptions(),
       m_particleLayout.getParticles() );
 
-    const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
-    window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
+    return m_shaderPipeline.draw( modifierTexture );
   }
 
   void ChannelPipeline::drawMenu()
@@ -92,10 +103,25 @@ namespace nx
 
   void ChannelPipeline::drawChannelPipelineMenu()
   {
-    if ( ImGui::TreeNode( "Global Options" ) )
+    if ( ImGui::TreeNode( "Channel Options" ) )
     {
       ImGui::SeparatorText( "Channel Blend" );
       MenuHelper::drawBlendOptions( m_blendMode );
+
+      if ( ImGui::BeginCombo( "Channel Draw Priority",
+                              m_drawPriorityNames[ m_drawPriority ].c_str() ) )
+      {
+        for ( int32_t i = 0; i < MAX_CHANNELS; ++i )
+        {
+          if ( ImGui::Selectable( m_drawPriorityNames[ i ].c_str(),
+                                  i == m_drawPriority ) )
+          {
+            m_drawPriority = i;
+            ImGui::SetItemDefaultFocus();
+          }
+        }
+        ImGui::EndCombo();
+      }
 
       ImGui::TreePop();
       ImGui::Spacing();

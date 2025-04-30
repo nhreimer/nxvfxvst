@@ -1,6 +1,10 @@
 #pragma once
 
+#include <queue>
+
+
 #include "data/PipelineContext.hpp"
+#include "helpers/Definitions.hpp"
 #include "models/ChannelPipeline.hpp"
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
@@ -16,8 +20,24 @@ namespace nx
   class MultichannelPipeline
   {
 
-    // TODO: This is hardcoded for now, but it should be adjustable by the user
-    static constexpr int MAX_CHANNELS = 4;
+    struct ChannelDrawingData_t
+    {
+      int32_t priority { 0 };
+      const sf::RenderTexture& texture;
+      const sf::BlendMode& blendMode;
+
+      // Overload the '<' operator
+      bool operator<(const ChannelDrawingData_t& other) const
+      {
+        // For min-heap (lower value = higher priority)
+        return priority > other.priority;
+      }
+
+      bool operator=(const ChannelDrawingData_t & other) const
+      {
+        return &texture == &other.texture;
+      }
+    };
 
   public:
     explicit MultichannelPipeline( PipelineContext& context );
@@ -50,6 +70,8 @@ namespace nx
     std::unique_ptr< IEncoder > m_encoder;
 
     int32_t m_selectedCodec = 0;
+
+    std::priority_queue< ChannelDrawingData_t > m_drawingPrioritizer;
 
   };
 
