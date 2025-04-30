@@ -17,7 +17,7 @@ namespace nx
 
     auto * fmt = m_formatCtx->oformat;
 
-    const auto * codec = getCodec();
+    const auto * codec = getCodec( data.codecName );
     if ( codec == nullptr )
     {
       LOG_ERROR( "failed to find an appropriate mp4 codec" );
