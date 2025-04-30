@@ -8,6 +8,8 @@
 
 #include "models/InterfaceTypes.hpp"
 
+
+// Customer JSON converters belong in this namespace
 namespace nlohmann
 {
   // sf::Glsl::Vec3 (alias for sf::Vector3<float>)

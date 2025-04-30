@@ -29,23 +29,23 @@ namespace nx
      * @param noteValue
      * @return Tuple< noteNumber, noteOctave >
      */
-    static std::tuple< int32_t , int32_t > getMidiNote( int32_t noteValue )
+    static std::tuple< int32_t , int32_t > getMidiNote( const int32_t noteValue )
     {
-      int32_t deoffset = noteValue - MIDI_FLOOR;
-      int32_t noteName = ( deoffset % 12 );
-      auto octave = static_cast< int32_t >( static_cast< float >( deoffset ) / 12.f );
+      const auto deoffset = noteValue - MIDI_FLOOR;
+      const auto noteName = ( deoffset % 12 );
+      const auto octave = static_cast< int32_t >( static_cast< float >( deoffset ) / 12.f );
 
       return { noteName, octave };
     }
 
-    inline static int32_t convertToMidiNote( int32_t midiNote, int32_t midiOctave )
+    static constexpr auto convertToMidiNote( const int32_t midiNote, const int32_t midiOctave )
     {
       return midiOctave * 12 + MIDI_FLOOR + midiNote;
     }
 
   private:
 
-    inline static const int MIDI_FLOOR = 21;
+    static constexpr int MIDI_FLOOR = 21;
 
   };
 

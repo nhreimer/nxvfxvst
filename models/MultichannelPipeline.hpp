@@ -21,7 +21,6 @@ namespace nx
 
   public:
     explicit MultichannelPipeline( PipelineContext& context );
-
     ~MultichannelPipeline() = default;
 
     [[nodiscard]]
@@ -30,11 +29,10 @@ namespace nx
 
     void processMidiEvent( const Midi_t &midi ) const;
 
-    void draw( sf::RenderWindow &window );
-
-    void update( const sf::Time &deltaTime ) const;
-
+    void draw(sf::RenderWindow &window);
     void drawMenu();
+
+    void update(const sf::Time &deltaTime) const;
 
   private:
 
@@ -50,6 +48,8 @@ namespace nx
 
     // used for saving to video
     std::unique_ptr< IEncoder > m_encoder;
+
+    int32_t m_selectedCodec = 0;
 
   };
 

@@ -94,14 +94,14 @@ namespace nx
   }
 
   /////////////////////////////////////////////////////////
-  /* PUBLIC */
+  /// PUBLIC
   void FFMpegEncoder::addMidiEvent( const Midi_t& midiEvent )
   {
     m_recorder.addEvent( m_frameCount, midiEvent, m_clock.getElapsedTime().asSeconds() );
   }
 
   /////////////////////////////////////////////////////////
-  /* PUBLIC */
+  /// PUBLIC
   void FFMpegEncoder::writeFrame(const sf::RenderWindow& window)
   {
     if ( m_texture.getSize() != window.getSize() )
@@ -139,7 +139,7 @@ namespace nx
   }
 
   /////////////////////////////////////////////////////////
-  /* PUBLIC */
+  /// PUBLIC
   FFMpegEncoder::~FFMpegEncoder()
   {
     if ( m_codecCtx == nullptr )
@@ -163,6 +163,27 @@ namespace nx
 
     m_recorder.saveToFile( m_metadataFilename );
     LOG_INFO( "Encoder shutdown successful" );
+  }
+
+  /////////////////////////////////////////////////////////
+  /// PUBLIC STATIC
+  const std::vector< std::string >& FFMpegEncoder::getAvailableCodecs()
+  {
+    if ( m_availableCodecs.empty() )
+    {
+      const AVCodec * current_codec = nullptr;
+      void * i = nullptr;
+      while ( ( current_codec = av_codec_iterate( &i ) ) )
+      {
+        if ( av_codec_is_encoder( current_codec ) )
+        {
+          if ( current_codec->type == AVMEDIA_TYPE_VIDEO )
+            m_availableCodecs.push_back( std::string( current_codec->name ) );
+        }
+      }
+    }
+
+    return m_availableCodecs;
   }
 
   /////////////////////////////////////////////////////////
@@ -191,33 +212,14 @@ namespace nx
   }
 
   /////////////////////////////////////////////////////////
-  /* PRIVATE */
-  const AVCodec* FFMpegEncoder::getCodec() const
+  /// PRIVATE
+  const AVCodec* FFMpegEncoder::getCodec( const std::string& codecName )
   {
-    const auto * codec = avcodec_find_encoder_by_name("h264_nvenc");
+    const auto * codec = avcodec_find_encoder_by_name( codecName.c_str() );
 
     if ( !codec )
     {
-      LOG_ERROR( "failed to find h264_nvenc codec" );
-      //codec = avcodec_find_encoder_by_name("h264_mf");
-      // if on windows then it'll default to h264_mf most likely and you'll get
-      // a warning. that warning occurs even if you use the "264_mf" name
-      codec = avcodec_find_encoder( AV_CODEC_ID_H264 );
-    }
-
-    if ( !codec )
-    {
-      LOG_ERROR( "failed to find h264 codec" );
-      codec = avcodec_find_encoder_by_name("mpeg4");
-    }
-
-    if ( !codec )
-    {
-      LOG_ERROR( "failed to find mpeg4 codec" );
-    }
-    else
-    {
-      LOG_DEBUG( "Using codec `{}`", codec->long_name );
+      LOG_ERROR( "failed to find codec: {}", codecName );
     }
 
     return codec;

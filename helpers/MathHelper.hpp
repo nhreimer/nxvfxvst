@@ -116,12 +116,12 @@ constexpr float NX_D2R  = 0.017453293f;
      * @param rotate number of positions to offset
      * @return vector of bool values
      */
-    static std::vector< bool > partition( int k, int n, int rotate = 0 )
+    static std::vector< bool > partition( const int k, const int n, const int rotate = 0 )
     {
-      int remainder = n % k;
-      float gapRatio = static_cast< float >( n ) / static_cast< float >( k );
+      const int remainder = n % k;
+      const float gapRatio = static_cast< float >( n ) / static_cast< float >( k );
 
-      int hardGapSize = static_cast< int >( gapRatio ) + 1;
+      const int hardGapSize = static_cast< int >( gapRatio ) + 1;
 
       std::vector< bool > result( n );
       int y = 0;

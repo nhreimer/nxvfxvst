@@ -10,6 +10,8 @@ namespace nx
     int32_t fps { 60 };
     std::array< char, 256 > outputFilename;
 
+    std::string codecName;
+
     // Presets:
     //    p1 = fastest, lowest quality
     //    p7 = slowest, best quality (still blazing fast on your GPUs)
@@ -36,6 +38,7 @@ namespace nx
     // this is used for synchronizing the video and midi events
     // it'll create a map and then dump the map out for you along with other metadata
     virtual void addMidiEvent( const Midi_t& midiEvent ) = 0;
+
   };
 
 }
