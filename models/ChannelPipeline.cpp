@@ -1,9 +1,21 @@
 #include "models/ChannelPipeline.hpp"
 
-#include "helpers/Definitions.hpp"
-
 namespace nx
 {
+
+  ChannelPipeline::ChannelPipeline( PipelineContext& context, const int32_t channelId )
+    : m_ctx( context ),
+      m_particleLayout( context ),
+      m_modifierPipeline( context ),
+      m_shaderPipeline( context ),
+      m_drawPriority( channelId )
+  {
+    if ( m_drawPriorityNames[ 0 ].empty() )
+    {
+      for ( int32_t i = 0; i < MAX_CHANNELS; ++i )
+        m_drawPriorityNames[ i ] = std::to_string( i + 1 );
+    }
+  }
 
   nlohmann::json ChannelPipeline::saveChannelPipeline() const
   {
@@ -67,16 +79,6 @@ namespace nx
     m_shaderPipeline.update( deltaTime );
   }
 
-  // void ChannelPipeline::draw( sf::RenderWindow& window )
-  // {
-  //   const auto& modifierTexture = m_modifierPipeline.applyModifiers(
-  //     m_particleLayout.getParticleOptions(),
-  //     m_particleLayout.getParticles() );
-  //
-  //   const auto& shaderTexture = m_shaderPipeline.draw( modifierTexture );
-  //   window.draw( sf::Sprite( shaderTexture.getTexture() ), m_blendMode );
-  // }
-
   const sf::RenderTexture& ChannelPipeline::draw()
   {
     const auto& modifierTexture = m_modifierPipeline.applyModifiers(
@@ -105,6 +107,8 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Channel Options" ) )
     {
+      ImGui::Checkbox( "Mute", &m_isBypassed );
+
       ImGui::SeparatorText( "Channel Blend" );
       MenuHelper::drawBlendOptions( m_blendMode );
 

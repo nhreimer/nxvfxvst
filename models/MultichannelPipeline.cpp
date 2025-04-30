@@ -48,6 +48,8 @@ namespace nx
     // know the drawing order
     for ( const auto& channel: m_channels )
     {
+      if ( channel->isBypassed() ) continue;
+
       m_drawingPrioritizer.push(
         ChannelDrawingData_t
         {

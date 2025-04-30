@@ -19,20 +19,7 @@ namespace nx
 
   public:
 
-    ChannelPipeline( PipelineContext& context, const int32_t channelId )
-      : m_ctx( context ),
-        m_particleLayout( context ),
-        m_modifierPipeline( context ),
-        m_shaderPipeline( context ),
-        m_drawPriority( channelId )
-    {
-      if ( m_drawPriorityNames[ 0 ].empty() )
-      {
-        for ( int32_t i = 0; i < MAX_CHANNELS; ++i )
-          m_drawPriorityNames[ i ] = std::to_string( i + 1 );
-      }
-    }
-
+    ChannelPipeline( PipelineContext& context, const int32_t channelId );
     ~ChannelPipeline() = default;
 
     void toggleBypass() { m_isBypassed = !m_isBypassed; }
@@ -49,7 +36,6 @@ namespace nx
 
     void update( const sf::Time& deltaTime ) const;
 
-    //void draw( sf::RenderWindow& window );
     const sf::RenderTexture& draw();
 
     void drawMenu();
