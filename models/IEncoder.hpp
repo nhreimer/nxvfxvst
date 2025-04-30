@@ -25,7 +25,12 @@ namespace nx
   struct IEncoder
   {
     virtual ~IEncoder() = default;
+
+    /// Called every frame
+    /// @param texture the texture to write
     virtual void writeFrame( const sf::RenderWindow& texture ) = 0;
+
+    [[nodiscard]]
     virtual bool isRecording() const = 0;
 
     // this is used for synchronizing the video and midi events

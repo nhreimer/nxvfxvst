@@ -32,7 +32,7 @@ if ( BUILD_PLUGIN )
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 1.0.5.0
+    VERSION 1.0.6.0
     DESCRIPTION "nxvfxvst VST 3 Plug-in"
   )
 
@@ -61,6 +61,36 @@ if ( BUILD_PLUGIN )
     vst/myplugincontroller.h
     vst/myplugincontroller.cpp
     vst/mypluginentry.cpp
+
+    models/encoder/FFMpegEncoder.cpp
+    models/encoder/RawRGBAEncoder.cpp
+
+    models/modifier/MirrorModifier.cpp
+    models/modifier/ParticleFullMeshLineModifier.cpp
+    models/modifier/ParticleSequentialLineModifier.cpp
+    models/modifier/PerlinDeformerModifier.cpp
+    models/modifier/RingZoneMeshModifier.cpp
+
+    models/particle/behavior/ColorMorphBehavior.cpp
+    models/particle/behavior/FreeFallBehavior.cpp
+    models/particle/behavior/JitterBehavior.cpp
+    models/particle/behavior/MagneticAttractorBehavior.cpp
+    models/particle/behavior/RadialSpreaderBehavior.cpp
+
+    models/particle/EllipticalLayout.cpp
+    models/particle/FractalRingLayout.cpp
+    models/particle/GoldenSpiralLayout.cpp
+    models/particle/LissajousCurveLayout.cpp
+    models/particle/LSystemCurveLayout.cpp
+    models/particle/RandomParticleLayout.cpp
+    models/particle/SpiralParticleLayout.cpp
+
+    models/ChannelPipeline.cpp
+    models/ModifierPipeline.cpp
+    models/MultichannelPipeline.cpp
+    models/ParticleBehaviorPipeline.cpp
+    models/ParticleLayoutManager.cpp
+    models/ShaderPipeline.cpp
   )
 
   target_include_directories( ${PROJECT_NAME}

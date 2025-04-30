@@ -19,40 +19,17 @@ namespace nx
     {}
 
     [[nodiscard]]
-    nlohmann::json serialize() const override
-    {
-      return
-      {
-        { "type", SerialHelper::serializeEnum( getType() ) },
-        { "timeDivisor", m_data.timeDivisor }
-      };
-    }
+    nlohmann::json serialize() const override;
 
-    void deserialize(const nlohmann::json &j) override
-    {
-      m_data.timeDivisor = j.at( "timeDivisor" ).get<float>();
-    }
+    void deserialize(const nlohmann::json &j) override;
 
     E_BehaviorType getType() const override { return E_BehaviorType::E_FreeFallBehavior; }
 
-    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override
-    {}
+    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override {}
 
-    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override
-    {
-      const auto trail = p->spawnTime / m_data.timeDivisor;
-      p->shape.setPosition( { p->shape.getPosition().x, p->shape.getPosition().y + trail } );
-    }
+    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override;
 
-    void drawMenu() override
-    {
-      if ( ImGui::TreeNode( "Free Fall Behavior" ) )
-      {
-        ImGui::SliderFloat( "##Free Fall Time", &m_data.timeDivisor, 0.5f, 50.f, "Free Fall Time %0.2f" );
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
+    void drawMenu() override;
 
   private:
     PipelineContext& m_ctx;

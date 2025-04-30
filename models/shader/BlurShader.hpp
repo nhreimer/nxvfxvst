@@ -2,6 +2,7 @@
 
 #include "helpers/CommonHeaders.hpp"
 #include "vst/VSTStateContext.hpp"
+#include "models/shader/BlenderShader.hpp"
 
 namespace nx
 {

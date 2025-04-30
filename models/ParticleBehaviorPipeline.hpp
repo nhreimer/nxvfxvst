@@ -1,10 +1,6 @@
 #pragma once
 
-#include "models/particle/behavior/RadialSpreaderBehavior.hpp"
-#include "models/particle/behavior/FreeFallBehavior.hpp"
-#include "models/particle/behavior/JitterBehavior.hpp"
-#include "models/particle/behavior/ColorMorphBehavior.hpp"
-#include "models/particle/behavior/MagneticBehavior.hpp"
+#include "models/IParticleBehavior.hpp"
 
 namespace nx
 {
@@ -16,153 +12,18 @@ namespace nx
       : m_ctx( context )
     {}
 
-    nlohmann::json savePipeline() const
-    {
-      nlohmann::json j = nlohmann::json::array();
+    nlohmann::json savePipeline() const;
+    void loadPipeline( const nlohmann::json& j );
 
-      for ( const auto& behavior : m_particleBehaviors )
-        j.push_back( behavior->serialize() );
+    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) const;
+    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) const;
 
-      return j;
-    }
-
-    void loadPipeline( const nlohmann::json& j )
-    {
-      m_particleBehaviors.clear();
-      for ( const auto& data : j )
-      {
-        if ( !j.contains( "type" ) )
-          continue;
-
-        const auto type =
-          SerialHelper::deserializeEnum< E_BehaviorType >( data.value("type", "" ) );
-        switch ( type )
-        {
-          case E_BehaviorType::E_JitterBehavior:
-            deserializeBehavior< JitterBehavior >( data );
-            break;
-
-          case E_BehaviorType::E_FreeFallBehavior:
-            deserializeBehavior< FreeFallBehavior >( data );
-            break;
-
-          case E_BehaviorType::E_RadialSpreaderBehavior:
-            deserializeBehavior< RadialSpreaderBehavior >( data );
-            break;
-
-          case E_BehaviorType::E_ColorMorphBehavior:
-            deserializeBehavior< ColorMorphBehavior >( data );
-            break;
-
-          case E_BehaviorType::E_MagneticBehavior:
-            deserializeBehavior< MagneticAttractorBehavior >( data );
-            break;
-
-          default:
-            LOG_ERROR( "unable to deserialize modifier type" );
-            break;
-        }
-      }
-    }
-
-    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) const
-    {
-      for ( const auto& behavior : m_particleBehaviors )
-        behavior->applyOnSpawn( p, midi );
-    }
-
-    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) const
-    {
-      for ( const auto& behavior : m_particleBehaviors )
-        behavior->applyOnUpdate( p, deltaTime );
-    }
-
-    void drawMenu()
-    {
-      drawBehaviorsAvailable();
-      drawBehaviorPipelineMenu();
-    }
+    void drawMenu();
 
   private:
 
-    void drawBehaviorPipelineMenu()
-    {
-      ImGui::Separator();
-      ImGui::Text( "Behaviors: %d", m_particleBehaviors.size() );
-
-      int deletePos = -1;
-      int swapA = -1;
-      int swapB = -1;
-
-      if ( ImGui::TreeNode( "Active Behaviors" ) )
-      {
-        for ( int i = 0; i < m_particleBehaviors.size(); ++i )
-        {
-          ImGui::PushID( i );
-
-          if ( i > 0 )
-            ImGui::Separator();
-
-          if ( ImGui::Button( "x" ) )
-            deletePos = i;
-          else
-          {
-            ImGui::SameLine();
-            m_particleBehaviors[ i ]->drawMenu();
-
-            if ( ImGui::Button( "u" ) )
-            {
-              swapA = i;
-              swapB = i - 1;
-            }
-
-            ImGui::SameLine();
-
-            if ( ImGui::Button( "d" ) )
-            {
-              swapA = i;
-              swapB = i + 1;
-            }
-          }
-          ImGui::PopID();
-        }
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-
-      if ( deletePos > -1 )
-        m_particleBehaviors.erase( m_particleBehaviors.begin() + deletePos );
-      else if ( swapA > -1 && swapB > -1 && swapA < m_particleBehaviors.size() && swapB < m_particleBehaviors.size() )
-        std::swap( m_particleBehaviors[ swapA ], m_particleBehaviors[ swapB ] );
-    }
-
-    void drawBehaviorsAvailable()
-    {
-      if ( ImGui::TreeNode( "Behaviors Available" ) )
-      {
-        if ( ImGui::Button( "Radial Spread##1" ) )
-          createBehavior< RadialSpreaderBehavior >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Free Fall##1" ) )
-          createBehavior< FreeFallBehavior >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Jitter##1" ) )
-          createBehavior< JitterBehavior >();
-
-        ImGui::SameLine();
-        if ( ImGui::Button( "Color Morph##1" ) )
-          createBehavior< ColorMorphBehavior >();
-
-        if ( ImGui::Button( "Magnetic##1" ) )
-          createBehavior< MagneticAttractorBehavior >();
-
-        ImGui::TreePop();
-        ImGui::Spacing();
-      }
-    }
+    void drawBehaviorPipelineMenu();
+    void drawBehaviorsAvailable();
 
     template < typename T >
     IParticleBehavior * createBehavior()
