@@ -96,7 +96,7 @@ namespace nx
 
       // push to a non-blocking queue
       // until the next frame gets executed by the controller thread
-      m_queue.push( {
+      m_queue.enqueue( {
         .channel = event.noteOn.channel,
         .pitch = event.noteOn.pitch,
         .velocity = event.noteOn.velocity
@@ -202,7 +202,7 @@ namespace nx
     {
       // this occurs on the controller thread
       Midi_t midiEvent;
-      while ( m_queue.try_pop( midiEvent ) )
+      while ( m_queue.try_dequeue( midiEvent ) )
         m_pipelines.processMidiEvent( midiEvent );
     }
 

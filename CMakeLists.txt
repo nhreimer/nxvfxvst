@@ -42,6 +42,7 @@ if ( BUILD_PLUGIN )
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
   find_package(FFMPEG REQUIRED)
+  find_package(unofficial-concurrentqueue CONFIG REQUIRED)
 #  target_include_directories(main PRIVATE ${FFMPEG_INCLUDE_DIRS})
 #  target_link_directories(main PRIVATE ${FFMPEG_LIBRARY_DIRS})
 #  target_link_libraries(main PRIVATE ${FFMPEG_LIBRARIES})
@@ -144,6 +145,7 @@ if ( BUILD_PLUGIN )
       nlohmann_json::nlohmann_json
 
       ${FFMPEG_LIBRARIES}
+      unofficial::concurrentqueue::concurrentqueue
     )
 
   else()
@@ -164,6 +166,8 @@ if ( BUILD_PLUGIN )
       ImGui-SFML::ImGui-SFML
 #      spdlog::spdlog_header_only
       ${FFMPEG_LIBRARIES}
+
+      unofficial::concurrentqueue::concurrentqueue
     )
 
   endif()
@@ -207,11 +211,13 @@ else()
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
   find_package(FFMPEG REQUIRED)
+  find_package(unofficial-concurrentqueue CONFIG REQUIRED)
 
   add_executable(${PROJECT_NAME} main.cpp)
   target_link_directories( ${PROJECT_NAME}
     PRIVATE
     ${FFMPEG_LIBRARY_DIRS}
+    unofficial::concurrentqueue::concurrentqueue
   )
 
   target_link_libraries( ${PROJECT_NAME}

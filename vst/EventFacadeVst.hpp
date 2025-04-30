@@ -1,7 +1,8 @@
 #pragma once
 
-#include <concurrent_queue.h>
+// #include <concurrent_queue.h>
 
+#include <concurrentqueue/concurrentqueue.h>
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include "imgui-SFML.h"
@@ -65,7 +66,8 @@ namespace nx
 
     // receives midi events on the processor thread
     // and processes them on the controller thread
-    Concurrency::concurrent_queue< Midi_t > m_queue;
+    //Concurrency::concurrent_queue< Midi_t > m_queue;
+    moodycamel::ConcurrentQueue< Midi_t > m_queue;
   };
 
 }

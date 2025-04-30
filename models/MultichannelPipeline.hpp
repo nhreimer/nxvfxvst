@@ -2,12 +2,13 @@
 
 #include <queue>
 
-
 #include "data/PipelineContext.hpp"
 #include "helpers/Definitions.hpp"
 #include "models/ChannelPipeline.hpp"
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
+
+#include "utils/ThreadPool.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
