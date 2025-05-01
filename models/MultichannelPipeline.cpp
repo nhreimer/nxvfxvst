@@ -50,20 +50,20 @@ namespace nx
     {
       if ( channel->isBypassed() ) continue;
 
-      m_drawingPrioritizer.push(
-        ChannelDrawingData_t
-        {
-          .priority = channel->getDrawPriority(),
-          .texture = channel->draw(),
-          .blendMode = channel->getChannelBlendMode()
-        });
+      m_drawingPrioritizer.emplace( ChannelDrawingData_t
+      {
+        .priority = channel->getDrawPriority(),
+        .texture = &channel->draw(),
+        .blendMode = &channel->getChannelBlendMode()
+      } );
     }
 
     // draw each item in order
     while ( !m_drawingPrioritizer.empty() )
     {
-      auto& top = m_drawingPrioritizer.top();
-      window.draw( sf::Sprite( top.texture.getTexture() ), top.blendMode );
+      const auto& top = m_drawingPrioritizer.top();
+      window.draw( sf::Sprite( top.texture->getTexture() ),
+                   *top.blendMode );
       m_drawingPrioritizer.pop();
     }
 

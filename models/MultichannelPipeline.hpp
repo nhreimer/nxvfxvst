@@ -24,19 +24,19 @@ namespace nx
     struct ChannelDrawingData_t
     {
       int32_t priority { 0 };
-      const sf::RenderTexture& texture;
-      const sf::BlendMode& blendMode;
+      const sf::RenderTexture * texture { nullptr };
+      const sf::BlendMode * blendMode { nullptr };
 
-      // Overload the '<' operator
+      // Overload '<' for std::priority_queue (max-heap)
+      // Lower priority value = higher actual priority
       bool operator<(const ChannelDrawingData_t& other) const
       {
-        // For min-heap (lower value = higher priority)
         return priority > other.priority;
       }
 
-      bool operator=(const ChannelDrawingData_t & other) const
+      bool operator>(const ChannelDrawingData_t& other) const
       {
-        return &texture == &other.texture;
+        return priority < other.priority;
       }
     };
 

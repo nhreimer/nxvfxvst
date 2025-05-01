@@ -213,7 +213,60 @@ else()
   find_package(FFMPEG REQUIRED)
   find_package(unofficial-concurrentqueue CONFIG REQUIRED)
 
-  add_executable(${PROJECT_NAME} main.cpp)
+  add_executable(${PROJECT_NAME}
+    main.cpp
+
+    app/EventFacadeApp.cpp
+
+    shapes/CurvedLine.cpp
+
+    models/encoder/FFMpegEncoder.cpp
+    models/encoder/RawRGBAEncoder.cpp
+
+    models/modifier/MirrorModifier.cpp
+    models/modifier/ParticleFullMeshLineModifier.cpp
+    models/modifier/ParticleSequentialLineModifier.cpp
+    models/modifier/PerlinDeformerModifier.cpp
+    models/modifier/RingZoneMeshModifier.cpp
+
+    models/particle/behavior/ColorMorphBehavior.cpp
+    models/particle/behavior/FreeFallBehavior.cpp
+    models/particle/behavior/JitterBehavior.cpp
+    models/particle/behavior/MagneticAttractorBehavior.cpp
+    models/particle/behavior/RadialSpreaderBehavior.cpp
+
+    models/particle/EllipticalLayout.cpp
+    models/particle/FractalRingLayout.cpp
+    models/particle/GoldenSpiralLayout.cpp
+    models/particle/LissajousCurveLayout.cpp
+    models/particle/LSystemCurveLayout.cpp
+    models/particle/RandomParticleLayout.cpp
+    models/particle/SpiralParticleLayout.cpp
+
+    models/ChannelPipeline.cpp
+    models/ModifierPipeline.cpp
+    models/MultichannelPipeline.cpp
+    models/ParticleBehaviorPipeline.cpp
+    models/ParticleLayoutManager.cpp
+    models/ShaderPipeline.cpp
+
+    models/shader/BlenderShader.cpp
+    models/shader/BlurShader.cpp
+    models/shader/ColorShader.cpp
+    models/shader/DensityHeatMapShader.cpp
+    models/shader/DualKawaseBlurShader.cpp
+    models/shader/FeedbackShader.cpp
+    models/shader/KaleidoscopeShader.cpp
+    models/shader/LayeredGlitchShader.cpp
+    models/shader/RippleShader.cpp
+    models/shader/RumbleShader.cpp
+    models/shader/ShockBloomShader.cpp
+    models/shader/SmearShader.cpp
+    models/shader/StrobeShader.cpp
+    models/shader/TransformShader.cpp
+
+    models/shader/easings/TimeEasing.cpp
+  )
   target_link_directories( ${PROJECT_NAME}
     PRIVATE
     ${FFMPEG_LIBRARY_DIRS}

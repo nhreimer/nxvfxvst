@@ -5,11 +5,12 @@ namespace nx
 
   ChannelPipeline::ChannelPipeline( PipelineContext& context, const int32_t channelId )
     : m_ctx( context ),
+      m_drawPriority( channelId ),    // the ID is the initial priority. it serves no other purpose.
       m_particleLayout( context ),
       m_modifierPipeline( context ),
-      m_shaderPipeline( context ),
-      m_drawPriority( channelId )
+      m_shaderPipeline( context )
   {
+    // check the 0th value to see whether the static values haven't been written yet
     if ( m_drawPriorityNames[ 0 ].empty() )
     {
       for ( int32_t i = 0; i < MAX_CHANNELS; ++i )
