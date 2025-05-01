@@ -74,6 +74,9 @@ namespace nx
 
     std::priority_queue< ChannelDrawingData_t > m_drawingPrioritizer;
 
+    sf::Clock m_renderTimer;
+    float m_renderTime { 0.f };
+
   };
 
 } // namespace nx

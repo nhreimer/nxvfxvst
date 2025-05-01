@@ -113,7 +113,7 @@ namespace nx
       ImGui::SeparatorText( "Channel Blend" );
       MenuHelper::drawBlendOptions( m_blendMode );
 
-      if ( ImGui::BeginCombo( "Channel Draw Priority",
+      if ( ImGui::BeginCombo( "Draw Priority",
                               m_drawPriorityNames[ m_drawPriority ].c_str() ) )
       {
         for ( int32_t i = 0; i < MAX_CHANNELS; ++i )

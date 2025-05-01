@@ -44,6 +44,7 @@ namespace nx
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
   {
+    m_renderTimer.restart();
     // get data from each channel and store it in a Priority Queue, so we
     // know the drawing order
     for ( const auto& channel: m_channels )
@@ -77,6 +78,8 @@ namespace nx
         m_encoder.reset( nullptr );
       }
     }
+
+    m_renderTime = m_renderTimer.getElapsedTime().asMilliseconds();
   }
 
   void MultichannelPipeline::update( const sf::Time &deltaTime ) const
@@ -93,6 +96,7 @@ namespace nx
       ImGuiWindowFlags_AlwaysAutoResize );
 
     ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
+    ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
     ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
     ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
 
