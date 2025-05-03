@@ -95,10 +95,16 @@ namespace nx
       nullptr,
       ImGuiWindowFlags_AlwaysAutoResize );
 
-    ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
-    ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
-    ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
-    ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
+    if ( ImGui::TreeNode( "Information" ) )
+    {
+      ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
+      ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
+      ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
+      ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
+
+      ImGui::TreePop();
+      ImGui::Spacing();
+    }
 
     int32_t offsetChannel = m_selectedChannel + 1;
 
