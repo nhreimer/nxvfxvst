@@ -59,6 +59,9 @@ namespace nx
       ImGui::SliderFloat2("Center Offset", &m_data.centerOffset.x, -500.f, 500.f);
       ImGui::SliderFloat("Slices", &m_data.slices, 1.f, 36.f);
 
+      ImGui::SeparatorText( "Behaviors" );
+      m_behaviorPipeline.drawMenu();
+
       ImGui::TreePop();
       ImGui::Spacing();
     }
