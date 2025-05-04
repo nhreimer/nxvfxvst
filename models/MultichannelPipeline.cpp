@@ -13,6 +13,8 @@ namespace nx
   {
     for ( int32_t i = 0; i < m_channels.size(); ++i )
       m_channels[ i ] = std::make_unique< ChannelPipeline >( context, i );
+
+    m_messageClock.setMessage( "...welcome to nxvst..." );
   }
 
   [[nodiscard]]
@@ -69,9 +71,10 @@ namespace nx
     }
 
     // now that we have a final image, send it to the video encoder
+    // and make sure we start at the right time
     if ( m_encoder )
     {
-      if ( m_encoder->isRecording() ) m_encoder->writeFrame( window );
+      if ( m_encoder->isRecording() ) m_encoder->writeFrame( m_ctx.globalInfo.playhead, window );
       else
       {
         m_messageClock.setMessage( "Encoder failed. NOT recording." );
@@ -101,6 +104,7 @@ namespace nx
       ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
       ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
       ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
+      ImGui::Text( "Playhead: %0.5f", m_ctx.globalInfo.playhead );
 
       ImGui::TreePop();
       ImGui::Spacing();
@@ -162,6 +166,8 @@ namespace nx
       ImGui::InputText( "Filename ",
                         m_encoderData.outputFilename.data(),
                         m_encoderData.outputFilename.size() );
+
+      ImGui::InputFloat( "Start at (seconds): ", &m_encoderData.startAtInSeconds );
 
       if ( m_encoder )
       {

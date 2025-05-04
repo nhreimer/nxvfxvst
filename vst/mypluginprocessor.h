@@ -5,6 +5,7 @@
 #pragma once
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
+#include "helpers/Definitions.hpp"
 
 // forward decl
 namespace Steinberg::Vst { struct Event; }
@@ -58,10 +59,14 @@ private:
 
   void sendMidiNoteEventMessage( const Steinberg::Vst::Event& event ) const;
   void sendBPMMessage() const;
+  void sendPlayheadMessage() const;
 
 private:
 
+  double m_lastPlayhead { 0.f };
   double m_lastBPM { 0.f };
+  static constexpr double m_messageThrottleInMS = PLAYHEAD_INTERVAL_IN_SECS;
+  sf::Clock m_clock;
 };
 
 //------------------------------------------------------------------------

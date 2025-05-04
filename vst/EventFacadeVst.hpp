@@ -40,6 +40,8 @@ namespace nx
 
     void processBPMChange( const double bpm );
 
+    void processPlayheadUpdate( const double playhead );
+
     void initialize( sf::RenderWindow & window );
 
     void shutdown( sf::RenderWindow & window );

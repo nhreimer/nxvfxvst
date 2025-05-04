@@ -68,6 +68,21 @@ tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
 {
   if ( data.processContext != nullptr )
   {
+    if ( m_clock.getElapsedTime().asSeconds() > m_messageThrottleInMS )
+    {
+      const auto currentSample = data.processContext->projectTimeSamples;
+      const auto sampleRate = data.processContext->sampleRate;
+      const auto currentTimeInSeconds = currentSample / sampleRate;
+
+      if ( m_lastPlayhead != currentTimeInSeconds )
+      {
+        m_lastPlayhead = currentTimeInSeconds; // gets current time in seconds
+        sendPlayheadMessage();
+        m_clock.restart();
+      }
+    }
+
+
     m_lastBPM = data.processContext->tempo;
     sendBPMMessage();
   }
@@ -160,6 +175,20 @@ void nxvfxvstProcessor::sendBPMMessage() const
   ptrMsg->setMessageID( "bpm" );
 
   if ( ptrMsg->getAttributes()->setFloat( "bpm", m_lastBPM ) == kResultOk )
+    this->sendMessage( ptrMsg );
+
+  ptrMsg->release();
+}
+
+//------------------------------------------------------------------------
+
+void nxvfxvstProcessor::sendPlayheadMessage() const
+{
+  auto * ptrMsg = allocateMessage();
+  if ( ptrMsg == nullptr ) return;
+  ptrMsg->setMessageID( "playhead" );
+
+  if ( ptrMsg->getAttributes()->setFloat( "playhead", m_lastPlayhead ) == kResultOk )
     this->sendMessage( ptrMsg );
 
   ptrMsg->release();

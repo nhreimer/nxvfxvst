@@ -1,6 +1,9 @@
 #pragma once
 
 #include <fstream>
+#include <nlohmann/json.hpp>
+
+#include "models/data/Midi_t.hpp"
 
 namespace nx
 {

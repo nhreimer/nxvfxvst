@@ -110,6 +110,13 @@ namespace nx
       m_globalInfo.bpm = bpm;
     }
 
+    void EventFacadeVst::processPlayheadUpdate( const double playhead )
+    {
+      // WARNING:
+      // comes in on the processor thread and not on the controller thread!
+      m_globalInfo.playhead = playhead;
+    }
+
     void EventFacadeVst::initialize( sf::RenderWindow & window )
     {
       LOG_INFO( "initializing event receiver" );

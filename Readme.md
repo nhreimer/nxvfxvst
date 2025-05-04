@@ -251,15 +251,6 @@ You can use ffmpeg on the command line to convert it, e.g.,
 
 Be sure to look at the JSON metadata file for the actual width and height.
 
-2. MP4 using the ffmpeg library. It will run through a few options to find an encoder in case of failure.
-
-* h264 nvenc (hardware encoder)
-* h264 (on windows this is most likely the multimedia foundation version)
-* mpeg4 (should be available on nearly all systems)
-
-If it fails, be sure to check the logs. In a debug build, you can call FFMpegEncoder::printAllCodecs()
-to get a list of all the available video encoders on your system.
-
 ## Pipeline Context
 
 A pipeline context is passed down through every single component:

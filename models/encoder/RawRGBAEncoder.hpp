@@ -13,6 +13,12 @@ namespace nx
       uint32_t width { 0 };
       uint32_t height { 0 };
       int64_t frameCount { 0 };
+      double firstFrameInSeconds { 0.f };
+
+      // the offset between the playhead and the first frame
+      // which means if you render the audio down at the same playhead
+      // then you account for the offset to match the audio and video by
+      double offsetInSeconds { 0.f };
     };
 
     // ffmpeg -f rawvideo -pix_fmt rgba -s 800x600 -r 60 -i output.rgba -c:v libx264 -pix_fmt yuv420p out.mp4
@@ -30,11 +36,13 @@ namespace nx
                            m_clock.getElapsedTime().asSeconds() );
     }
 
-    void writeFrame( const sf::RenderWindow& window ) override;
+    void writeFrame( const double playhead, const sf::RenderWindow& window ) override;
 
     bool isRecording() const override { return m_isRecording; }
 
     private:
+
+      const EncoderData_t& m_data;
 
       std::ofstream m_file;
       std::string m_filename;

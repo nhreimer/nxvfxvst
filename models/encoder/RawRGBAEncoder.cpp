@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include "helpers/Definitions.hpp"
+
 namespace nx
 {
 
@@ -9,7 +11,8 @@ namespace nx
   /// PUBLIC
   /////////////////////////////////////////////////////////
   RawRGBAEncoder::RawRGBAEncoder( const EncoderData_t& data )
-    : m_filename( data.outputFilename.data() )
+    : m_data( data ),
+      m_filename( data.outputFilename.data() )
   {
     m_file.open( m_filename, std::ios::binary );
     if ( m_file.fail() )
@@ -53,6 +56,8 @@ namespace nx
         << "\twidth: " << m_header.width << ", \n"
         << "\theight: " << m_header.height << ", \n"
         << "\tframeCount: " << m_header.frameCount << "\n"
+        << "\tfirstFrameInSeconds: " << m_header.firstFrameInSeconds << "\n"
+        << "\toffsetInSeconds: " << m_header.offsetInSeconds << "\n"
         << "}" << std::endl;
 
       headerFileStream.close();
@@ -63,8 +68,16 @@ namespace nx
 
   /////////////////////////////////////////////////////////
   /* PUBLIC */
-  void RawRGBAEncoder::writeFrame( const sf::RenderWindow& window )
+  void RawRGBAEncoder::writeFrame( const double playhead, const sf::RenderWindow& window )
   {
+    // don't do anything until the playhead is at or beyond our starting point
+    // get the closest, which ensures we'll be within PLAYHEAD_INTERVAL_IN_SECS / 2 distance
+
+    const auto currentDelta = std::abs( m_data.startAtInSeconds - playhead );
+    const auto futureDelta = std::abs( m_data.startAtInSeconds - ( playhead + PLAYHEAD_INTERVAL_IN_SECS ) );
+
+    if ( futureDelta < 0 || futureDelta < currentDelta ) return;
+
     if ( m_texture.getSize() != window.getSize() )
     {
       m_header.height = window.getSize().y;
@@ -85,6 +98,15 @@ namespace nx
     const auto * pixels = img.getPixelsPtr();
     const auto byteCount = window.getSize().x * window.getSize().y * 4; // RGBA
     m_file.write( reinterpret_cast< const char* >( pixels ), byteCount );
+
+    if ( m_header.frameCount == 0 )
+    {
+      m_header.firstFrameInSeconds = playhead;
+
+      // see how far off we are
+      m_header.offsetInSeconds = playhead - m_data.startAtInSeconds;
+    }
+
     ++m_header.frameCount;
   }
 

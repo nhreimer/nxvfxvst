@@ -193,6 +193,12 @@ namespace priv
   }
 
   ////////////////////////////////////////////////////////////////////////////////
+  void notifyPlayheadUpdate( const double playhead ) override
+  {
+    m_eventFacade.processPlayheadUpdate( playhead );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   Steinberg::tresult isPlatformTypeSupported( Steinberg::FIDString type ) override
   {
     // Windows platform

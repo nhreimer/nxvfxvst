@@ -52,6 +52,17 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
       LOG_ERROR( "BPM notification failed" );
     }
   }
+  else if ( Steinberg::FIDStringsEqual( message->getMessageID(), "playhead" ) )
+  {
+    if ( message->getAttributes()->getFloat( "playhead", m_lastPlayhead ) == kResultOk )
+    {
+      m_ptrView->notifyPlayheadUpdate( m_lastPlayhead );
+    }
+    else
+    {
+      LOG_ERROR( "Playhead notification failed" );
+    }
+  }
 
   return result;
 

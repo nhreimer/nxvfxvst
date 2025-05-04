@@ -28,6 +28,10 @@ namespace nx
     // gets read by the controller
     double bpm { 0.f };
 
+    // get written by the processor
+    // gets read by the controller
+    double playhead { 0.f };
+
     // All pipelines and shaders have access to:
     // * Consistent global timebase (for rhythms, perlin offsets, etc.)
     // * Frame-specific info (e.g., strobe every N frames)

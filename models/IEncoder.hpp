@@ -10,18 +10,21 @@ namespace nx
     int32_t fps { 60 };
     std::array< char, 256 > outputFilename;
 
-    std::string codecName;
+    // the playhead hits this time then it should start
+    float startAtInSeconds { 0.f };
+
+    //std::string codecName;
 
     // Presets:
     //    p1 = fastest, lowest quality
     //    p7 = slowest, best quality (still blazing fast on your GPUs)
-    std::string mp4PresetOption { "p7" }; // p4 is the "normal"
+    //std::string mp4PresetOption { "p7" }; // p4 is the "normal"
 
     // Tunes:
     //    hq = high quality
     //    ull = ultra-low latency (great for streaming)
     //    lossless = no compression
-    std::string mp4TuningOption { "hq" };
+    //std::string mp4TuningOption { "hq" };
   };
 
   struct IEncoder
@@ -30,7 +33,7 @@ namespace nx
 
     /// Called every frame
     /// @param texture the texture to write
-    virtual void writeFrame( const sf::RenderWindow& texture ) = 0;
+    virtual void writeFrame( const double playhead, const sf::RenderWindow& texture ) = 0;
 
     [[nodiscard]]
     virtual bool isRecording() const = 0;
