@@ -15,15 +15,23 @@ namespace nx
       return;
     }
 
-    auto * fmt = m_formatCtx->oformat;
-
     const auto * codec = getCodec( data.codecName );
     if ( codec == nullptr )
     {
       LOG_ERROR( "failed to find an appropriate mp4 codec" );
       return;
     }
-    m_stream = avformat_new_stream(m_formatCtx, codec);
+
+    LOG_INFO( "using codec: {}", data.codecName );
+
+    m_stream = avformat_new_stream(m_formatCtx.ptr, codec);
+
+    if ( m_stream == nullptr )
+    {
+      LOG_ERROR( "failed to allocate stream" );
+      return;
+    }
+
     m_stream->id = static_cast< int >(m_formatCtx->nb_streams - 1 );
 
     m_codecCtx = avcodec_alloc_context3(codec);
@@ -36,36 +44,50 @@ namespace nx
 
     m_stream->time_base = m_codecCtx->time_base;
     m_codecCtx->codec_id = codec->id; //AV_CODEC_ID_H264;
+    m_codecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
     m_codecCtx->bit_rate = 800000;
     m_codecCtx->width = data.size.x;
     m_codecCtx->height = data.size.y;
-    m_codecCtx->time_base = {1, data.fps};
-    m_codecCtx->framerate = {data.fps, 1};
+    m_codecCtx->time_base = {1, 60};
+    m_codecCtx->framerate = {60, 1};
+    // m_codecCtx->time_base = {1, data.fps};
+    // m_codecCtx->framerate = {data.fps, 1};
     m_codecCtx->gop_size = 12;
     m_codecCtx->max_b_frames = 2;
     m_codecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
-    // set the options
-    av_opt_set( m_codecCtx->priv_data, "preset", data.mp4PresetOption.c_str(), 0 );
-    av_opt_set( m_codecCtx->priv_data, "tune", data.mp4TuningOption.c_str(), 0 );
-
-    // av_opt_set(m_codecCtx->priv_data, "preset", "p4", 0); // p1 to p7 (fast to slow)
-    // av_opt_set(m_codecCtx->priv_data, "tune", "hq", 0);   // latency / hq / ull
-
-    if (fmt->flags & AVFMT_GLOBALHEADER)
+    // writing to a file via AVFormatContext, you'll also usually do
+    if (m_formatCtx->oformat->flags & AVFMT_GLOBALHEADER)
       m_codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
-    avcodec_open2(m_codecCtx, codec, nullptr);
-    avcodec_parameters_from_context(m_stream->codecpar, m_codecCtx);
+    // set the options
+    if ( codec->id == AV_CODEC_ID_H264 )
+    {
+      LOG_INFO( "using H264 encoder. applying preset and tune options" );
+      av_opt_set( m_codecCtx->priv_data, "preset", data.mp4PresetOption.c_str(), 0 );
+      av_opt_set( m_codecCtx->priv_data, "tune", data.mp4TuningOption.c_str(), 0 );
+    }
 
-    errCode = avio_open(&m_formatCtx->pb, data.outputFilename.data(), AVIO_FLAG_WRITE);
+    auto retCode = avcodec_open2(m_codecCtx.ptr, codec, nullptr);
+    if ( retCode != 0 )
+    {
+      LOG_ERROR( "Failed to open codec (avcodec_open2): {}", retCode );
+      return;
+    }
+
+    avcodec_parameters_from_context(m_stream->codecpar, m_codecCtx.ptr);
+
+    //errCode = avio_open(&m_formatCtx->pb, data.outputFilename.data(), AVIO_FLAG_WRITE);
+    errCode = avio_open(&m_avioCtx, data.outputFilename.data(), AVIO_FLAG_WRITE);
     if ( errCode != 0 )
     {
       LOG_ERROR( "Failed to open output file: {}", errCode );
       return;
     }
 
-    avformat_write_header(m_formatCtx, nullptr);
+    m_formatCtx->pb = m_avioCtx.ptr;
+
+    avformat_write_header(m_formatCtx.ptr, nullptr);
 
     m_frame = av_frame_alloc();
 
@@ -78,7 +100,7 @@ namespace nx
     m_frame->format = m_codecCtx->pix_fmt;
     m_frame->width  = m_codecCtx->width;
     m_frame->height = m_codecCtx->height;
-    av_frame_get_buffer(m_frame, 32);
+    av_frame_get_buffer(m_frame.ptr, 32);
 
     m_pkt = av_packet_alloc();
 
@@ -125,7 +147,7 @@ namespace nx
     const int inLineSize[1] = { 4 * static_cast< int >(window.getSize().x) };
 
     sws_scale(
-      m_swsCtx,
+      m_swsCtx.ptr,
       inData,
       inLineSize,
       0,
@@ -153,13 +175,7 @@ namespace nx
       LOG_ERROR( "Failed to send final frames" );
     }
 
-    av_write_trailer(m_formatCtx);
-    avcodec_free_context(&m_codecCtx);
-    av_frame_free(&m_frame);
-    av_packet_free(&m_pkt);
-    sws_freeContext(m_swsCtx);
-    avio_closep(&m_formatCtx->pb);
-    avformat_free_context(m_formatCtx);
+    av_write_trailer(m_formatCtx.ptr);
 
     m_recorder.saveToFile( m_metadataFilename );
     LOG_INFO( "Encoder shutdown successful" );
@@ -193,19 +209,19 @@ namespace nx
   bool FFMpegEncoder::sendFrame() const
   {
     // Flush encoder
-    const auto retCode = avcodec_send_frame(m_codecCtx, m_frame);
+    const auto retCode = avcodec_send_frame(m_codecCtx.ptr, m_frame.ptr);
     if ( retCode < 0 )
     {
       LOG_ERROR( "Failed to send frame to encoder: {}", retCode );
       return false;
     }
 
-    while (avcodec_receive_packet(m_codecCtx, m_pkt) == 0)
+    while (avcodec_receive_packet(m_codecCtx.ptr, m_pkt.ptr) == 0)
     {
-      av_packet_rescale_ts(m_pkt, m_codecCtx->time_base, m_stream->time_base);
+      av_packet_rescale_ts(m_pkt.ptr, m_codecCtx->time_base, m_stream->time_base);
       m_pkt->stream_index = m_stream->index;
-      av_interleaved_write_frame(m_formatCtx, m_pkt);
-      av_packet_unref(m_pkt);
+      av_interleaved_write_frame(m_formatCtx.ptr, m_pkt.ptr);
+      av_packet_unref(m_pkt.ptr);
     }
 
     return true;

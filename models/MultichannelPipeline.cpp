@@ -158,36 +158,6 @@ namespace nx
       {
         m_encoderType = E_Encoder::E_RawRGBA;
       }
-      else if ( ImGui::RadioButton( "MP4", m_encoderType == E_Encoder::E_MP4 ) )
-      {
-        m_encoderType = E_Encoder::E_MP4;
-      }
-
-      if ( m_encoderType == E_Encoder::E_MP4 )
-      {
-        const auto& codecs = FFMpegEncoder::getAvailableCodecs();
-
-        if ( m_selectedCodec < codecs.size() )
-        {
-          if ( ImGui::BeginCombo( "##AVCodevs", codecs[ m_selectedCodec ].c_str() ) )
-          {
-            for ( int i = 0; i < codecs.size(); ++i )
-            {
-              if ( ImGui::Selectable( codecs[ i ].c_str(), i == m_selectedCodec ) )
-              {
-                m_encoderData.codecName = codecs[ m_selectedCodec ];
-                m_selectedCodec = i;
-                ImGui::SetItemDefaultFocus();
-              }
-            }
-            ImGui::EndCombo();
-          }
-        }
-        else
-        {
-          ImGui::Text( "No codecs found." );
-        }
-      }
 
       ImGui::InputText( "Filename ",
                         m_encoderData.outputFilename.data(),

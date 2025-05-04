@@ -24,6 +24,57 @@ endif()
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+set( NX_CPP_FILES
+  shapes/CurvedLine.cpp
+
+#  models/encoder/FFMpegEncoder.cpp
+  models/encoder/RawRGBAEncoder.cpp
+
+  models/modifier/MirrorModifier.cpp
+  models/modifier/ParticleFullMeshLineModifier.cpp
+  models/modifier/ParticleSequentialLineModifier.cpp
+  models/modifier/PerlinDeformerModifier.cpp
+  models/modifier/RingZoneMeshModifier.cpp
+
+  models/particle/behavior/ColorMorphBehavior.cpp
+  models/particle/behavior/FreeFallBehavior.cpp
+  models/particle/behavior/JitterBehavior.cpp
+  models/particle/behavior/MagneticAttractorBehavior.cpp
+  models/particle/behavior/RadialSpreaderBehavior.cpp
+
+  models/particle/EllipticalLayout.cpp
+  models/particle/FractalRingLayout.cpp
+  models/particle/GoldenSpiralLayout.cpp
+  models/particle/LissajousCurveLayout.cpp
+  models/particle/LSystemCurveLayout.cpp
+  models/particle/RandomParticleLayout.cpp
+  models/particle/SpiralParticleLayout.cpp
+
+  models/ChannelPipeline.cpp
+  models/ModifierPipeline.cpp
+  models/MultichannelPipeline.cpp
+  models/ParticleBehaviorPipeline.cpp
+  models/ParticleLayoutManager.cpp
+  models/ShaderPipeline.cpp
+
+  models/shader/BlenderShader.cpp
+  models/shader/BlurShader.cpp
+  models/shader/ColorShader.cpp
+  models/shader/DensityHeatMapShader.cpp
+  models/shader/DualKawaseBlurShader.cpp
+  models/shader/FeedbackShader.cpp
+  models/shader/KaleidoscopeShader.cpp
+  models/shader/LayeredGlitchShader.cpp
+  models/shader/RippleShader.cpp
+  models/shader/RumbleShader.cpp
+  models/shader/ShockBloomShader.cpp
+  models/shader/SmearShader.cpp
+  models/shader/StrobeShader.cpp
+  models/shader/TransformShader.cpp
+
+  models/shader/easings/TimeEasing.cpp
+)
+
 if ( BUILD_PLUGIN )
 
   message( STATUS "BUILDING VST3 PLUGIN" )
@@ -41,7 +92,7 @@ if ( BUILD_PLUGIN )
 #  find_package(spdlog CONFIG REQUIRED)
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
-  find_package(FFMPEG REQUIRED)
+#  find_package(FFMPEG REQUIRED)
   find_package(unofficial-concurrentqueue CONFIG REQUIRED)
 #  target_include_directories(main PRIVATE ${FFMPEG_INCLUDE_DIRS})
 #  target_link_directories(main PRIVATE ${FFMPEG_LIBRARY_DIRS})
@@ -64,55 +115,7 @@ if ( BUILD_PLUGIN )
     vst/mypluginentry.cpp
 
     vst/EventFacadeVst.cpp
-
-    shapes/CurvedLine.cpp
-
-    models/encoder/FFMpegEncoder.cpp
-    models/encoder/RawRGBAEncoder.cpp
-
-    models/modifier/MirrorModifier.cpp
-    models/modifier/ParticleFullMeshLineModifier.cpp
-    models/modifier/ParticleSequentialLineModifier.cpp
-    models/modifier/PerlinDeformerModifier.cpp
-    models/modifier/RingZoneMeshModifier.cpp
-
-    models/particle/behavior/ColorMorphBehavior.cpp
-    models/particle/behavior/FreeFallBehavior.cpp
-    models/particle/behavior/JitterBehavior.cpp
-    models/particle/behavior/MagneticAttractorBehavior.cpp
-    models/particle/behavior/RadialSpreaderBehavior.cpp
-
-    models/particle/EllipticalLayout.cpp
-    models/particle/FractalRingLayout.cpp
-    models/particle/GoldenSpiralLayout.cpp
-    models/particle/LissajousCurveLayout.cpp
-    models/particle/LSystemCurveLayout.cpp
-    models/particle/RandomParticleLayout.cpp
-    models/particle/SpiralParticleLayout.cpp
-
-    models/ChannelPipeline.cpp
-    models/ModifierPipeline.cpp
-    models/MultichannelPipeline.cpp
-    models/ParticleBehaviorPipeline.cpp
-    models/ParticleLayoutManager.cpp
-    models/ShaderPipeline.cpp
-
-    models/shader/BlenderShader.cpp
-    models/shader/BlurShader.cpp
-    models/shader/ColorShader.cpp
-    models/shader/DensityHeatMapShader.cpp
-    models/shader/DualKawaseBlurShader.cpp
-    models/shader/FeedbackShader.cpp
-    models/shader/KaleidoscopeShader.cpp
-    models/shader/LayeredGlitchShader.cpp
-    models/shader/RippleShader.cpp
-    models/shader/RumbleShader.cpp
-    models/shader/ShockBloomShader.cpp
-    models/shader/SmearShader.cpp
-    models/shader/StrobeShader.cpp
-    models/shader/TransformShader.cpp
-
-    models/shader/easings/TimeEasing.cpp
+    ${NX_CPP_FILES}
   )
 
   target_include_directories( ${PROJECT_NAME}
@@ -120,8 +123,6 @@ if ( BUILD_PLUGIN )
 
     # must used the patched version
     C:/Precision/projects/SFML/include
-    ${FFMPEG_INCLUDE_DIRS}
-    ${FFNVCODEC_INCLUDE_DIRS}
   )
 
   if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
@@ -164,8 +165,6 @@ if ( BUILD_PLUGIN )
       #    SFML::Window
       #    SFML::Graphics
       ImGui-SFML::ImGui-SFML
-#      spdlog::spdlog_header_only
-      ${FFMPEG_LIBRARIES}
 
       unofficial::concurrentqueue::concurrentqueue
     )
@@ -210,7 +209,6 @@ else()
   find_package(spdlog CONFIG REQUIRED)
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
-  find_package(FFMPEG REQUIRED)
   find_package(unofficial-concurrentqueue CONFIG REQUIRED)
 
   add_executable(${PROJECT_NAME}
@@ -218,58 +216,11 @@ else()
 
     app/EventFacadeApp.cpp
 
-    shapes/CurvedLine.cpp
-
-    models/encoder/FFMpegEncoder.cpp
-    models/encoder/RawRGBAEncoder.cpp
-
-    models/modifier/MirrorModifier.cpp
-    models/modifier/ParticleFullMeshLineModifier.cpp
-    models/modifier/ParticleSequentialLineModifier.cpp
-    models/modifier/PerlinDeformerModifier.cpp
-    models/modifier/RingZoneMeshModifier.cpp
-
-    models/particle/behavior/ColorMorphBehavior.cpp
-    models/particle/behavior/FreeFallBehavior.cpp
-    models/particle/behavior/JitterBehavior.cpp
-    models/particle/behavior/MagneticAttractorBehavior.cpp
-    models/particle/behavior/RadialSpreaderBehavior.cpp
-
-    models/particle/EllipticalLayout.cpp
-    models/particle/FractalRingLayout.cpp
-    models/particle/GoldenSpiralLayout.cpp
-    models/particle/LissajousCurveLayout.cpp
-    models/particle/LSystemCurveLayout.cpp
-    models/particle/RandomParticleLayout.cpp
-    models/particle/SpiralParticleLayout.cpp
-
-    models/ChannelPipeline.cpp
-    models/ModifierPipeline.cpp
-    models/MultichannelPipeline.cpp
-    models/ParticleBehaviorPipeline.cpp
-    models/ParticleLayoutManager.cpp
-    models/ShaderPipeline.cpp
-
-    models/shader/BlenderShader.cpp
-    models/shader/BlurShader.cpp
-    models/shader/ColorShader.cpp
-    models/shader/DensityHeatMapShader.cpp
-    models/shader/DualKawaseBlurShader.cpp
-    models/shader/FeedbackShader.cpp
-    models/shader/KaleidoscopeShader.cpp
-    models/shader/LayeredGlitchShader.cpp
-    models/shader/RippleShader.cpp
-    models/shader/RumbleShader.cpp
-    models/shader/ShockBloomShader.cpp
-    models/shader/SmearShader.cpp
-    models/shader/StrobeShader.cpp
-    models/shader/TransformShader.cpp
-
-    models/shader/easings/TimeEasing.cpp
+    ${NX_CPP_FILES}
   )
   target_link_directories( ${PROJECT_NAME}
     PRIVATE
-    ${FFMPEG_LIBRARY_DIRS}
+#    ${FFMPEG_LIBRARY_DIRS}
     unofficial::concurrentqueue::concurrentqueue
   )
 
@@ -284,7 +235,6 @@ else()
     ImGui-SFML::ImGui-SFML
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
-    ${FFMPEG_LIBRARIES}
   )
 
 endif()

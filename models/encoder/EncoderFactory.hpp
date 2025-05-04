@@ -1,7 +1,7 @@
 #pragma once
 
 #include "models/encoder/RawRGBAEncoder.hpp"
-#include "models/encoder/FFMpegEncoder.hpp"
+// #include "models/encoder/FFMpegEncoder.hpp"
 
 namespace nx
 {
@@ -20,8 +20,8 @@ namespace nx
         case E_Encoder::E_RawRGBA:
           return std::make_unique< RawRGBAEncoder >( data );
 
-        case E_Encoder::E_MP4:
-          return std::make_unique< FFMpegEncoder >( data );
+        // case E_Encoder::E_MP4:
+        //   return std::make_unique< FFMpegEncoder >( data );
 
         default:
           return nullptr;

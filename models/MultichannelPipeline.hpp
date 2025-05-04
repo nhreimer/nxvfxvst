@@ -8,8 +8,6 @@
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
 
-#include "utils/ThreadPool.hpp"
-
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
 #else
