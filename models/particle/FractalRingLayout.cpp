@@ -43,19 +43,23 @@ namespace nx
 
   void FractalRingLayout::addMidiEvent( const Midi_t &midiEvent )
   {
-    // const float angle = ( ( midiEvent.pitch / 127.f ) * NX_TAU );
-
     const sf::Vector2f pos =
     {
-      // m_globalInfo.windowHalfSize.x + std::cos( angle ) * m_data.radius,
-      // m_globalInfo.windowHalfSize.y + std::sin( angle ) * m_data.radius
       m_ctx.globalInfo.windowHalfSize.x,
       m_ctx.globalInfo.windowHalfSize.y
     };
 
-    auto * p = createParticle( midiEvent, pos, m_data.radius );
-    p->shape.setPosition( pos );
-    spawnFractalRing( midiEvent, m_data.depthLimit, m_data.radius, pos );
+    // auto * p = createParticle( midiEvent, pos, m_data.radius );
+    // p->shape.setPosition( pos );
+    // spawnFractalRing( midiEvent, m_data.depthLimit, m_data.radius, pos );
+
+    // Only spawn one level of fractal on each MIDI note
+    spawnFractalRing(midiEvent, m_currentDepth, m_data.radius, pos);
+
+    // Advance or reset depth
+    ++m_currentDepth;
+    if ( m_currentDepth > m_data.depthLimit )
+      m_currentDepth = 1;
   }
 
   void FractalRingLayout::update( const sf::Time &deltaTime )
@@ -113,7 +117,10 @@ namespace nx
                          const sf::Vector2f& lastPosition )
   {
     // base case
-    if ( depth <= 0 ) return;
+    // if ( depth <= 0 ) return;
+
+    if (depth <= 0)
+      return;
 
     const float lastRadius = adjustedRadius / m_data.radiusAdjustment;
 

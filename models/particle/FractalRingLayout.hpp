@@ -63,6 +63,7 @@ private:
   FractalRingLayoutData_t m_data;
 
   ParticleBehaviorPipeline m_behaviorPipeline;
+  int32_t m_currentDepth { 1 };
 };
 
 }
