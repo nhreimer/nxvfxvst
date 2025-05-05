@@ -11,34 +11,24 @@ namespace nx
   [[nodiscard]]
   nlohmann::json ColorMorphBehavior::serialize() const
   {
-    return
- {
-    { "type", SerialHelper::serializeEnum( getType() ) },
-      { "speed", m_data.speed },
-      { "saturation", m_data.saturation },
-      { "brightness", m_data.brightness },
-      { "quantizeStep", m_data.quantizeStep },
-      { "useHueOffset", m_data.useHueOffset },
-      { "useSkittles", m_data.useSkittles },
-      { "reverseColors", m_data.reverseColors },
-      { "morphDuration", m_data.morphDuration },
-      { "morphToColor", SerialHelper::convertColorToJson( m_data.morphToColor ) }
-    };
+    nlohmann::json j;
+    j[ "type" ] = SerialHelper::serializeEnum( getType() );
+    EXPAND_SHADER_PARAMS_TO_JSON(COLOR_MORPH_BEHAVIOR_PARAMS)
+    return j;
   }
 
   /////////////////////////////////////////////////////////
   /// PUBLIC
   void ColorMorphBehavior::deserialize(const nlohmann::json &j)
   {
-    m_data.speed = j.at( "speed" ).get<float>();
-    m_data.saturation = j.at( "saturation" ).get<float>();
-    m_data.brightness = j.at( "brightness" ).get<float>();
-    m_data.quantizeStep = j.at( "quantizeStep" ).get<float>();
-    m_data.useHueOffset = j.at( "useHueOffset" ).get<bool>();
-    m_data.useSkittles = j.at( "useSkittles" ).get<bool>();
-    m_data.reverseColors = j.at( "reverseColors" ).get<bool>();
-    m_data.morphToColor = SerialHelper::convertColorFromJson( j.at( "morphToColor" ) );
-    m_data.morphDuration = j.at( "morphDuration" ).get<float>();
+    if ( SerialHelper::isTypeGood( j, getType() ) )
+    {
+      EXPAND_SHADER_PARAMS_FROM_JSON(COLOR_MORPH_BEHAVIOR_PARAMS)
+    }
+    else
+    {
+      LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+    }
   }
 
   /////////////////////////////////////////////////////////
@@ -47,7 +37,7 @@ namespace nx
                                          const Midi_t& midi )
   {
     // Optionally inject random hue offset based on pitch
-    m_data.hueOffset = (m_data.useHueOffset)
+    m_data.hueOffset.first = (m_data.useHueOffset.first)
       ? static_cast<float>(midi.pitch % 128) / 127.f * 360.f
       : 0.f;
   }
@@ -57,9 +47,9 @@ namespace nx
   void ColorMorphBehavior::applyOnUpdate( TimedParticle_t * p,
                                           const sf::Time& deltaTime )
   {
-    if ( m_data.useSkittles )
+    if ( m_data.useSkittles.first )
       applySkittlesMorphing( p, deltaTime );
-    else if ( m_data.reverseColors )
+    else if ( m_data.reverseColors.first )
       applyBicolorMorphingReverse( p, deltaTime );
     else
       applyBicolorMorphing( p, deltaTime );
@@ -71,20 +61,7 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Color Morph Behavior" ) )
     {
-      ImGui::Checkbox( "Use Hue Offset", &m_data.useHueOffset );
-      ImGui::Checkbox( "Use Skittles Morph", &m_data.useSkittles );
-      ImGui::SliderFloat("Hue Quantize Step", &m_data.quantizeStep, 0.f, 90.f );
-      ImGui::SliderFloat("Saturation", &m_data.saturation, 0.f, 1.f);
-      ImGui::SliderFloat("Brightness", &m_data.brightness, 0.f, 1.f);
-      ImGui::SliderFloat("Color Morph Speed", &m_data.speed, 0.f, 5.f);
-
-      ImGui::Checkbox( "Reverse Bounce", &m_data.reverseColors );
-      ImGui::SliderFloat("Morph Duration (sec)", &m_data.morphDuration, 0.1f, 10.f);
-      ImVec4 color = m_data.morphToColor;
-
-      if ( ImGui::ColorEdit4("Target Color", reinterpret_cast< float * >( &color) ) )
-        m_data.morphToColor = color;
-
+      EXPAND_SHADER_IMGUI(COLOR_MORPH_BEHAVIOR_PARAMS, m_data)
       ImGui::TreePop();
       ImGui::Separator();
     }
@@ -97,9 +74,9 @@ namespace nx
                                                  const sf::Time& deltaTime ) const
   {
     const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
-    const float t = elapsed / m_data.morphDuration;
+    const float t = elapsed / m_data.morphDuration.first;
 
-    const auto morphed = ColorHelper::lerpColor(p->initialColor, m_data.morphToColor, t);
+    const auto morphed = ColorHelper::lerpColor(p->initialColor, m_data.morphToColor.first, t);
     p->shape.setFillColor(morphed);
   }
 
@@ -110,8 +87,8 @@ namespace nx
   {
     const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
 
-    const float t = 0.5f * (1.f + std::sin(elapsed * m_data.speed * NX_TAU));
-    const auto morphed = ColorHelper::lerpColor( p->initialColor, m_data.morphToColor, t );
+    const float t = 0.5f * (1.f + std::sin(elapsed * m_data.speed.first * NX_TAU));
+    const auto morphed = ColorHelper::lerpColor( p->initialColor, m_data.morphToColor.first, t );
     p->shape.setFillColor(morphed);
   }
 
@@ -124,17 +101,17 @@ namespace nx
     const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
 
     // Base hue animation based on time and speed
-    const float hueBase = std::fmod(elapsed * m_data.speed * 360.f, 360.f);
+    const float hueBase = std::fmod(elapsed * m_data.speed.first * 360.f, 360.f);
 
     // Final hue is base + offset
-    float finalHue = std::fmod(hueBase + m_data.hueOffset, 360.f);
+    float finalHue = std::fmod(hueBase + m_data.hueOffset.first, 360.f);
 
     // Optionally quantize the hue
-    if (m_data.quantizeStep > 0.f)
-      finalHue = std::floor(finalHue / m_data.quantizeStep) * m_data.quantizeStep;
+    if (m_data.quantizeStep.first > 0.f)
+      finalHue = std::floor(finalHue / m_data.quantizeStep.first) * m_data.quantizeStep.first;
 
     // Preserve alpha from original color
-    const auto morphed = hsvToRgb(finalHue, m_data.saturation, m_data.brightness, p->initialColor.a);
+    const auto morphed = hsvToRgb(finalHue, m_data.saturation.first, m_data.brightness.first, p->initialColor.a);
 
     // Apply the new color
     p->shape.setFillColor(morphed);

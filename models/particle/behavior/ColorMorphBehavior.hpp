@@ -7,24 +7,40 @@ namespace nx
   class ColorMorphBehavior final : public IParticleBehavior
   {
 
+#define COLOR_MORPH_BEHAVIOR_PARAMS(X)                                                                   \
+X(speed,         float,     1.0f,   0.0f, 10.0f,   "Hue cycle speed (Hz)",            true)             \
+X(saturation,    float,     1.0f,   0.0f, 1.0f,    "Color saturation multiplier",     true)             \
+X(brightness,    float,     1.0f,   0.0f, 1.0f,    "Brightness multiplier",           true)             \
+X(quantizeStep,  float,     0.0f,   0.0f, 90.0f,   "Set > 0 to enable hue steps",     true)             \
+X(hueOffset,     float,     0.0f,  -1.0f, 1.0f,    "Hue offset (normalized)",         true)             \
+X(morphDuration, float,     2.0f,   0.01f, 10.0f,  "Duration of each morph (sec)",    true)             \
+X(useHueOffset,  bool,      true,   0,     1,      "Toggle hue offset",               true)            \
+X(useSkittles,   bool,      false,  0,     1,      "Enable Skittles color mode",      true)            \
+X(reverseColors, bool,      false,  0,     1,      "Reverse the hue morph direction", true)            \
+X(morphToColor,  sf::Color, sf::Color::Black, 0, 255, "Target color for hue morph",   false)
+
     struct ColorMorphData_t
     {
-      float speed = 1.0f;         // cycles per second
-      float saturation = 1.0f;    // color intensity
-      float brightness = 1.0f;    // brightness
-      float quantizeStep = 0.f;   // set > 0 to enable hue steps
-      float hueOffset = 0.f;
-      float morphDuration = 2.f;
-      bool useHueOffset = true;
-      bool useSkittles = false;   // just a color free-for-all
-      bool reverseColors = false;
-      sf::Color morphToColor { sf::Color::Black };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(COLOR_MORPH_BEHAVIOR_PARAMS)
+    };
+
+    enum class E_ColorMorphParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(COLOR_MORPH_BEHAVIOR_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_ColorMorphParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(COLOR_MORPH_BEHAVIOR_PARAMS)
     };
 
   public:
     explicit ColorMorphBehavior(PipelineContext& context)
       : m_ctx(context)
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(COLOR_MORPH_BEHAVIOR_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override;

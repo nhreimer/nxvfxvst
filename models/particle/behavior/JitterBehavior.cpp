@@ -6,16 +6,22 @@ namespace nx
   [[nodiscard]]
   nlohmann::json JitterBehavior::serialize() const
   {
-    return
- {
-      { "type", SerialHelper::serializeEnum( getType() ) },
-      { "jitterMultiplier", m_data.jitterMultiplier }
-    };
+    nlohmann::json j;
+    j[ "type" ] = SerialHelper::serializeEnum( getType() );
+    EXPAND_SHADER_PARAMS_TO_JSON(JITTER_BEHAVIOR_PARAMS)
+    return j;
   }
 
   void JitterBehavior::deserialize(const nlohmann::json &j)
   {
-    m_data.jitterMultiplier = j.at( "jitterMultiplier" ).get<float>();
+    if ( SerialHelper::isTypeGood( j, getType() ) )
+    {
+      EXPAND_SHADER_PARAMS_FROM_JSON(JITTER_BEHAVIOR_PARAMS)
+    }
+    else
+    {
+      LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+    }
   }
 
   void JitterBehavior::applyOnSpawn( TimedParticle_t * p, const Midi_t& midi )
@@ -32,7 +38,7 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Jitter Behavior" ) )
     {
-      ImGui::SliderFloat( "Jitter", &m_data.jitterMultiplier, 0.f, 5.f );
+      EXPAND_SHADER_IMGUI(JITTER_BEHAVIOR_PARAMS, m_data)
       ImGui::TreePop();
       ImGui::Spacing();
     }
@@ -49,7 +55,7 @@ namespace nx
     auto safeRadius = static_cast< uint32_t >( p->shape.getRadius() );
     if ( safeRadius == 0 ) ++safeRadius;
 
-    const auto jitterAmount = m_data.jitterMultiplier *
+    const auto jitterAmount = m_data.jitterMultiplier.first *
                                    static_cast< float >( m_rand() % safeRadius );
     return p->shape.getPosition() +
       sf::Vector2f { std::cos( jitterAngle ) * jitterAmount, std::sin( jitterAngle ) * jitterAmount };

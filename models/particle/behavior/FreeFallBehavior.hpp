@@ -8,15 +8,31 @@ namespace nx
   class FreeFallBehavior final : public IParticleBehavior
   {
 
+#define FREE_FALL_BEHAVIOR_PARAMS(X)                                            \
+X(timeDivisor,  float,  2.5f,   0.f, 50.f, "Time in seconds of falling", true )
+
     struct FreeFallData_t
     {
-      float timeDivisor { 2.5f };     // in seconds
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(FREE_FALL_BEHAVIOR_PARAMS)
+    };
+
+    enum class E_FreeFallBehaviorParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(FREE_FALL_BEHAVIOR_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_FreeFallBehaviorParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(FREE_FALL_BEHAVIOR_PARAMS)
     };
 
   public:
     explicit FreeFallBehavior(PipelineContext& context)
       : m_ctx(context)
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(FREE_FALL_BEHAVIOR_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override;

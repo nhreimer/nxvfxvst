@@ -7,16 +7,33 @@ namespace nx
   class RadialSpreaderBehavior final : public IParticleBehavior
   {
 
+#define RADIAL_SPREADER_BEHAVIOR_PARAMS(X)                                       \
+X(spreadMultiplier    , float , 1.5f  ,   0.f ,   5.f, "Amount of spread", true) \
+X(speed               , float , 0.5f  ,   0.f ,   5.f, "Speed of spread", true)
+
     struct RadialSpreaderData_t
     {
-      float spreadMultiplier = 1.5f;
-      float speed = 0.5f;
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(RADIAL_SPREADER_BEHAVIOR_PARAMS)
     };
+
+    enum class E_RadialSpreadBehaviorParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(RADIAL_SPREADER_BEHAVIOR_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_RadialSpreadBehaviorParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(RADIAL_SPREADER_BEHAVIOR_PARAMS)
+    };
+
 
   public:
     explicit RadialSpreaderBehavior(PipelineContext& context)
       : m_ctx( context )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(RADIAL_SPREADER_BEHAVIOR_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override;
