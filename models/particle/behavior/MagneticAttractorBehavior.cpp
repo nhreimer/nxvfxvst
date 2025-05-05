@@ -7,20 +7,20 @@ namespace nx
   {
     const sf::Vector2f pos = p->shape.getPosition();
 
-    const sf::Vector2f attractor { m_data.magnetLocation.x * static_cast< float >(m_ctx.globalInfo.windowSize.x ),
-                                    m_data.magnetLocation.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
+    const sf::Vector2f attractor { m_data.magnetLocation.first.x * static_cast< float >(m_ctx.globalInfo.windowSize.x ),
+                                    m_data.magnetLocation.first.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
 
     const sf::Vector2f dir = attractor - pos;
     const float distance = std::max(length(dir), 0.001f); // avoid divide by 0
     const sf::Vector2f normDir = dir / distance;
 
     // Falloff based on distance
-    float force = m_data.strength * 2.f;
-    if (m_data.useFalloff)
-      force *= 1.f / std::pow(distance, m_data.falloffExponent);
+    float force = m_data.strength.first * 2.f;
+    if (m_data.useFalloff.first)
+      force *= 1.f / std::pow(distance, m_data.falloffExponent.first);
 
     // Direction: pull or push
-    if (!m_data.isAttracting)
+    if (!m_data.isAttracting.first)
       force *= -1.f;
 
     // Apply movement offset
@@ -32,17 +32,14 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Magnetic Behavior" ) )
     {
-      ImGui::Checkbox("Attracting", &m_data.isAttracting);
-      ImGui::SliderFloat("Strength", &m_data.strength, 0.0f, 500.0f);
-      ImGui::Checkbox("Use Falloff", &m_data.useFalloff);
-      ImGui::SliderFloat("Falloff Exponent", &m_data.falloffExponent, 0.1f, 4.0f);
-      // ImGui::Checkbox("Follow Mouse", &m_followMouse);
+      const sf::Vector2f currentPos = m_data.magnetLocation.first;
 
-      if ( ImGui::SliderFloat( "Magnet x##1", &m_data.magnetLocation.x, 0.f, 1.f ) ||
-           ImGui::SliderFloat( "Magnet y##1", &m_data.magnetLocation.y, 0.f, 1.f ) )
+      EXPAND_SHADER_IMGUI(MAGNET_BEHAVIOR_PARAMS, m_data)
+
+      if ( currentPos != m_data.magnetLocation.first )
       {
-        const sf::Vector2f calibrated { m_data.magnetLocation.x * static_cast< float >( m_ctx.globalInfo.windowSize.x ),
-                                        m_data.magnetLocation.y * static_cast< float >( m_ctx.globalInfo.windowSize.y ) };
+        const sf::Vector2f calibrated { m_data.magnetLocation.first.x * static_cast< float >( m_ctx.globalInfo.windowSize.x ),
+                                        m_data.magnetLocation.first.y * static_cast< float >( m_ctx.globalInfo.windowSize.y ) };
         m_timedCursor.setPosition( calibrated );
       }
 
@@ -54,4 +51,25 @@ namespace nx
       m_timedCursor.drawPosition();
   }
 
-}
+  nlohmann::json MagneticAttractorBehavior::serialize() const
+  {
+    nlohmann::json j;
+    j[ "type" ] = SerialHelper::serializeEnum( getType() );
+    EXPAND_SHADER_PARAMS_TO_JSON(MAGNET_BEHAVIOR_PARAMS)
+    return j;
+  }
+
+  void MagneticAttractorBehavior::deserialize(const nlohmann::json &j)
+  {
+    if ( SerialHelper::isTypeGood( j, getType() ) )
+    {
+      EXPAND_SHADER_PARAMS_FROM_JSON(MAGNET_BEHAVIOR_PARAMS)
+    }
+    else
+    {
+      LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+    }
+  }
+
+
+} // namespace nx

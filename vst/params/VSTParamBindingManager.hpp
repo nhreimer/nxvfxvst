@@ -7,7 +7,6 @@
 
 #include "helpers/Definitions.hpp"
 #include "log/Logger.hpp"
-#include "models/IShader.hpp"
 #include "public.sdk/source/vst/vstparameters.h"
 
 namespace nx
@@ -20,7 +19,7 @@ namespace nx
   // Represents a single binding between a VST param and a Shader Control
   struct VSTParamBinding
   {
-    IShader * owner { nullptr };
+    void * owner { nullptr };
     int32_t vstParamID { -1 };        // e.g., 0..127
     std::string shaderControlName;    // e.g., "Brightness", "Sigma", etc.
     ShaderControlSetter setter;       // Function to call when param changes
@@ -30,9 +29,9 @@ namespace nx
   };
 
   ///
-  /// Whenever an IShader is instantiated, it attempts to bind automatically
+  /// Whenever a controller is instantiated, it attempts to bind automatically
   /// to any available parameter IDs that are left.
-  /// Whenever an IShader is destroyed, it must unbind to keep the parameters
+  /// Whenever a controller is destroyed, it must unbind to keep the parameters
   /// available for others.
   class VSTParamBindingManager
   {
@@ -44,7 +43,7 @@ namespace nx
         m_onUnRegistrationCallback( std::move( onUnregistrationCallback ) )
     {}
 
-    int32_t registerBindableControl( IShader * owner,
+    int32_t registerBindableControl( void * owner,
                                   const std::string& controlName,
                                   const float minValue,
                                   const float maxValue,
@@ -70,7 +69,7 @@ namespace nx
       return nextId;
     }
 
-    void unregisterAllControlsOwnedBy( const IShader * owner )
+    void unregisterAllControlsOwnedBy( const void * owner )
     {
       for ( auto& binding : m_bindings )
       {
@@ -87,7 +86,7 @@ namespace nx
       resetBinding( m_bindings[ vstParamID ] );
     }
 
-    void assignParamIDToControl( IShader * owner,
+    void assignParamIDToControl( void * owner,
                                  const std::string& controlName,
                                  const int32_t vstParamID)
     {
@@ -119,7 +118,7 @@ namespace nx
       }
     }
 
-    int32_t findParamID( const IShader * owner, const std::string& controlName ) const
+    int32_t findParamID( const void * owner, const std::string& controlName ) const
     {
       for ( auto& binding : m_bindings )
       {
