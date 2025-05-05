@@ -31,7 +31,7 @@ namespace nx
   }
 
   /////////////////////////////////////////////////////////
-  /* PUBLIC */
+  /// PUBLIC
   RawRGBAEncoder::~RawRGBAEncoder()
   {
     if ( m_file.is_open() )
@@ -67,9 +67,12 @@ namespace nx
   }
 
   /////////////////////////////////////////////////////////
-  /* PUBLIC */
+  /// PUBLIC
   void RawRGBAEncoder::writeFrame( const double playhead, const sf::RenderWindow& window )
   {
+    // keep the frames in step with 60 FPS
+    if ( !m_frameLock.shouldRenderFrame() ) return;
+
     // don't do anything until the playhead is at or beyond our starting point
     // get the closest, which ensures we'll be within PLAYHEAD_INTERVAL_IN_SECS / 2 distance
 

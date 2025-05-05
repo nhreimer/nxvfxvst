@@ -3,6 +3,8 @@
 #include "models/EventRecorder.hpp"
 #include "models/IEncoder.hpp"
 
+#include "models/encoder/FrameRateLock.hpp"
+
 namespace nx
 {
   class RawRGBAEncoder final : public IEncoder
@@ -54,5 +56,7 @@ namespace nx
 
       sf::Clock m_clock;
       EventRecorder m_recorder;
+
+      FrameRateLock m_frameLock;
   };
 }

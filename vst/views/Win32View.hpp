@@ -38,7 +38,12 @@ namespace priv
 
     static HWND createChildWindow( const HWND parent, const sf::IntRect r )
     {
-      assert( parent != nullptr );
+      if ( parent == nullptr )
+      {
+        LOG_CRITICAL( "Parent HWND must not be null!" );
+        return nullptr;
+      }
+
       const auto moduleHandle = getWindowsModuleHandle();
 
       // LOG_DEBUG( "ModuleHandle: {}", static_cast< void * >( moduleHandle ) );
