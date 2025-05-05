@@ -18,7 +18,8 @@ Synchronize midi events to highly customizable visuals.
   * Route midi output to independent VFX chains
   * Infinite shader and modifier chaining per channel
 * Each effect can be assigned user-specified midi notes for triggers
-* DAW Automation controls for effects 
+* DAW Automation controls for effects
+  * Dynamically names and resets names of parameters for DAW visibility
 * JSON serialization for importing/exporting (via clipboard at the moment)
 * Real-time VFX Engine that synchronize to midi events
   * Effects
@@ -26,7 +27,7 @@ Synchronize midi events to highly customizable visuals.
   * Particle modifiers
   * Easings (for time decays)
   * Triggers at multiple stages of a pipeline (for time synchronization)
-* Real-time video encoder (Raw RGBA and MP4)
+* Real-time video encoder (Raw RGBA with Frame Rate Locking)
 
 ---
 
