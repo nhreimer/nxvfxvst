@@ -57,9 +57,37 @@ namespace nx
     spawnFractalRing(midiEvent, m_currentDepth, m_data.radius, pos);
 
     // Advance or reset depth
-    ++m_currentDepth;
-    if ( m_currentDepth > m_data.depthLimit )
-      m_currentDepth = 1;
+    switch (m_data.fractalDepthTraversalMode)
+    {
+      case E_FractalDepthTraversalMode::E_Forward:
+        m_currentDepth++;
+        if (m_currentDepth > m_data.depthLimit)
+          m_currentDepth = 1;
+        break;
+
+      case E_FractalDepthTraversalMode::E_Reverse:
+        m_currentDepth--;
+        if (m_currentDepth < 1)
+          m_currentDepth = m_data.depthLimit;
+        break;
+
+      case E_FractalDepthTraversalMode::E_PingPong:
+        m_currentDepth += m_data.depthDirection;
+        if (m_currentDepth >= m_data.depthLimit)
+        {
+          m_currentDepth = m_data.depthLimit;
+          m_data.depthDirection = -1;
+        }
+        else if (m_currentDepth <= 1)
+        {
+          m_currentDepth = 1;
+          m_data.depthDirection = 1;
+        }
+        break;
+      default:
+        LOG_ERROR( "Unknown Fractal Traversal Direction!" );
+        break;
+    }
   }
 
   void FractalRingLayout::update( const sf::Time &deltaTime )
@@ -101,6 +129,21 @@ namespace nx
       ImGui::SliderFloat( "Radial Spread", &m_data.radialSpread, 0.f, 5.f );
       ImGui::Checkbox( "Enable Fractal Depth Fade", &m_data.enableFractalFades );
       ImGui::SliderFloat( "Fractal Depth Fade Offset", &m_data.delayFractalFadesMultiplier, 0.f, 5.f );
+
+      ImGui::SeparatorText( "Fractal Depth Traversal" );
+
+      if ( ImGui::RadioButton( "Forward##1", m_data.fractalDepthTraversalMode == E_FractalDepthTraversalMode::E_Forward ) )
+      {
+        m_data.fractalDepthTraversalMode = E_FractalDepthTraversalMode::E_Forward;
+      }
+      else if ( ImGui::RadioButton( "Reverse##1", m_data.fractalDepthTraversalMode == E_FractalDepthTraversalMode::E_Reverse ) )
+      {
+        m_data.fractalDepthTraversalMode = E_FractalDepthTraversalMode::E_Reverse;
+      }
+      else if ( ImGui::RadioButton( "Ping-Pong##1", m_data.fractalDepthTraversalMode == E_FractalDepthTraversalMode::E_PingPong ) )
+      {
+        m_data.fractalDepthTraversalMode = E_FractalDepthTraversalMode::E_PingPong;
+      }
 
       ImGui::Separator();
       m_behaviorPipeline.drawMenu();

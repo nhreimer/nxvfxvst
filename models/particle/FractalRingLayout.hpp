@@ -5,6 +5,13 @@
 namespace nx
 {
 
+  enum class E_FractalDepthTraversalMode
+  {
+    E_Forward,
+    E_Reverse,
+    E_PingPong
+  };
+
 struct FractalRingLayoutData_t : public ParticleLayoutData_t
 {
   int32_t depthLimit { 2 };
@@ -13,12 +20,15 @@ struct FractalRingLayoutData_t : public ParticleLayoutData_t
   float radialSpread { 1.f };
   float delayFractalFadesMultiplier { 1.25f };
   bool enableFractalFades { true };
+  E_FractalDepthTraversalMode fractalDepthTraversalMode { E_FractalDepthTraversalMode::E_Forward };
+  int32_t depthDirection { 1 }; // +1 or -1 for ping-pong
 };
 
 ///
 /// This is good for single notes because it hits the center, like a kick drum or something
 class FractalRingLayout final : public IParticleLayout
 {
+
 public:
 
   explicit FractalRingLayout( PipelineContext& context )
@@ -64,6 +74,7 @@ private:
 
   ParticleBehaviorPipeline m_behaviorPipeline;
   int32_t m_currentDepth { 1 };
+
 };
 
 }
