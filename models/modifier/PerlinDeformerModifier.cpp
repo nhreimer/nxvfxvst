@@ -1,7 +1,5 @@
 #include "models/modifier/PerlinDeformerModifier.hpp"
 
-#include "helpers/ColorHelper.hpp"
-
 namespace nx
 {
 
@@ -12,16 +10,10 @@ namespace nx
   [[nodiscard]]
   nlohmann::json PerlinDeformerModifier::serialize() const
   {
-    return
-    {
-      { "type", SerialHelper::serializeEnum( getType() ) },
-      { "noiseScale", m_data.noiseScale },
-      { "timeScale", m_data.timeScale },
-      { "deformStrength", m_data.deformStrength },
-      { "colorFade", m_data.colorFade },
-      { "noiseType", "E_FBM" }, // TODO: serialize this!
-      { "octaves", m_data.octaves }
-    };
+    nlohmann::json j;
+    j[ "type" ] = SerialHelper::serializeEnum( getType() );
+    EXPAND_SHADER_PARAMS_TO_JSON(PERLIN_DEFORMER_MODIFIER_PARAMS)
+    return j;
   }
 
   /////////////////////////////////////////////////////////
@@ -30,11 +22,7 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      m_data.noiseScale = j.at( "noiseScale" ).get<float>();
-      m_data.timeScale = j.at( "timeScale" ).get<float>();
-      m_data.deformStrength = j.at( "deformStrength" ).get<float>();
-      m_data.colorFade = j.at( "colorFade" ).get<float>();
-      m_data.octaves = j.at( "octaves" ).get<int32_t>();
+      EXPAND_SHADER_PARAMS_FROM_JSON(PERLIN_DEFORMER_MODIFIER_PARAMS)
     }
     else
     {
@@ -48,19 +36,10 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Perlin Deformer" ) )
     {
-      ImGui::SliderFloat("Deform Strength", &m_data.deformStrength, 0.f, 100.f);
-      ImGui::SliderFloat("Noise Scale", &m_data.noiseScale, 0.001f, 0.1f, "%.4f");
-      ImGui::SliderFloat("Time Speed", &m_data.timeScale, 0.f, 5.f);
-      ImGui::SliderFloat("Color fade", &m_data.colorFade, 0.f, 1.f);
+      ImGui::Checkbox( "Is Active##1", &m_data.isActive );
+      EXPAND_SHADER_IMGUI(PERLIN_DEFORMER_MODIFIER_PARAMS, m_data)
 
-      ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
-
-      if ( !m_data.useParticleColors )
-        ColorHelper::drawImGuiColorEdit4( "Line Color", m_data.perlinColor );
-
-      if ( m_data.noiseType == E_NoiseType::E_FBM )
-        ImGui::SliderInt( "FBM Octave", &m_data.octaves, 1, 8 );
-
+      ImGui::SeparatorText( "Perlin Deformer Types" );
       if ( ImGui::RadioButton( "Hash##1", m_data.noiseType == E_NoiseType::E_Hash ) )
       {
         m_data.noiseType = E_NoiseType::E_Hash;
@@ -89,11 +68,11 @@ namespace nx
     for (size_t i = 0; i < particles.size(); ++i)
     {
       const sf::Vector2f pos = particles[ i ]->shape.getPosition();
-      const float x = pos.x * m_data.noiseScale;
-      const float y = pos.y * m_data.noiseScale;
+      const float x = pos.x * m_data.noiseScale.first;
+      const float y = pos.y * m_data.noiseScale.first;
 
-      const float offsetX = (getNoise(x + m_time, y) - 0.5f) * 2.f * m_data.deformStrength;
-      const float offsetY = (getNoise(x, y + m_time) - 0.5f) * 2.f * m_data.deformStrength;
+      const float offsetX = (getNoise(x + m_time, y) - 0.5f) * 2.f * m_data.deformStrength.first;
+      const float offsetY = (getNoise(x, y + m_time) - 0.5f) * 2.f * m_data.deformStrength.first;
 
       const sf::Vector2f warpedPos = pos + sf::Vector2f(offsetX, offsetY);
 
@@ -104,11 +83,11 @@ namespace nx
         outArtifacts.emplace_back( new sf::CircleShape( particles[ i ]->shape ) ) );
 
       copiedShape->setPosition( warpedPos );
-      const auto color = ( m_data.useParticleColors )
+      const auto color = ( m_data.useParticleColors.first )
         ? copiedShape->getFillColor()
-        : m_data.perlinColor;
+        : m_data.perlinColor.first;
 
-      copiedShape->setFillColor( { color.r, color.g, color.b, static_cast< uint8_t >(color.a * m_data.colorFade) } );
+      copiedShape->setFillColor( { color.r, color.g, color.b, static_cast< uint8_t >(color.a * m_data.colorFade.first) } );
     }
   }
 
@@ -121,7 +100,7 @@ namespace nx
     {
       case E_NoiseType::E_Hash:  return getHashNoise(x, y);
       case E_NoiseType::E_Value: return getValueNoise(x, y);
-      case E_NoiseType::E_FBM:   return getFBM(x, y, m_data.octaves);
+      case E_NoiseType::E_FBM:   return getFBM(x, y, m_data.octaves.first);
       default: return 0.f;
     }
   }

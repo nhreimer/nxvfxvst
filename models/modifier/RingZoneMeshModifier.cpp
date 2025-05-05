@@ -10,21 +10,10 @@ namespace nx
   /////////////////////////////////////////////////////////
   nlohmann::json RingZoneMeshModifier::serialize() const
   {
-    return
-    {
-      { "type", SerialHelper::serializeEnum( getType() ) },
-      { "isActive", m_data.isActive },
-      { "ringSpacing", m_data.ringSpacing },
-      { "drawRings", m_data.drawRings },
-      { "drawSpokes", m_data.drawSpokes },
-      { "lineColor", SerialHelper::convertColorToJson( m_data.lineColor ) },
-      { "otherLineColor", SerialHelper::convertColorToJson( m_data.otherLineColor ) },
-      { "lineWidth", m_data.lineThickness },
-      { "pulseSpeed", m_data.pulseSpeed },
-      { "minAlpha", m_data.minAlpha },
-       { "maxAlpha", m_data.maxAlpha },
-       { "enablePulse", m_data.enablePulse }
-    };
+    nlohmann::json j;
+    j[ "type" ] = SerialHelper::serializeEnum( getType() );
+    EXPAND_SHADER_PARAMS_TO_JSON(RING_ZONE_MESH_MODIFIER_PARAMS)
+    return j;
   }
 
   /////////////////////////////////////////////////////////
@@ -33,16 +22,7 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      m_data.isActive = j[ "isActive" ].get<bool>();
-      m_data.ringSpacing = j.at( "ringSpacing" ).get<float>();
-      m_data.drawRings = j.at( "drawRings" ).get<bool>();
-      m_data.lineThickness = j.at( "lineWidth" ).get<float>();
-      m_data.pulseSpeed = j.at( "pulseSpeed" ).get<float>();
-      m_data.minAlpha = j.at( "minAlpha" ).get<float>();
-      m_data.maxAlpha = j.at( "maxAlpha" ).get<float>();
-      m_data.enablePulse = j.at( "enablePulse" ).get<bool>();
-      m_data.lineColor = SerialHelper::convertColorFromJson( j.at( "lineColor" ) );
-      m_data.otherLineColor = SerialHelper::convertColorFromJson( j.at( "otherLineColor" ) );
+      EXPAND_SHADER_PARAMS_FROM_JSON(RING_ZONE_MESH_MODIFIER_PARAMS)
     }
     else
     {
@@ -56,44 +36,7 @@ namespace nx
   {
     if (ImGui::TreeNode("Ring Zone Mesh Modifier"))
     {
-      ImGui::SliderFloat("Ring Spacing", &m_data.ringSpacing, 20.f, 200.f);
-      ImGui::Checkbox("Draw Ring Loops", &m_data.drawRings);
-      ImGui::Checkbox("Draw Radials", &m_data.drawSpokes);
-      // ImGui::SliderFloat("Line Width", &m_data.lineWidth, 1.f, 50.f);
-      //
-      // ImVec4 color = m_data.lineColor;
-      // if (ImGui::ColorEdit4("Line Color", reinterpret_cast< float * >(&color)))
-      //   m_data.lineColor = color;
-      //
-      // color = m_data.otherLineColor;
-      // if (ImGui::ColorEdit4("Other Line Color", reinterpret_cast< float * >(&color)))
-      //   m_data.otherLineColor = color;
-
-      ImGui::SeparatorText("Pulse Alpha");
-      ImGui::Checkbox("Enable Pulse", &m_data.enablePulse);
-      if (m_data.enablePulse)
-      {
-        ImGui::SliderFloat("Pulse Speed (Hz)", &m_data.pulseSpeed, 0.1f, 10.0f);
-        ImGui::SliderFloat("Min Alpha", &m_data.minAlpha, 0.f, 255.f);
-        ImGui::SliderFloat("Max Alpha", &m_data.maxAlpha, 0.f, 255.f);
-      }
-
-      ImGui::SeparatorText("Line Options");
-
-      ImGui::SliderFloat( "Thickness##1", &m_data.lineThickness, 1.f, 100.f, "Thickness %0.2f" );
-      ImGui::SliderFloat( "Curvature##1", &m_data.curvature, -NX_PI, NX_PI, "Curvature %0.2f" );
-      ImGui::SliderInt( "Segments##1", &m_data.lineSegments, 1, 150, "Segments %d" );
-
-      ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
-
-      if ( !m_data.useParticleColors )
-      {
-        ColorHelper::drawImGuiColorEdit4( "Line Color", m_data.lineColor );
-        ColorHelper::drawImGuiColorEdit4( "Other Line Color", m_data.otherLineColor );
-      }
-
-      //ImGui::SeparatorText( "Blend Options" );
-
+      EXPAND_SHADER_IMGUI(RING_ZONE_MESH_MODIFIER_PARAMS, m_data)
       ImGui::TreePop();
       ImGui::Spacing();
     }
@@ -104,20 +47,20 @@ namespace nx
   void RingZoneMeshModifier::modify(const ParticleLayoutData_t &, std::deque< TimedParticle_t * > &particles,
               std::deque< sf::Drawable * > &outArtifacts)
   {
-    float alpha = m_data.lineColor.a; // default static alpha
+    float alpha = m_data.lineColor.first.a; // default static alpha
 
-    if (m_data.enablePulse)
+    if (m_data.enablePulse.first)
     {
       float time = m_ctx.globalInfo.elapsedTimeSeconds;
-      float t = std::sin(time * m_data.pulseSpeed * NX_TAU); // [-1, 1]
+      float t = std::sin(time * m_data.pulseSpeed.first * NX_TAU); // [-1, 1]
       float normalized = 0.5f * (t + 1.f); // [0, 1]
-      alpha = m_data.minAlpha + (m_data.maxAlpha - m_data.minAlpha) * normalized;
+      alpha = m_data.minAlpha.first + (m_data.maxAlpha.first - m_data.minAlpha.first) * normalized;
     }
 
-    auto pulsedColor = m_data.lineColor;
+    auto pulsedColor = m_data.lineColor.first;
     pulsedColor.a = static_cast< uint8_t >(alpha);
 
-    auto otherPulsedColor = m_data.otherLineColor;
+    auto otherPulsedColor = m_data.otherLineColor.first;
     otherPulsedColor.a = static_cast< uint8_t >( alpha );
 
     //auto *lines = new sf::VertexArray(sf::PrimitiveType::Lines);
@@ -129,7 +72,7 @@ namespace nx
     for (auto *p: particles)
     {
       const float dist = length(p->shape.getPosition() - center);
-      int ringIdx = static_cast< int >(dist / m_data.ringSpacing);
+      int ringIdx = static_cast< int >(dist / m_data.ringSpacing.first);
       rings[ ringIdx ].push_back(p);
     }
 
@@ -146,7 +89,7 @@ namespace nx
       ringParticles, [ & ](TimedParticle_t *a, TimedParticle_t *b)
       { return angleFromCenter(center, a->shape.getPosition()) < angleFromCenter(center, b->shape.getPosition()); });
 
-      if (m_data.drawRings)
+      if (m_data.drawRings.first)
       {
         for (size_t i = 0; i < ringParticles.size(); ++i)
         {
@@ -155,10 +98,10 @@ namespace nx
 
           auto * line = new CurvedLine( p1->shape.getPosition(),
                                         p2->shape.getPosition(),
-                                        m_data.curvature,
-                                        m_data.lineSegments );
+                                        m_data.curvature.first,
+                                        m_data.lineSegments.first );
 
-          line->setWidth( m_data.lineThickness );
+          line->setWidth( m_data.lineThickness.first );
 
           if ( p1->timeLeft > p2->timeLeft )
             setLineColors( line, p1, p2, pulsedColor );
@@ -169,7 +112,7 @@ namespace nx
         }
       }
 
-      if (m_data.drawSpokes && ringIdx > 0)
+      if (m_data.drawSpokes.first && ringIdx > 0)
       {
         auto &prevRing = rings[ ringIdx - 1 ];
         const size_t minCount = std::min(ringParticles.size(), prevRing.size());
@@ -179,10 +122,10 @@ namespace nx
 
           auto * line = new CurvedLine( ringParticles[ i ]->shape.getPosition(),
                                         prevRing[ i ]->shape.getPosition(),
-                                        m_data.curvature,
-                                        m_data.lineSegments );
+                                        m_data.curvature.first,
+                                        m_data.lineSegments.first );
 
-          line->setWidth( m_data.lineThickness );
+          line->setWidth( m_data.lineThickness.first );
 
           if ( ringParticles[ i ]->timeLeft > prevRing[ i ]->timeLeft )
             setLineColors( line, ringParticles[ i ], prevRing[ i ], pulsedColor );
@@ -190,15 +133,6 @@ namespace nx
             setLineColors( line, prevRing[ i ], ringParticles[ i ], otherPulsedColor );
 
           outArtifacts.push_back( line );
-
-          // outArtifacts.emplace_back(
-          //   new GradientLine( ringParticles[ i ]->shape.getPosition(),
-          //                      prevRing[ i ]->shape.getPosition(),
-          //                      m_data.lineThickness,
-          //                      pulsedColor,
-          //                      otherPulsedColor ) );
-          // lines->append(sf::Vertex(ringParticles[ i ]->shape.getPosition(), pulsedColor));
-          // lines->append(sf::Vertex(prevRing[ i ]->shape.getPosition(), pulsedColor));
         }
       }
     }
@@ -213,17 +147,17 @@ namespace nx
                       const TimedParticle_t * pointB,
                       const sf::Color pulsedColor ) const
   {
-    if ( m_data.useParticleColors )
+    if ( m_data.useParticleColors.first )
     {
       line->setGradient( pointA->shape.getFillColor(), pointB->shape.getFillColor() );
     }
-    else if ( m_data.enablePulse )
+    else if ( m_data.enablePulse.first )
     {
-      line->setGradient( m_data.lineColor, pulsedColor );
+      line->setGradient( m_data.lineColor.first, pulsedColor );
     }
     else
     {
-      line->setGradient( m_data.lineColor, m_data.otherLineColor );
+      line->setGradient( m_data.lineColor.first, m_data.otherLineColor.first );
     }
   }
 

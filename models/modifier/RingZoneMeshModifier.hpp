@@ -1,34 +1,53 @@
 #pragma once
 
 #include "shapes/CurvedLine.hpp"
-#include "models/data/ParticleLineData_t.hpp"
 
 namespace nx
 {
   /// this works really well with Fractal layouts
   class RingZoneMeshModifier final : public IParticleModifier
   {
-    struct RingZoneMeshData_t : public ParticleLineData_t
+
+#define RING_ZONE_MESH_MODIFIER_PARAMS(X)                                                                       \
+X(lineThickness,     float,     2.0f,   0.1f,   100.0f,   "Thickness of the curved line",          true)    \
+X(swellFactor,       float,     1.5f,   0.0f,   10.0f,   "Swelling multiplier at midpoint",       true)     \
+X(easeDownInSeconds, float,     1.0f,   0.01f,  10.0f,   "Ease-out fade duration (seconds)",      true)     \
+X(useParticleColors, bool,      true,   0,      1,       "Use original particle colors",          true)     \
+X(lineColor,         sf::Color, sf::Color(255,255,255,255), 0, 255, "Primary fallback line color", false)   \
+X(otherLineColor,    sf::Color, sf::Color(255,255,255,255), 0, 255, "Alternate/fading line color", false)   \
+X(curvature,         float,     0.25f,  -NX_PI,  NX_PI,    "Amount of curvature (arc)",             true)   \
+X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in the curve",       true)     \
+X(ringSpacing,   float,   100.0f,   1.0f,   1000.0f,  "Distance between rings",               true)         \
+X(drawRings,     bool,    true,     0,      1,        "Toggle drawing of ring meshes",        false)        \
+X(drawSpokes,    bool,    true,     0,      1,        "Toggle drawing of radial spokes",      false)        \
+X(pulseSpeed,    float,   1.0f,     0.01f,  10.0f,    "Pulsing animation speed (Hz)",          true)        \
+X(minAlpha,      float,   32.0f,    0.0f,   255.0f,   "Minimum pulse alpha",                   true)        \
+X(maxAlpha,      float,   200.0f,   0.0f,   255.0f,   "Maximum pulse alpha",                   true)        \
+X(enablePulse,   bool,    true,     0,      1,        "Enable pulse alpha animation",          true)
+
+    struct RingZoneMeshData_t
     {
       bool isActive = true;
-      float ringSpacing = 100.f;
-      bool drawRings = true;
-      bool drawSpokes = true;
-      // sf::Color lineColor = sf::Color(255, 255, 255, 100);
-      // sf::Color otherLineColor = sf::Color(255, 255, 255, 100);
-      //
-      // float lineWidth { 2.f };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(RING_ZONE_MESH_MODIFIER_PARAMS)
+    };
 
-      float pulseSpeed = 1.0f; // Hz
-      float minAlpha = 32.f;
-      float maxAlpha = 200.f;
-      bool enablePulse = true;
+    enum class E_RingZoneMeshModifierParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(RING_ZONE_MESH_MODIFIER_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_RingZoneMeshModifierParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(RING_ZONE_MESH_MODIFIER_PARAMS)
     };
 
   public:
     explicit RingZoneMeshModifier(PipelineContext& context)
       : m_ctx(context)
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(RING_ZONE_MESH_MODIFIER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     E_ModifierType getType() const override { return E_ModifierType::E_RingZoneMeshModifier; }
 

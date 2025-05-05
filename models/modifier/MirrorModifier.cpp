@@ -1,7 +1,5 @@
 #include "models/modifier/MirrorModifier.hpp"
 
-#include "helpers/ColorHelper.hpp"
-
 namespace nx
 {
   /////////////////////////////////////////////////////////
@@ -9,18 +7,10 @@ namespace nx
   /////////////////////////////////////////////////////////
   nlohmann::json MirrorModifier::serialize() const
   {
-    return
-    {
-      { "type", getType() },
-      { "isActive", m_data.isActive },
-      { "count", m_data.count },
-      { "distance", m_data.distance },
-      { "mirrorAlpha", m_data.mirrorAlpha },
-      { "lastVelocityNorm", m_data.lastVelocityNorm },
-      { "useDynamicRadius", m_data.useDynamicRadius },
-      { "dynamicRadius", m_data.dynamicRadius },
-      { "angleOffsetDegrees", m_data.angleOffsetDegrees }
-    };
+    nlohmann::json j;
+    j[ "type" ] = SerialHelper::serializeEnum( getType() );
+    EXPAND_SHADER_PARAMS_TO_JSON(MIRROR_MODIFIER_PARAMS)
+    return j;
   }
 
   /////////////////////////////////////////////////////////
@@ -29,14 +19,7 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      m_data.isActive = j.at( "isActive" ).get<bool>();
-      m_data.count = j.at( "count" ).get<int>();
-      m_data.distance = j.at( "distance" ).get<float>();
-      m_data.mirrorAlpha = j.at( "mirrorAlpha" ).get<float>();
-      m_data.lastVelocityNorm = j.at( "lastVelocityNorm" ).get<float>();
-      m_data.useDynamicRadius = j.at( "useDynamicRadius" ).get<bool>();
-      m_data.dynamicRadius = j.at( "dynamicRadius" ).get<float>();
-      m_data.angleOffsetDegrees = j.at( "angleOffsetDegrees" ).get<float>();
+      EXPAND_SHADER_PARAMS_FROM_JSON(MIRROR_MODIFIER_PARAMS)
     }
     else
     {
@@ -50,21 +33,8 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Mirror Modifier" ) )
     {
-      ImGui::Checkbox( "Mirror Enabled", &m_data.isActive );
-      ImGui::SliderInt("Mirror Count", &m_data.count, 1, 16);
-      ImGui::SliderFloat("Mirror Distance", &m_data.distance, 10.f, 300.f);
-      ImGui::SliderFloat("Mirror Opacity", &m_data.mirrorAlpha, 0.f, 1.f);
-      ImGui::SliderFloat("Mirror Rotation (deg)", &m_data.angleOffsetDegrees, 0.f, 360.f);
-
-      ImGui::Checkbox( "Velocity Radius", &m_data.useDynamicRadius );
-      ImGui::SliderFloat( "Mirror Velocity Amplifier", &m_data.dynamicRadius, 0.f, 5.f);
-
-      ImGui::Checkbox( "Use Particle Colors", &m_data.useParticleColors );
-      if ( !m_data.useParticleColors )
-      {
-        ColorHelper::drawImGuiColorEdit4( "Mirrored Color", m_data.mirrorColor );
-        ColorHelper::drawImGuiColorEdit4( "Mirrored Outline Color", m_data.mirrorOutlineColor );
-      }
+      ImGui::Checkbox( "Is Active##1", &m_data.isActive );
+      EXPAND_SHADER_IMGUI(MIRROR_MODIFIER_PARAMS, m_data)
 
       ImGui::TreePop();
       ImGui::Spacing();
@@ -82,15 +52,15 @@ namespace nx
       const sf::Vector2f origin = p->shape.getPosition();
       const float baseAngle =
         std::atan2(origin.y - m_ctx.globalInfo.windowHalfSize.y, origin.x - m_ctx.globalInfo.windowHalfSize.x);
-      const float angleOffsetRad = m_data.angleOffsetDegrees * NX_D2R;
+      const float angleOffsetRad = m_data.angleOffsetDegrees.first * NX_D2R;
 
-      const float radius = ( m_data.useDynamicRadius )
-        ? m_data.distance * m_data.dynamicRadius * m_data.lastVelocityNorm
-        : m_data.distance;
+      const float radius = ( m_data.useDynamicRadius.first )
+        ? m_data.distance.first * m_data.dynamicRadius.first * m_data.lastVelocityNorm.first
+        : m_data.distance.first;
 
-      for (int i = 0; i < m_data.count; ++i)
+      for (int i = 0; i < m_data.count.first; ++i)
       {
-        const float angle = baseAngle + angleOffsetRad + i * (2.f * NX_PI / m_data.count);
+        const float angle = baseAngle + angleOffsetRad + i * (2.f * NX_PI / m_data.count.first);
         const sf::Vector2f mirrorPos =
         {
           origin.x + std::cos(angle) * radius,
@@ -98,20 +68,20 @@ namespace nx
         };
 
         auto* shape = new sf::CircleShape(p->shape); // copy
-        auto fillColor = m_data.useParticleColors
+        auto fillColor = m_data.useParticleColors.first
           ? shape->getFillColor()
-          : m_data.mirrorColor;
+          : m_data.mirrorColor.first;
 
-        fillColor.a = static_cast< uint8_t >(fillColor.a * m_data.mirrorAlpha);
+        fillColor.a = static_cast< uint8_t >(fillColor.a * m_data.mirrorAlpha.first);
         shape->setFillColor(fillColor);
 
         if ( shape->getOutlineThickness() > 0.f )
         {
-          auto outlineColor = m_data.useParticleColors
+          auto outlineColor = m_data.useParticleColors.first
             ? shape->getOutlineColor()
-            : m_data.mirrorOutlineColor;
+            : m_data.mirrorOutlineColor.first;
 
-          outlineColor.a = static_cast< uint8_t >(outlineColor.a * m_data.mirrorAlpha);
+          outlineColor.a = static_cast< uint8_t >(outlineColor.a * m_data.mirrorAlpha.first);
           shape->setOutlineColor(outlineColor);
         }
 

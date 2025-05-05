@@ -38,6 +38,14 @@ namespace nx
     {
       MenuHelper::drawBlendOptions( value );
     }
+    else if constexpr (std::is_same_v<T, int32_t>)
+    {
+      ImGui::SliderInt(label, &value, min, max);
+    }
+    else
+    {
+      LOG_ERROR( "Unsupported ImGui Data Type: {}", label );
+    }
 
     if ( allowVSTBinding )
     {

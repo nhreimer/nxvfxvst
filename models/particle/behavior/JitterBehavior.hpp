@@ -18,7 +18,6 @@ X(jitterMultiplier  , float, 0.5f, 0.f, 5.f, "Amount of jitter", true)
       EXPAND_SHADER_PARAMS_FOR_STRUCT(JITTER_BEHAVIOR_PARAMS)
     };
 
-
     enum class E_JitterBehaviorParam
     {
       EXPAND_SHADER_PARAMS_FOR_ENUM(JITTER_BEHAVIOR_PARAMS)

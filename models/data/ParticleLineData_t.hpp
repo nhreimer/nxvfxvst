@@ -17,11 +17,6 @@ namespace nx
 
     float curvature { 0.25f };
     int32_t lineSegments { 20 };
-
-    // TODO: this is probably not in use anymore.
-    // TODO: ModifierPipeline has a global modifier blend option that seems
-    // TODO: to be used
-    sf::BlendMode blendMode { sf::BlendNone };
   };
 
 }

@@ -8,24 +8,40 @@ namespace nx
 
     enum class E_NoiseType : int8_t { E_Hash, E_Value, E_FBM };
 
+#define PERLIN_DEFORMER_MODIFIER_PARAMS(X)                                                               \
+X(noiseScale,        float,     0.01f,  0.0001f, 1.0f,   "Controls spatial frequency of noise",   true)  \
+X(timeScale,         float,     1.0f,   0.0f,    10.0f,  "Time-based animation speed",           true)   \
+X(deformStrength,    float,     10.0f,  0.0f,    100.0f, "Amount of distortion offset",          true)   \
+X(colorFade,         float,     1.0f,   0.0f,    5.0f,   "Color fade strength",                  true)   \
+X(octaves,           int32_t,   4,      1,      12,     "Number of FBM octaves",                 true)   \
+X(useParticleColors, bool,      false,  0,      1,      "Use individual particle colors",        true)   \
+X(perlinColor,       sf::Color, sf::Color(255, 255, 255, 100), 0, 255, "Fallback color",         false)
+
     struct PerlinDeformerData_t
     {
-      float noiseScale = 0.01f;     // spatial frequency
-      float timeScale = 1.0f;       // temporal speed
-      float deformStrength = 10.f;  // how much to offset
-      float colorFade = 1.f;        // how to fade the color
-      E_NoiseType noiseType = E_NoiseType::E_FBM;
-      int32_t octaves { 4 }; // FBM only
+      bool isActive { true };
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(PERLIN_DEFORMER_MODIFIER_PARAMS)
+      E_NoiseType noiseType { E_NoiseType::E_FBM };
+    };
 
-      bool useParticleColors { false };
-      sf::Color perlinColor = sf::Color(255, 255, 255, 100);
+    enum class E_PerlinDeformerBehaviorParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(PERLIN_DEFORMER_MODIFIER_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_PerlinDeformerBehaviorParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(PERLIN_DEFORMER_MODIFIER_PARAMS)
     };
 
   public:
 
     explicit PerlinDeformerModifier( PipelineContext& context )
       : m_ctx( context )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(PERLIN_DEFORMER_MODIFIER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     ~PerlinDeformerModifier() override = default;
 
@@ -37,14 +53,14 @@ namespace nx
     [[nodiscard]]
     E_ModifierType getType() const override { return E_ModifierType::E_PerlinDeformerModifier; }
 
-    bool isActive() const override { return m_isActive; }
+    bool isActive() const override { return m_data.isActive; }
     void processMidiEvent(const Midi_t &midiEvent) override {}
 
     void drawMenu() override;
 
     void update(const sf::Time &deltaTime) override
     {
-      m_time += ( deltaTime.asSeconds() * m_data.timeScale );
+      m_time += ( deltaTime.asSeconds() * m_data.timeScale.first );
     }
 
     void modify(
@@ -77,6 +93,5 @@ namespace nx
     PerlinDeformerData_t m_data;
 
     float m_time { 0.f };
-    bool m_isActive { true };
   };
 }
