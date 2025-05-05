@@ -24,6 +24,8 @@ namespace nx
       float turnAngle = 30.f; // degrees turned on L/R
       float segmentLength = 30.f; // length of each forward step
       float initialAngleDeg = 0.f;
+      float spreadFactor = 1.f;   // how far to spread out branches
+      float depthFactor = 0.2f;   // how tight the particles are to each other
       int32_t stepsPerNote = 1; // 2, 3, etc.
       E_BranchMode m_branchMode = E_BranchMode::E_Both;
     };

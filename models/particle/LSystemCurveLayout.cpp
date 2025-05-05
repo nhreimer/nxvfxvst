@@ -17,6 +17,9 @@ namespace nx
     j[ "turnAngle" ] = m_data.turnAngle;
     j[ "segmentLength" ] = m_data.segmentLength;
     j[ "initialAngleDeg" ] = m_data.initialAngleDeg;
+    j[ "spreadFactor" ] = m_data.spreadFactor;
+    j[ "depthFactor" ] = m_data.depthFactor;
+    j[ "stepsPerNote" ] = m_data.stepsPerNote;
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     return j;
   }
@@ -30,6 +33,9 @@ namespace nx
       m_data.turnAngle = j["turnAngle"];
       m_data.segmentLength = j["segmentLength"];
       m_data.initialAngleDeg = j["initialAngleDeg"];
+      m_data.spreadFactor = j["spreadFactor"];
+      m_data.depthFactor = j["depthFactor"];
+      m_data.stepsPerNote = j["stepsPerNote"];
     }
     else
     {
@@ -53,6 +59,8 @@ namespace nx
       ImGui::SliderFloat("Segment Length", &m_data.segmentLength, 5.f, 100.f);
       ImGui::SliderFloat("Turn Angle (deg)", &m_data.turnAngle, 1.f, 90.f);
       ImGui::SliderFloat("Initial Angle", &m_data.initialAngleDeg, -180.f, 180.f);
+      ImGui::SliderFloat( "Spread out", &m_data.spreadFactor, 1.f, 5.f );
+      ImGui::SliderFloat( "Tightness", &m_data.depthFactor, 0.f, 5.f );
       ImGui::SliderInt( "Steps per Note", &m_data.stepsPerNote, 1, 5 );
 
       ImGui::SeparatorText( "Branch Mode" );
@@ -101,9 +109,6 @@ namespace nx
         midiEvent
       });
     }
-
-    // How many elements to expand per MIDI note? (adjustable)
-    //constexpr int stepsPerNote = 1;
 
     for (int i = 0; i < m_data.stepsPerNote && !m_lsystemStack.empty(); ++i)
     {
@@ -163,9 +168,11 @@ namespace nx
       return;
     }
 
-    // Extend to next segment
-    const sf::Vector2f dir = MathHelper::polarToCartesian(state.angleDeg, m_data.segmentLength);
-    const sf::Vector2f newPos = state.position + dir;
+    // Extend to the next segment
+    const float tightness = 1.f + ( m_data.depth - m_currentDepth ) * m_data.depthFactor;
+    const sf::Vector2f dir = MathHelper::polarToCartesian(state.angleDeg,
+                              m_data.segmentLength * m_data.spreadFactor * tightness);
+    const sf::Vector2f newPos = ( state.position + dir );
 
     switch (m_data.m_branchMode)
     {
