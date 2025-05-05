@@ -5,21 +5,23 @@
 #include <string>
 #include <vector>
 
+#include "helpers/Definitions.hpp"
 #include "log/Logger.hpp"
 #include "models/IShader.hpp"
 #include "public.sdk/source/vst/vstparameters.h"
 
 namespace nx
 {
-  // Forward declaration
-  using ShaderControlSetter = std::function<float(float)>; // normalized 0–1
+  // normalized 0–1
+  using ShaderControlSetter = std::function<float(float)>;
   using OnControlRegistrationCallback = std::function<void(int32_t, float)>;
+  using OnControlUnRegistrationCallback = std::function<void(int32_t)>;
 
   // Represents a single binding between a VST param and a Shader Control
   struct VSTParamBinding
   {
     IShader * owner { nullptr };
-    int32_t vstParamID { -1 };        // 0..127
+    int32_t vstParamID { -1 };        // e.g., 0..127
     std::string shaderControlName;    // e.g., "Brightness", "Sigma", etc.
     ShaderControlSetter setter;       // Function to call when param changes
     float lastValue { 0.f };          // last known value
@@ -36,8 +38,10 @@ namespace nx
   {
   public:
 
-    explicit VSTParamBindingManager( OnControlRegistrationCallback&& onRegistrationCallback )
-      : m_onRegistrationCallback( onRegistrationCallback )
+    VSTParamBindingManager( OnControlRegistrationCallback&& onRegistrationCallback,
+                            OnControlUnRegistrationCallback&& onUnregistrationCallback )
+      : m_onRegistrationCallback( std::move( onRegistrationCallback ) ),
+        m_onUnRegistrationCallback( std::move( onUnregistrationCallback ) )
     {}
 
     int32_t registerBindableControl( IShader * owner,
@@ -158,7 +162,6 @@ namespace nx
         if constexpr (std::is_same_v<T, float>)
         {
           m_bindings[ vstParamID ].lastValue = convertToNormalized( m_bindings[ vstParamID ], value );
-          LOG_INFO( "Setting VST Param ID: {} => {} ({})", vstParamID, value, m_bindings[ vstParamID ].lastValue );
 
           // force update in the controller
           m_onRegistrationCallback(
@@ -177,9 +180,8 @@ namespace nx
 
     int32_t getAvailableVSTParamID()
     {
-      constexpr int maxParams = 128;
       for ( int32_t i = m_nextAvailableVSTParamID,
-            y = 0; y < maxParams; i = i + 1 % maxParams, ++y )
+            y = 0; y < PARAMETERS_ENABLED; i = i + 1 % PARAMETERS_ENABLED, ++y )
       {
         if ( m_bindings[ i ].vstParamID == -1 )
         {
@@ -191,8 +193,9 @@ namespace nx
       return -1;
     }
 
-    static void resetBinding( VSTParamBinding& binding )
+    void resetBinding( VSTParamBinding& binding ) const
     {
+      m_onUnRegistrationCallback( binding.vstParamID );
       binding.owner = nullptr;
       binding.shaderControlName = m_emptyString;
       binding.vstParamID = -1;
@@ -203,8 +206,9 @@ namespace nx
   private:
 
     OnControlRegistrationCallback m_onRegistrationCallback;
+    OnControlUnRegistrationCallback m_onUnRegistrationCallback;
     int32_t m_nextAvailableVSTParamID { 0 };
-    std::array< VSTParamBinding, 128 > m_bindings;
+    std::array< VSTParamBinding, PARAMETERS_ENABLED > m_bindings;
     inline static std::string m_emptyString = "";
     // std::vector<VSTParamBinding> m_bindings; // key = VST Param ID
   };

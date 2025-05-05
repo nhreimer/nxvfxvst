@@ -22,10 +22,25 @@ public:
   //------------------------------------------------------------------------
 	nxvfxvstController()
 	  : m_paramBindingManager(
+	    // SET THE NAME AND INITIAL VALUE!
 	    [this]( const int32_t vstParamId, const float normalizedValue )
 	    {
 	      LOG_WARN( "{} => {}", vstParamId, normalizedValue );
 	      setParamNormalized(vstParamId, normalizedValue);
+	    },
+	    // RESET THE NAME!
+	    [this]( const int32_t vstParamId )
+	    {
+	      if ( vstParamId > -1 && vstParamId < PARAMETERS_ENABLED )
+	      {
+	        auto * param = dynamic_cast< Steinberg::Vst::RangeParameter * >( parameters.getParameter( vstParamId ) );
+	        if ( param )
+	        {
+	          const std::string paramName( "Param_" + std::to_string( vstParamId ) );
+	          const Steinberg::UString128 ustr( paramName.c_str() );
+            ustr.copyTo( param->getInfo().title, 128 );
+	        }
+	      }
 	    } )
 	{
 	  m_state = nlohmann::json::object();
@@ -54,7 +69,15 @@ public:
 	Steinberg::tresult PLUGIN_API getState (Steinberg::IBStream* state) SMTG_OVERRIDE;
   Steinberg::tresult PLUGIN_API setParamNormalized(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) SMTG_OVERRIDE
   {
+    // set the name of the parameter dynamically
     m_stateContext.paramBindingManager.setParamNormalized(id, value);
+    auto& binding = m_stateContext.paramBindingManager.getBindingById( id );
+    auto * param = dynamic_cast< Steinberg::Vst::RangeParameter* >( parameters.getParameter( id ) );
+    if ( param )
+    {
+      const Steinberg::UString128 ustr( binding.shaderControlName.c_str() );
+      ustr.copyTo( param->getInfo().title, 128 );
+    }
     return Steinberg::kResultTrue;
   }
 
@@ -77,7 +100,7 @@ public:
     str.append( std::to_string( VSTParamBindingManager::convertToDenormalized( binding, valueNormalized ) ) );
     str.append( "]" );
 
-    Steinberg::UString128 ustr( str.c_str() );
+    const Steinberg::UString128 ustr( str.c_str() );
     ustr.copyTo( string, 128 );
     return Steinberg::kResultTrue;
   }

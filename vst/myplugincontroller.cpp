@@ -99,17 +99,20 @@ tresult PLUGIN_API nxvfxvstController::initialize (FUnknown* context)
 		return result;
 	}
 
-	// Register a bunch of dummy parameters
-  for (int32_t i = 0; i < 128; ++i)
+	// Register a bunch of dummy parameters, because according to the documentation:
+  // Steinberg VST3 SDK Documentation: “All parameters must be created in initialize()
+  // to ensure proper parameter registration and automation handling by the host.”
+  // on the plus side, we can change the name of the parameter
+  for (int32_t i = 0; i < PARAMETERS_ENABLED; ++i)
   {
     std::string paramName( "Param_" + std::to_string(i) );
 
-    // hands off ownership
-    auto * param = new Vst::RangeParameter(USTRING( paramName.c_str() ), i, nullptr, 0.f, 1.f, 0.f);
-    parameters.addParameter(param);
+    // hands off ownership: this is NOT leaked
+    parameters.addParameter(
+      new Vst::RangeParameter(USTRING( paramName.c_str() ), i, nullptr, 0.f, 1.f, 0.f));
   }
 
-  LOG_INFO( "initialized controller with 128 parameters" );
+  LOG_INFO( "initialized controller with {} parameters", PARAMETERS_ENABLED );
 	return result;
 }
 

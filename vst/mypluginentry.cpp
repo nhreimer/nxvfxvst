@@ -19,8 +19,8 @@ using namespace nx;
 //------------------------------------------------------------------------
 
 BEGIN_FACTORY_DEF ("nx", 
-			       "https://www.mycompanyname.com", 
-			       "mailto:nx@nx.org")
+			       "https://github.com/nhreimer/nxvfxvst",
+			       "mailto:nicholas.hans@gmail.com")
 
 	//---First Plug-in included in this factory-------
 	// its kVstAudioEffectClass component
