@@ -58,8 +58,6 @@ namespace nx
 
   void LissajousCurveLayout::addMidiEvent( const Midi_t &midiEvent )
   {
-    //ParticleConsumer::addMidiEvent( midiEvent );
-
     const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
     const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
 
@@ -73,19 +71,19 @@ namespace nx
     ParticleLayoutBase::initializeParticle( p, midiEvent );
   }
 
-  sf::Vector2f LissajousCurveLayout::getNextPosition( const Midi_t & midiEvent ) const
-  {
-    const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
-    const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
-
-    // this is also the phase
-    const float t = m_ctx.globalInfo.elapsedTimeSeconds;
-
-    const float x = ( m_ctx.globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * t + m_data.phaseDelta);
-    const float y = ( m_ctx.globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * t);
-
-    return { x, y };
-  }
+  // sf::Vector2f LissajousCurveLayout::getNextPosition( const Midi_t & midiEvent ) const
+  // {
+  //   const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
+  //   const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
+  //
+  //   // this is also the phase
+  //   const float t = m_ctx.globalInfo.elapsedTimeSeconds;
+  //
+  //   const float x = ( m_ctx.globalInfo.windowSize.x * m_data.phaseSpread ) * sin(a * t + m_data.phaseDelta);
+  //   const float y = ( m_ctx.globalInfo.windowSize.y * m_data.phaseSpread ) * sin(b * t);
+  //
+  //   return { x, y };
+  // }
 
 
 }

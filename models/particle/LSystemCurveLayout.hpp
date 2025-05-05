@@ -21,10 +21,19 @@ namespace nx
     struct LSystemCurveLayoutData_t : public ParticleLayoutData_t
     {
       int depth = 4; // number of recursive steps
-      float turnAngle = 25.f; // degrees turned on L/R
-      float segmentLength = 20.f; // length of each forward step
+      float turnAngle = 30.f; // degrees turned on L/R
+      float segmentLength = 30.f; // length of each forward step
       float initialAngleDeg = 0.f;
+      int32_t stepsPerNote = 1; // 2, 3, etc.
       E_BranchMode m_branchMode = E_BranchMode::E_Both;
+    };
+
+    struct LSystemState_t
+    {
+      sf::Vector2f position;
+      float angleDeg;
+      int depth;
+      Midi_t midiNote;
     };
 
   public:
@@ -55,10 +64,8 @@ namespace nx
     std::deque< TimedParticle_t * > &getParticles() override { return m_particles; }
 
   private:
-    void drawLSystem( const sf::Vector2f position,
-                      const float angleDeg,
-                      const int depth,
-                      const Midi_t & midiNote );
+
+    void expandLSystemStep( const LSystemState_t & state );
 
   private:
     PipelineContext& m_ctx;
@@ -66,6 +73,9 @@ namespace nx
     ParticleBehaviorPipeline m_behaviorPipeline;
 
     std::deque< TimedParticle_t* > m_particles;
+
+    std::vector< LSystemState_t > m_lsystemStack;
+    int m_currentDepth = 1;
   };
 
 } // namespace nx

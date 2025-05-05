@@ -43,8 +43,8 @@ namespace nx
 
     void addMidiEvent( const Midi_t &midiEvent ) override;
 
-  protected:
-    sf::Vector2f getNextPosition( const Midi_t & midiEvent ) const;
+  private:
+    // sf::Vector2f getNextPosition( const Midi_t & midiEvent ) const;
 
   private:
 

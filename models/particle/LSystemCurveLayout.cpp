@@ -53,8 +53,9 @@ namespace nx
       ImGui::SliderFloat("Segment Length", &m_data.segmentLength, 5.f, 100.f);
       ImGui::SliderFloat("Turn Angle (deg)", &m_data.turnAngle, 1.f, 90.f);
       ImGui::SliderFloat("Initial Angle", &m_data.initialAngleDeg, -180.f, 180.f);
+      ImGui::SliderInt( "Steps per Note", &m_data.stepsPerNote, 1, 5 );
 
-      ImGui::Text( "Branch Mode" );
+      ImGui::SeparatorText( "Branch Mode" );
       if ( ImGui::RadioButton( "Both", m_data.m_branchMode == E_BranchMode::E_Both ) )
         m_data.m_branchMode = E_BranchMode::E_Both;
 
@@ -81,14 +82,36 @@ namespace nx
   void LSystemCurveLayout::addMidiEvent( const Midi_t &midiEvent )
   {
     // 127 - 21 = full pitch range
-    const auto offsetX = midiEvent.pitch / 106.f;
-    const sf::Vector2f position = { m_ctx.globalInfo.windowSize.x * offsetX,
-                                    m_ctx.globalInfo.windowSize.y * offsetX };
+    if (m_lsystemStack.empty())
+    {
+      // Start a new tree!
+      const auto offsetX = midiEvent.pitch / 106.f;
+      const sf::Vector2f position = {
+        m_ctx.globalInfo.windowSize.x * offsetX,
+        m_ctx.globalInfo.windowSize.y * offsetX
+      };
 
-    drawLSystem( position, // m_globalInfo.windowHalfSize,
-                 m_data.initialAngleDeg,
-                 m_data.depth,
-                 midiEvent );
+      m_currentDepth = 1;
+      m_lsystemStack.clear();
+
+      m_lsystemStack.push_back({
+        position,
+        m_data.initialAngleDeg,
+        m_data.depth,
+        midiEvent
+      });
+    }
+
+    // How many elements to expand per MIDI note? (adjustable)
+    //constexpr int stepsPerNote = 1;
+
+    for (int i = 0; i < m_data.stepsPerNote && !m_lsystemStack.empty(); ++i)
+    {
+      auto state = m_lsystemStack.back();
+      m_lsystemStack.pop_back();
+
+      expandLSystemStep(state);
+    }
   }
 
   void LSystemCurveLayout::update( const sf::Time &deltaTime )
@@ -119,71 +142,66 @@ namespace nx
     }
   }
 
-
-  void LSystemCurveLayout::drawLSystem( const sf::Vector2f position,
-                    const float angleDeg,
-                    const int depth,
-                    const Midi_t & midiNote )
+  void LSystemCurveLayout::expandLSystemStep(const LSystemState_t& state)
   {
-    if ( depth <= 0 )
+    if (state.depth <= 0)
     {
-      // Place particle at final location
-      auto * p = m_particles.emplace_back( new TimedParticle_t() );
+      // Final particle placement
+      auto* p = m_particles.emplace_back(new TimedParticle_t());
       p->shape.setRadius(m_data.radius);
 
-      if ( p->shape.getPointCount() != m_data.shapeSides )
-        p->shape.setPointCount( m_data.shapeSides );
+      if (p->shape.getPointCount() != m_data.shapeSides)
+        p->shape.setPointCount(m_data.shapeSides);
 
-      p->shape.setOutlineThickness( m_data.outlineThickness );
-      p->shape.setOutlineColor( m_data.outlineColor );
-
-      p->shape.setOrigin( p->shape.getGlobalBounds().size / 2.f );
-      p->shape.setPosition(position);
+      p->shape.setOutlineThickness(m_data.outlineThickness);
+      p->shape.setOutlineColor(m_data.outlineColor);
+      p->shape.setOrigin(p->shape.getGlobalBounds().size / 2.f);
+      p->shape.setPosition(state.position);
       p->spawnTime = m_ctx.globalInfo.elapsedTimeSeconds;
       p->initialColor = m_data.startColor;
-      m_behaviorPipeline.applyOnSpawn( p, midiNote );
+      m_behaviorPipeline.applyOnSpawn(p, state.midiNote);
       return;
     }
 
-    // Forward segment
-    const sf::Vector2f dir = MathHelper::polarToCartesian(angleDeg, m_data.segmentLength);
-    const sf::Vector2f newPos = position + dir;
+    // Extend to next segment
+    const sf::Vector2f dir = MathHelper::polarToCartesian(state.angleDeg, m_data.segmentLength);
+    const sf::Vector2f newPos = state.position + dir;
 
-    switch ( m_data.m_branchMode )
+    switch (m_data.m_branchMode)
     {
       case E_BranchMode::E_Both:
-        drawLSystem( newPos, angleDeg + m_data.turnAngle, depth - 1, midiNote );
-        drawLSystem( newPos, angleDeg - m_data.turnAngle, depth - 1, midiNote );
+        m_lsystemStack.push_back({ newPos, state.angleDeg + m_data.turnAngle, state.depth - 1, state.midiNote });
+        m_lsystemStack.push_back({ newPos, state.angleDeg - m_data.turnAngle, state.depth - 1, state.midiNote });
         break;
 
       case E_BranchMode::E_LeftOnly:
-        drawLSystem( newPos, angleDeg + m_data.turnAngle, depth - 1, midiNote );
+        m_lsystemStack.push_back({ newPos, state.angleDeg + m_data.turnAngle, state.depth - 1, state.midiNote });
         break;
 
       case E_BranchMode::E_RightOnly:
-        drawLSystem( newPos, angleDeg - m_data.turnAngle, depth - 1, midiNote );
+        m_lsystemStack.push_back({ newPos, state.angleDeg - m_data.turnAngle, state.depth - 1, state.midiNote });
         break;
 
       case E_BranchMode::E_MidiPitch:
-      {
-        switch ( midiNote.pitch % 3 )
+        switch (state.midiNote.pitch % 3)
         {
           case 0:
-            drawLSystem( newPos, angleDeg + m_data.turnAngle, depth - 1, midiNote );
-            drawLSystem( newPos, angleDeg - m_data.turnAngle, depth - 1, midiNote );
+            m_lsystemStack.push_back({ newPos, state.angleDeg + m_data.turnAngle, state.depth - 1, state.midiNote });
+            m_lsystemStack.push_back({ newPos, state.angleDeg - m_data.turnAngle, state.depth - 1, state.midiNote });
             break;
           case 1:
-            drawLSystem( newPos, angleDeg + m_data.turnAngle, depth - 1, midiNote );
+            m_lsystemStack.push_back({ newPos, state.angleDeg + m_data.turnAngle, state.depth - 1, state.midiNote });
             break;
           case 2:
-            drawLSystem( newPos, angleDeg - m_data.turnAngle, depth - 1, midiNote );
+            m_lsystemStack.push_back({ newPos, state.angleDeg - m_data.turnAngle, state.depth - 1, state.midiNote });
             break;
-          default:
-            break;
+
+          default: break;
         }
-      }
+        break;
+
+      default: break;
     }
   }
-
 
 } // namespace nx
