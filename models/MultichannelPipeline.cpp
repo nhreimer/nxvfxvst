@@ -85,32 +85,33 @@ namespace nx
     m_renderTime = m_renderTimer.getElapsedTime().asMilliseconds();
   }
 
-  void MultichannelPipeline::update( const sf::Time &deltaTime ) const
+  void MultichannelPipeline::update( const sf::Time &deltaTime )
   {
+    m_frameDiagnostics.update( deltaTime );
+
     for ( const auto& channel: m_channels )
       channel->update( deltaTime );
   }
 
   void MultichannelPipeline::drawMenu()
   {
+    drawPipelineMenu();
+    drawPipelineMetrics();
+  }
+
+  void MultichannelPipeline::drawPipelineMenu()
+  {
+    ImGui::SetNextWindowBgAlpha(0.3f); // semi-transparent background
+
     ImGui::Begin(
       FULL_PRODUCT_NAME,
       nullptr,
       ImGuiWindowFlags_AlwaysAutoResize );
 
-    if ( ImGui::TreeNode( "Information" ) )
-    {
-      ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
-      ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
-      ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
-      ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
-      ImGui::Text( "Playhead: %0.5f", m_ctx.globalInfo.playhead );
-
-      ImGui::TreePop();
-      ImGui::Spacing();
-    }
-
     int32_t offsetChannel = m_selectedChannel + 1;
+
+    ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
+    ImGui::Text( "Playhead: %0.5f", m_ctx.globalInfo.playhead );
 
     // we do this so that the channel is 1 and not 0. it's just a convenience thing
     // but please note that the channel is 0-based index!
@@ -202,4 +203,29 @@ namespace nx
     ImGui::Text( "%s", BUILD_NUMBER );
     ImGui::End();
   }
+
+  void MultichannelPipeline::drawPipelineMetrics()
+  {
+    ImGui::SetNextWindowBgAlpha(0.3f); // semi-transparent background
+
+    ImGui::Begin("Frame Diagnostics", nullptr,
+                     ImGuiWindowFlags_AlwaysAutoResize |
+                     ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_NoFocusOnAppearing |
+                     ImGuiWindowFlags_NoNav);
+    {
+
+      // ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
+      // TODO: add multithreaded render output
+
+      ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
+      ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
+
+      m_frameDiagnostics.drawMenu();
+    }
+
+    ImGui::End();
+  }
+
+
 } // namespace nx

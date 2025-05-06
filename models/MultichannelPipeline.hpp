@@ -7,6 +7,7 @@
 #include "models/ChannelPipeline.hpp"
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
+#include "utils/ImGuiFrameDiagnostics.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
@@ -51,7 +52,12 @@ namespace nx
     void draw(sf::RenderWindow &window);
     void drawMenu();
 
-    void update(const sf::Time &deltaTime) const;
+    void update(const sf::Time &deltaTime);
+
+  private:
+
+    void drawPipelineMenu();
+    void drawPipelineMetrics();
 
   private:
 
@@ -74,6 +80,8 @@ namespace nx
 
     sf::Clock m_renderTimer;
     float m_renderTime { 0.f };
+
+    ImGuiFrameDiagnostics m_frameDiagnostics;
 
   };
 

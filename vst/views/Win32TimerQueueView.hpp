@@ -15,8 +15,7 @@
 #include "vst/EventFacadeVst.hpp"
 #include "vst/VSTStateContext.hpp"
 #include "vst/views/IVSTView.hpp"
-#include "vst/views/Win32WinImpl.hpp"
-
+#include "vst/views/Win32Helper.hpp"
 
 ///////////////////////////////////////////////////////////
 /// Uses the Win32 TimerQueue API rather than SetTimer
@@ -37,6 +36,20 @@ namespace nx
                           public IVSTView,    // same as IPlugView but with notify() added
                           public Steinberg::IPlugFrame
 {
+
+    ////////////////////////////////////////////////////////////////////////////////
+    /// WIN32 WINDOW INFO
+    ////////////////////////////////////////////////////////////////////////////////
+    struct Win32Details_t
+    {
+      std::string classname;              // WNDCLASS classname. must be unique.
+      HWND parentHwnd { nullptr };        // Parent HWND of the child HWND
+      HWND childHwnd { nullptr };         // HWND to the child
+      // HINSTANCE hInstance { nullptr };    // Instance handle: not necessary
+      HANDLE redrawTimer { nullptr };
+      int32_t currentFPS { 120 };
+    };
+
   public:
     void saveState(nlohmann::json &j) override { m_eventFacade.saveState( j ); }
     void restoreState(nlohmann::json &j) override { m_eventFacade.restoreState( j ); }
@@ -267,7 +280,7 @@ private:
 
     const int intervalMs = std::max(1, 1000 / m_win32.currentFPS);
 
-    const auto refreshRate = MathHelper::roundTo( getRefreshRateHz(), 0 );
+    const auto refreshRate = MathHelper::roundTo( win32::Win32Helper::getRefreshRateHz(), 0 );
 
     LOG_INFO( "refresh rate reported as {}", refreshRate );
 
@@ -338,8 +351,7 @@ private:
   {
     LOG_INFO( "creating child window" );
 
-    const auto childHwnd = priv::Win32WinImpl::createChildWindow(
-      this,
+    const auto childHwnd = win32::Win32Helper::createChildWindow(
       &Win32TimerQueueView::childWindowProc,
       parentHwnd,
       { { m_rect.left, m_rect.top },
@@ -367,62 +379,6 @@ private:
     LOG_INFO( "started message pump at {} FPS", m_win32.currentFPS );
 
     return true;
-  }
-
-  static double getRefreshRateHz()
-  {
-    ::DWM_TIMING_INFO timingInfo = {};
-    timingInfo.cbSize = sizeof(timingInfo);
-
-    LARGE_INTEGER qpcFreq = {};
-    QueryPerformanceFrequency(&qpcFreq);
-
-    if (SUCCEEDED(::DwmGetCompositionTimingInfo(nullptr, &timingInfo)))
-    {
-      if (timingInfo.qpcRefreshPeriod > 0 && qpcFreq.QuadPart > 0)
-      {
-        LOG_INFO( "Dwm reported refresh rate" );
-        return static_cast<double>(qpcFreq.QuadPart) / static_cast<double>(timingInfo.qpcRefreshPeriod);
-      }
-      LOG_WARN( "Dwm succeeded but unable to get metrics." );
-    }
-
-    LOG_WARN( "failed to get Dwm refresh rate. attempting to get desktop rate." );
-    // DWM failed — fallback to display info
-    DEVMODE devMode = {};
-    devMode.dmSize = sizeof(devMode);
-
-    if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &devMode))
-    {
-      if (devMode.dmDisplayFrequency > 1)
-      {
-        LOG_INFO( "Windows display reported refresh rate" );
-        return (devMode.dmDisplayFrequency);
-      }
-    }
-
-    LOG_WARN( "failed to get desktop rate. defaulting to 60 FPS." );
-
-    // Last resort
-    return 60.f;
-  }
-
-  /***
- * Gets the window size from the OS
- * @param hwnd handle to a window
- * @return size of window if successful, otherwise a vector of { 0, 0 }
- */
-  static sf::Vector2u getWin32WindowSize( const HWND hwnd )
-  {
-    RECT frame {};
-    if ( ::GetWindowRect( hwnd, &frame ) )
-    {
-      return { static_cast< uint32_t >( frame.right - frame.left ),
-                  static_cast< uint32_t >( frame.bottom - frame.top ) };
-    }
-
-    // hand back an empty vector
-    return sf::Vector2u {};
   }
 
   static LRESULT CALLBACK childWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -472,7 +428,7 @@ private:
   sf::ContextSettings m_sfContext { 24, 0, 8, 4, 6 };
 
   // holds Win32 window specifics
-  priv::Win32Details_t m_win32;
+  Win32Details_t m_win32;
 
   static constexpr UINT WM_RUN_FRAME = WM_APP + 1;
 

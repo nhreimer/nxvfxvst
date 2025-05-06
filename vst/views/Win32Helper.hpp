@@ -1,27 +1,72 @@
 #pragma once
 
-namespace nx::priv
-{
-  ////////////////////////////////////////////////////////////////////////////////
-  /// WIN32 WINDOW INFO
-  ////////////////////////////////////////////////////////////////////////////////
-  struct Win32Details_t
-  {
-    std::string classname;              // WNDCLASS classname. must be unique.
-    HWND parentHwnd { nullptr };        // Parent HWND of the child HWND
-    HWND childHwnd { nullptr };         // HWND to the child
-    // HINSTANCE hInstance { nullptr };    // Instance handle: not necessary
-    HANDLE redrawTimer { nullptr };
-    int32_t currentFPS { 120 };
-  };
+#include <dwmapi.h>
 
-  // NOTE: this should probably be thread safe to be on the safe side
-  class Win32WinImpl
+namespace nx::win32
+{
+
+  class Win32Helper
   {
   public:
 
-    static HWND createChildWindow( void * obj,
-                                   LRESULT (*childWndProc)( HWND, UINT, WPARAM, LPARAM ),
+    static double getRefreshRateHz()
+    {
+      ::DWM_TIMING_INFO timingInfo = {};
+      timingInfo.cbSize = sizeof(timingInfo);
+
+      LARGE_INTEGER qpcFreq = {};
+      QueryPerformanceFrequency(&qpcFreq);
+
+      if (SUCCEEDED(::DwmGetCompositionTimingInfo(nullptr, &timingInfo)))
+      {
+        if (timingInfo.qpcRefreshPeriod > 0 && qpcFreq.QuadPart > 0)
+        {
+          LOG_INFO( "Dwm reported refresh rate" );
+          return static_cast<double>(qpcFreq.QuadPart) / static_cast<double>(timingInfo.qpcRefreshPeriod);
+        }
+        LOG_WARN( "Dwm succeeded but unable to get metrics." );
+      }
+
+      LOG_WARN( "failed to get Dwm refresh rate. attempting to get desktop rate." );
+      // DWM failed — fallback to display info
+      DEVMODE devMode = {};
+      devMode.dmSize = sizeof(devMode);
+
+      if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &devMode))
+      {
+        if (devMode.dmDisplayFrequency > 1)
+        {
+          LOG_INFO( "Windows display reported refresh rate" );
+          return (devMode.dmDisplayFrequency);
+        }
+      }
+
+      LOG_WARN( "failed to get desktop rate. defaulting to 60 FPS." );
+
+      // Last resort
+      return 60.f;
+    }
+
+    /***
+   * Gets the window size from the OS
+   * @param hwnd handle to a window
+   * @return size of window if successful, otherwise a vector of { 0, 0 }
+   */
+    static sf::Vector2u getWin32WindowSize( const HWND hwnd )
+    {
+      RECT frame {};
+      if ( ::GetWindowRect( hwnd, &frame ) )
+      {
+        return { static_cast< uint32_t >( frame.right - frame.left ),
+                    static_cast< uint32_t >( frame.bottom - frame.top ) };
+      }
+
+      // hand back an empty vector
+      return sf::Vector2u {};
+    }
+
+
+    static HWND createChildWindow( LRESULT (*childWndProc)( HWND, UINT, WPARAM, LPARAM ),
                                    const HWND parent,
                                    const sf::IntRect r )
     {
