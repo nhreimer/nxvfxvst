@@ -90,6 +90,31 @@ Synchronize midi events to highly customizable visuals.
 
 ## VST Controller and VST Processor
 
+### VST3 Refresh Rate
+
+__TL;DR__:
+
+Windows Desktop Window Manager (DWM) cannot be bypassed (safely), and so the framerate will often 
+be limited to approximately 60 FPS.
+
+__DETAILS__:
+
+Why VST3 Plugins Can't Escape DWM Chains:
+
+    We're inside the DAW's process.
+    We render into a child HWND.
+    The DAW host owns the main thread, DPI context, compositor control, and event loop.
+    We don’t get to create exclusive full-screen swap chains, custom WGL contexts, or bypass HWND parenting.
+
+Even if you tried, most DAWs would reject the plugin (host rule: no global popups, no top-level windows, no full-screen hijacking).
+
+Games and full-screen apps manage to bypass this by:
+
+    Telling Windows to detach from DWM and hand the GPU fully to the app
+    They create their own top-level HWND and control the swap chain directly
+
+By default, the plugin will attempt to use 120 FPS, but it will match the reported refresh rate.
+The logs will then report any frames that are dropped according to the matched refresh rate. 
 
 ### VST3 Design Overview 
 
@@ -124,8 +149,8 @@ and then we allow the Controller thread to consume events on every frame.
 
 __TL;DR__:
 
-Parameters are limited to 128 slots. Parameter names in DAW show as "Param_N". Parameters 
-are limited to 0 - 1.
+Parameters are limited to 256 slots. Parameter names in DAW show as "Param_N" until a control takes over and renames it. 
+Parameters are limited to 0 - 1.
 
 __DETAILS__:
 
@@ -133,7 +158,7 @@ VST3 requires all parameters, i.e, user controls, to be defined during instantia
 however, creates dynamic effects and each effect has a number of controls. There's no reliable way
 (that I can tell) to change the VST parameter type or parameter name after creation. As a result, 
 the plugin registers a block of parameters during plugin instantiation, which is why you'll see 
-"Param_0" to "Param_127" appear as parameters. Those parameters get assigned dynamically whenever 
+"Param_0" to "Param_255" appear as parameters. Those parameters get assigned dynamically whenever 
 an effect is created but the name does not change.
 
 Additionally, all parameters are of the same Ranged Type, where the values are normalized between 

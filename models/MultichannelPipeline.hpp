@@ -16,7 +16,7 @@
 
 namespace nx
 {
-  class MultichannelPipeline
+  class MultichannelPipeline final
   {
 
     struct ChannelDrawingData_t

@@ -14,5 +14,8 @@ namespace nx
     virtual void notifyPlayheadUpdate( double playhead ) = 0;
     virtual void saveState( nlohmann::json& j ) = 0;
     virtual void restoreState( nlohmann::json& j ) = 0;
+
+    virtual void setFrameRate( int32_t fps ) = 0;
+    virtual int32_t getFrameRate() const = 0;
   };
 }

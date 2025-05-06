@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <dwmapi.h>
 #include <rpc.h>
 
 #include <base/source/fobject.h>
@@ -14,136 +15,25 @@
 #include "vst/EventFacadeVst.hpp"
 #include "vst/VSTStateContext.hpp"
 #include "vst/views/IVSTView.hpp"
+#include "vst/views/Win32WinImpl.hpp"
+
 
 ///////////////////////////////////////////////////////////
-/// DEPRECATED IN FAVOR OF USING Win32's TimerQueue API,
-/// which is more consistent when compared to SetTimer API
-/// This change was made to help lock in video recording
-/// better and not for any other reason.
+/// Uses the Win32 TimerQueue API rather than SetTimer
+/// for more consistent frame rates. Although we can set the
+/// timer to 1 ms if we wanted, we won't get any real gains
+/// because we can't bypass DWM reliably or safely.
+///
+/// To prevent the timer from spamming us unnecessarily,
+/// the class will match the refresh rate reported by Windows.
 ///////////////////////////////////////////////////////////
 
 namespace nx
 {
-
-namespace priv
-{
-  ////////////////////////////////////////////////////////////////////////////////
-  /// WIN32 WINDOW INFO
-  ////////////////////////////////////////////////////////////////////////////////
-  struct Win32Details_t
-  {
-    std::string classname;              // WNDCLASS classname. must be unique.
-    HWND parentHwnd { nullptr };        // Parent HWND of the child HWND
-    HWND childHwnd { nullptr };         // HWND to the child
-    // HINSTANCE hInstance { nullptr };    // Instance handle: not necessary
-    UINT_PTR timerResult { 0 };         // timer id
-  };
-
-  // NOTE: this should probably be thread safe to be on the safe side
-  class WinImpl
-  {
-  public:
-
-    static HWND createChildWindow( const HWND parent, const sf::IntRect r )
-    {
-      if ( parent == nullptr )
-      {
-        LOG_CRITICAL( "Parent HWND must not be null!" );
-        return nullptr;
-      }
-
-      const auto moduleHandle = getWindowsModuleHandle();
-
-      // LOG_DEBUG( "ModuleHandle: {}", static_cast< void * >( moduleHandle ) );
-
-      // failed to register? we only need to register a single class for n number of parents
-      if ( !registerWin32Class( moduleHandle ) ) return nullptr;
-
-      // successfully registered
-      m_isRegistered = true;
-
-      HWND handle = ::CreateWindowEx( WS_EX_CONTROLPARENT,		 // Extended possibilities for variation
-                                      INTERNAL_WINDOW_NAME,    // window class name
-                                      WINDOW_NAME,	           // Title Text
-                                      WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_CLIPSIBLINGS, // flags
-                                      r.position.x, r.position.y, r.size.x, r.size.y, // pos & size
-                                      //r.left, r.top, r.width, r.height,                   // pos & size
-                                      parent,	                                              // the parent window
-                                      nullptr,                                              // menu
-                                      moduleHandle,                                         // HINSTANCE of calling application
-                                      nullptr );                                     // idk
-
-      if ( handle == nullptr )
-      {
-        LOG_ERROR( "CreateWindowEx failed: {}", ::GetLastError() );
-        return nullptr;
-      };
-
-      LOG_DEBUG( "CreateWindowEx successful: {}", static_cast< void * >( handle ) );
-
-      return handle;
-    }
-
-  private:
-
-    static bool registerWin32Class( HINSTANCE moduleHandle )
-    {
-      if ( m_isRegistered )
-      {
-        LOG_DEBUG( "window class already registered. skipping step." );
-        return true;
-      }
-
-      WNDCLASSEX wincl;
-      wincl.hInstance = moduleHandle;
-      wincl.lpszClassName = INTERNAL_WINDOW_NAME;
-      wincl.lpfnWndProc = &processWndEvent;
-      wincl.style = CS_DBLCLKS | CS_OWNDC;
-      wincl.cbSize = sizeof( wincl );
-      wincl.hIcon = ::LoadIcon( nullptr, IDI_APPLICATION );
-      wincl.hIconSm = wincl.hIcon;
-      wincl.hCursor = ::LoadCursor(nullptr, IDC_ARROW );
-      wincl.lpszMenuName = nullptr;
-      wincl.cbClsExtra = 0;
-      wincl.cbWndExtra = 0;
-      wincl.hbrBackground = reinterpret_cast< HBRUSH >( COLOR_BTNFACE + 1 );
-
-      if ( ::RegisterClassEx( &wincl ) == 0 )
-      {
-        LOG_ERROR( "Failed to register window class: {}", ::GetLastError() );
-        return false;
-      }
-
-      LOG_DEBUG( "Successfully registered window class" );
-      return true;
-    }
-
-    static HINSTANCE getWindowsModuleHandle()
-    {
-      MEMORY_BASIC_INFORMATION mbi;
-      static int dummy;
-      ::VirtualQuery( &dummy, &mbi, sizeof( mbi ) );
-      return static_cast< HINSTANCE >( mbi.AllocationBase );
-    }
-
-    static LRESULT processWndEvent( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
-    {
-      return ::DefWindowProc( hwnd, msg, wParam, lParam );
-    }
-
-   static inline const auto INTERNAL_WINDOW_NAME = L"nxInternalWindow";
-   static inline const auto WINDOW_NAME = L"nxChildWindow";
-
-   // we only need to register a window once
-   static inline bool m_isRegistered { false };
-  };
-
-}
-
   ////////////////////////////////////////////////////////////////////////////////
   /// WIN32 CHILD VIEW
   ////////////////////////////////////////////////////////////////////////////////
-  class Win32View final : public Steinberg::FObject,
+  class Win32TimerQueueView final : public Steinberg::FObject,
                           public IVSTView,    // same as IPlugView but with notify() added
                           public Steinberg::IPlugFrame
 {
@@ -152,7 +42,7 @@ namespace priv
     void restoreState(nlohmann::json &j) override { m_eventFacade.restoreState( j ); }
 
     ////////////////////////////////////////////////////////////////////////////////
-    explicit Win32View( VSTStateContext& stateContext,
+    explicit Win32TimerQueueView( VSTStateContext& stateContext,
                         const Steinberg::ViewRect windowSize,
                         std::function< void( IVSTView * ) >&& onRemoved )
       : m_stateContext( stateContext ),
@@ -162,7 +52,7 @@ namespace priv
     {}
 
     ////////////////////////////////////////////////////////////////////////////////
-    ~Win32View() override
+    ~Win32TimerQueueView() override
     {
       // run the window shutdown process
       // notify the event receiver that the window will close
@@ -171,16 +61,7 @@ namespace priv
       if ( m_win32.childHwnd != nullptr )
       {
         // stop the callbacks
-        if ( m_win32.timerResult != 0 )
-        {
-          ::KillTimer( m_win32.childHwnd, m_win32.timerResult );
-          m_win32.timerResult = 0;
-        }
-
-        if ( const auto it = sm_wndMap.find( m_win32.childHwnd ); it != sm_wndMap.end() )
-          sm_wndMap.erase( it );
-        else // something has gone wrong!
-          LOG_ERROR( "unable to properly shut down child HWND because it is not mapped!" );
+        stopMessagePump();
 
         // shutdown can get called prior to the destructor, so mark this as invalid
         m_win32.childHwnd = nullptr;
@@ -236,6 +117,10 @@ namespace priv
       LOG_INFO( "child window created" );
       m_isActive = true;
       LOG_DEBUG( "event processing turned on" );
+
+      ::QueryPerformanceFrequency(&m_perfFreq);
+      ::QueryPerformanceCounter(&m_lastTick);
+
       return Steinberg::kResultTrue;
     }
 
@@ -315,19 +200,23 @@ namespace priv
     return Steinberg::kResultFalse;
   }
 
+  ////////////////////////////////////////////////////////////////////////////////
+
   void setFrameRate( const int32_t fps ) override
   {
-    // ignored
+    m_win32.currentFPS = std::clamp( fps, 1, 240 );
+    stopMessagePump();
+    startMessagePump();
   }
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  int32_t getFrameRate() const override { return USER_TIMER_MINIMUM / 60; }
+  int32_t getFrameRate() const override { return m_win32.currentFPS; }
 
   ////////////////////////////////////////////////////////////////////////////////
 
   //---Interface------
-  OBJ_METHODS (Win32View, FObject)
+  OBJ_METHODS (Win32TimerQueueView, FObject)
   DEFINE_INTERFACES
     DEF_INTERFACE (IPlugView)
     DEF_INTERFACE (IPlugFrame)
@@ -337,32 +226,12 @@ namespace priv
 private:
 
   /////////////////////////////////////////////////////////////////////////////
-  static void WINAPI processTimerExpiry( HWND hwnd,
-                                         UINT wmTimerMsg,
-                                         UINT_PTR timerId,
-                                         DWORD currentSysTime )
-  {
-    if ( const auto it = sm_wndMap.find( hwnd ); it != sm_wndMap.end() )
-    {
-      if ( !it->second->m_eventFacade.executeFrame( it->second->m_sfWindow ) )
-      {
-        LOG_DEBUG( "event loop indicates window is shutting down" );
-      }
-    }
-    else
-    {
-      // this means something has gone terribly wrong. events cannot be processed,
-      // so kill the timer.
-      LOG_CRITICAL( "timer is running but child HWND not found. stopping timer." );
-      ::KillTimer( hwnd, timerId );
-    }
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
   void initializeRenderWindow()
   {
     LOG_DEBUG( "initializing SFML render window" );
     m_sfWindow.create( m_win32.childHwnd, m_sfContext );
+    m_sfWindow.setVerticalSyncEnabled( false );
+    m_sfWindow.setFramerateLimit( 0 );
 
     LOG_INFO( "SFML Render Window OpenGL version {}.{}.",
       m_sfContext.majorVersion,
@@ -390,28 +259,88 @@ private:
   /////////////////////////////////////////////////////////////////////////////
   bool startMessagePump()
   {
-    m_win32.timerResult = ::SetTimer( m_win32.childHwnd,
-                                      sm_timerIdCounter,
-                                      USER_TIMER_MINIMUM,
-                                      processTimerExpiry );
-
-    if ( m_win32.timerResult == 0 )
+    if ( m_win32.redrawTimer )
     {
-      LOG_ERROR( "failed to create windows timer: {}", ::GetLastError() );
-      return false;
+      LOG_DEBUG( "redrawing timer already set." );
+      return true;
     }
 
-    ++sm_timerIdCounter;
-    return true;
+    const int intervalMs = std::max(1, 1000 / m_win32.currentFPS);
+
+    const auto refreshRate = MathHelper::roundTo( getRefreshRateHz(), 0 );
+
+    LOG_INFO( "refresh rate reported as {}", refreshRate );
+
+    if ( m_win32.currentFPS > refreshRate )
+    {
+      LOG_INFO("FPS set too high at {}. lowered to {}.", m_win32.currentFPS, refreshRate);
+      m_win32.currentFPS = refreshRate;
+    }
+
+    const BOOL success = ::CreateTimerQueueTimer(
+      &m_win32.redrawTimer,
+      nullptr,
+      [](PVOID lpParam, BOOLEAN)
+      {
+        auto* self = static_cast<Win32TimerQueueView*>(lpParam);
+        if (self && ::IsWindow(self->m_win32.childHwnd))
+        {
+          // Frame timing
+          ::LARGE_INTEGER now;
+          ::QueryPerformanceCounter(&now);
+
+          const double elapsedMs =
+              1000.0 * static_cast<double>(now.QuadPart - self->m_lastTick.QuadPart) / self->m_perfFreq.QuadPart;
+
+          const double expectedMs = 1000.0 / static_cast<double>(self->m_win32.currentFPS);
+
+          // Optional: set threshold to 1.5x expected frame time
+          if (elapsedMs > expectedMs * 1.2)
+          {
+            // Frame dropped — log, track, or visualize
+            LOG_INFO("[DropFrame] Missed frame deadline. expected {}, elapsed: {}", expectedMs, elapsedMs);
+          }
+
+          self->m_lastTick = now;
+
+          ::PostMessage(self->m_win32.childHwnd,
+                        WM_RUN_FRAME,
+                        reinterpret_cast<WPARAM>( self ),
+                        0);
+        }
+      },
+      this,
+      0,             // start immediately
+      intervalMs,    // frame interval
+      WT_EXECUTEDEFAULT
+    );
+
+    return success == TRUE;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  void stopMessagePump()
+  {
+    // stop the callbacks
+    if ( m_win32.redrawTimer != nullptr )
+    {
+      const auto result = ::DeleteTimerQueueTimer( nullptr, m_win32.redrawTimer, nullptr );
+      if ( result != TRUE )
+      {
+        LOG_ERROR( "DeleteTimerQueueTimer failed: {}", ::GetLastError() );
+      }
+      m_win32.redrawTimer = nullptr;
+    }
   }
 
   /////////////////////////////////////////////////////////////////////////////
   bool createChildWindow( HWND parentHwnd )
   {
-
     LOG_INFO( "creating child window" );
 
-    const auto childHwnd = priv::WinImpl::createChildWindow(
+    const auto childHwnd = priv::Win32WinImpl::createChildWindow(
+      this,
+      &Win32TimerQueueView::childWindowProc,
       parentHwnd,
       { { m_rect.left, m_rect.top },
           { m_rect.getWidth(), m_rect.getHeight() } } );
@@ -427,9 +356,6 @@ private:
     m_win32.parentHwnd = parentHwnd;
     m_win32.childHwnd = childHwnd;
 
-    sm_wndMap.insert( { m_win32.childHwnd, this } );
-    LOG_INFO( "inserted child window to static map" );
-
     initializeRenderWindow();
 
     if ( !startMessagePump() )
@@ -438,7 +364,47 @@ private:
       return false;
     }
 
+    LOG_INFO( "started message pump at {} FPS", m_win32.currentFPS );
+
     return true;
+  }
+
+  static double getRefreshRateHz()
+  {
+    ::DWM_TIMING_INFO timingInfo = {};
+    timingInfo.cbSize = sizeof(timingInfo);
+
+    LARGE_INTEGER qpcFreq = {};
+    QueryPerformanceFrequency(&qpcFreq);
+
+    if (SUCCEEDED(::DwmGetCompositionTimingInfo(nullptr, &timingInfo)))
+    {
+      if (timingInfo.qpcRefreshPeriod > 0 && qpcFreq.QuadPart > 0)
+      {
+        LOG_INFO( "Dwm reported refresh rate" );
+        return static_cast<double>(qpcFreq.QuadPart) / static_cast<double>(timingInfo.qpcRefreshPeriod);
+      }
+      LOG_WARN( "Dwm succeeded but unable to get metrics." );
+    }
+
+    LOG_WARN( "failed to get Dwm refresh rate. attempting to get desktop rate." );
+    // DWM failed — fallback to display info
+    DEVMODE devMode = {};
+    devMode.dmSize = sizeof(devMode);
+
+    if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &devMode))
+    {
+      if (devMode.dmDisplayFrequency > 1)
+      {
+        LOG_INFO( "Windows display reported refresh rate" );
+        return (devMode.dmDisplayFrequency);
+      }
+    }
+
+    LOG_WARN( "failed to get desktop rate. defaulting to 60 FPS." );
+
+    // Last resort
+    return 60.f;
   }
 
   /***
@@ -459,6 +425,31 @@ private:
     return sf::Vector2u {};
   }
 
+  static LRESULT CALLBACK childWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+  {
+    auto* self = reinterpret_cast< Win32TimerQueueView* >( wParam );
+    if ( !self )
+      return ::DefWindowProc(hwnd, msg, wParam, lParam);
+
+    switch (msg)
+    {
+      case WM_RUN_FRAME:
+        self->m_eventFacade.executeFrame(self->m_sfWindow);
+        return 0;
+
+      case WM_PAINT:
+        // existing paint code, or just validate
+        ::ValidateRect(hwnd, nullptr);
+        return 0;
+
+        // other cases: WM_SIZE, WM_CLOSE, etc.
+      default:
+        break;
+    }
+
+    return ::DefWindowProc(hwnd, msg, wParam, lParam);
+  }
+
 private:
 
   VSTStateContext& m_stateContext;
@@ -472,7 +463,7 @@ private:
 
   bool m_isActive { false };
 
-  nx::EventFacadeVst m_eventFacade;
+  EventFacadeVst m_eventFacade;
 
   // SFML specifics
   sf::RenderWindow m_sfWindow;
@@ -483,12 +474,10 @@ private:
   // holds Win32 window specifics
   priv::Win32Details_t m_win32;
 
-  // required for timer callbacks across multiple instances
-  // each child HWND is mapped to Win32SfmlWindow instance
-  inline static std::unordered_map< HWND, Win32View * > sm_wndMap {};
+  static constexpr UINT WM_RUN_FRAME = WM_APP + 1;
 
-  // usually starts at 5 and goes up
-  inline static std::atomic< uint32_t > sm_timerIdCounter { 5 };
+  ::LARGE_INTEGER m_perfFreq {};
+  ::LARGE_INTEGER m_lastTick {};
 
 };
 

@@ -134,6 +134,7 @@ if ( BUILD_PLUGIN )
 
       sdk
       Rpcrt4.lib
+      dwmapi.lib
 
       # must use the patched version
       C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
@@ -145,7 +146,6 @@ if ( BUILD_PLUGIN )
       spdlog::spdlog_header_only
       nlohmann_json::nlohmann_json
 
-      ${FFMPEG_LIBRARIES}
       unofficial::concurrentqueue::concurrentqueue
     )
 
@@ -156,6 +156,7 @@ if ( BUILD_PLUGIN )
 
       sdk
       Rpcrt4.lib
+      dwmapi.lib
 
       nlohmann_json::nlohmann_json
       # must use the patched version
@@ -229,6 +230,7 @@ else()
 
     #  sdk
     Rpcrt4.lib
+    dwmapi.lib
 
     SFML::Window
     SFML::Graphics
