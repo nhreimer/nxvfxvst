@@ -80,14 +80,14 @@ namespace nx
     m_shaderPipeline.update( deltaTime );
   }
 
-  const sf::RenderTexture& ChannelPipeline::draw()
-  {
-    const auto& modifierTexture = m_modifierPipeline.applyModifiers(
-      m_particleLayout.getParticleOptions(),
-      m_particleLayout.getParticles() );
-
-    return m_shaderPipeline.draw( modifierTexture );
-  }
+  // const sf::RenderTexture& ChannelPipeline::draw()
+  // {
+  //   const auto& modifierTexture = m_modifierPipeline.applyModifiers(
+  //     m_particleLayout.getParticleOptions(),
+  //     m_particleLayout.getParticles() );
+  //
+  //   return m_shaderPipeline.draw( modifierTexture );
+  // }
 
   void ChannelPipeline::drawMenu()
   {

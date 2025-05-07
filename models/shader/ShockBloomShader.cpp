@@ -89,26 +89,16 @@ namespace nx
     bool ShockBloomShader::isShaderActive() const { return m_data.isActive; }
 
     [[nodiscard]]
-    sf::RenderTexture& ShockBloomShader::applyShader( const sf::RenderTexture& inputTexture )
+    sf::RenderTexture * ShockBloomShader::applyShader( const sf::RenderTexture * inputTexture )
     {
-      if ( m_outputTexture.getSize() != inputTexture.getSize() )
-      {
-        if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-        {
-          LOG_ERROR( "failed to resize shock bloom texture" );
-        }
-        else
-        {
-          LOG_INFO( "resized shock bloom texture" );
-        }
-      }
+      m_outputTexture.ensureSize( inputTexture->getSize() );
 
       const float easing = m_easing.getEasing();
       const float radius = m_data.maxRadius.first * easing;
       const float alpha = easing * m_data.easingMultiplier.first;
 
       // Update uniforms
-      m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
+      m_shader.setUniform("resolution", sf::Vector2f(inputTexture->getSize()));
       m_shader.setUniform("center", m_data.center.first);
       m_shader.setUniform("radius", radius);
       m_shader.setUniform("thickness", m_data.thickness.first);
@@ -117,14 +107,16 @@ namespace nx
       m_shader.setUniform("innerTransparency", m_data.innerTransparency.first);
 
       // Fullscreen quad
-      sf::RectangleShape fullscreen(sf::Vector2f(inputTexture.getSize()));
+      sf::RectangleShape fullscreen(sf::Vector2f(inputTexture->getSize()));
       fullscreen.setFillColor(sf::Color::White);
 
       m_outputTexture.clear(sf::Color::Transparent);
       m_outputTexture.draw(fullscreen, &m_shader);
       m_outputTexture.display();
 
-      return m_blender.applyShader( inputTexture, m_outputTexture, m_data.mixFactor.first );
+      return m_blender.applyShader( inputTexture,
+                                    m_outputTexture.get(),
+                                    m_data.mixFactor.first );
     }
 
 }

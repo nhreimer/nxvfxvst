@@ -44,6 +44,12 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
 
     ~ShockBloomShader() override;
 
+    void destroyTextures() override
+    {
+      m_outputTexture.destroy();
+      m_blender.destroyTextures();
+    }
+
     [[nodiscard]]
     nlohmann::json serialize() const override;
 
@@ -63,7 +69,7 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
     bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture& applyShader( const sf::RenderTexture& inputTexture ) override;
+    sf::RenderTexture * applyShader( const sf::RenderTexture * inputTexture ) override;
 
   private:
 
@@ -71,7 +77,7 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
     ShockBloomData_t m_data;
 
     sf::Shader m_shader;
-    sf::RenderTexture m_outputTexture;
+    LazyTexture m_outputTexture;
 
     BlenderShader m_blender;
 

@@ -85,24 +85,18 @@ namespace nx
   }
 
   [[nodiscard]]
-  sf::RenderTexture& BlurShader::applyShader(
-    const sf::RenderTexture& inputTexture )
+  sf::RenderTexture * BlurShader::applyShader(
+    const sf::RenderTexture * inputTexture )
   {
-    if ( m_outputTexture.getSize() != m_ctx.globalInfo.windowSize )
-    {
-      if ( !m_outputTexture.resize( m_ctx.globalInfo.windowSize ) ||
-           !m_intermediary.resize( m_ctx.globalInfo.windowSize ) )
-      {
-        LOG_ERROR( "failed to resize blur texture" );
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
+    m_intermediary.ensureSize( inputTexture->getSize() );
 
     const float easing = m_easing.getEasing();
 
-    const sf::Sprite sprite( inputTexture.getTexture() );
+    const sf::Sprite sprite( inputTexture->getTexture() );
 
     // Apply horizontal blur
-    m_shader.setUniform( "texture", inputTexture.getTexture() );
+    m_shader.setUniform( "texture", inputTexture->getTexture() );
     m_shader.setUniform( "direction", sf::Glsl::Vec2( 1.f, 0.f ) ); // Horizontal
     m_shader.setUniform( "blurRadiusX", m_data.blurHorizontal.first );
     m_shader.setUniform( "blurRadiusY", 0.f ); // No vertical blur in this pass
@@ -111,7 +105,7 @@ namespace nx
 
     m_shader.setUniform( "intensity", easing );
 
-    m_intermediary.clear(sf::Color::Transparent);
+    m_intermediary.clear();
     m_intermediary.draw(sprite, &m_shader);
     m_intermediary.display();
 
@@ -129,7 +123,7 @@ namespace nx
     m_outputTexture.display();
 
     return m_blender.applyShader( inputTexture,
-                                  m_outputTexture,
+                                  m_outputTexture.get(),
                                   m_data.mixFactor.first );
   }
 

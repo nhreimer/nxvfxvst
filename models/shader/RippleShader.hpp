@@ -38,6 +38,12 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
 
     ~RippleShader() override;
 
+    void destroyTextures() override
+    {
+      m_outputTexture.destroy();
+      m_blender.destroyTextures();
+    }
+
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
     ///////////////////////////////////////////////////////
@@ -58,7 +64,7 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
     bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture & applyShader( const sf::RenderTexture &inputTexture ) override;
+    sf::RenderTexture * applyShader( const sf::RenderTexture * inputTexture ) override;
 
   private:
     PipelineContext& m_ctx;
@@ -67,7 +73,7 @@ X(mixFactor,     float, 1.0f,  0.f, 1.f,   "Mix between original and effects res
     sf::Clock m_clock;
 
     sf::Shader m_shader;
-    sf::RenderTexture m_outputTexture;
+    LazyTexture m_outputTexture;
 
     BlenderShader m_blender;
     TimedCursorPosition m_timedCursor;

@@ -68,17 +68,11 @@ namespace nx
   bool FeedbackShader::isShaderActive() const { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture& FeedbackShader::applyShader(const sf::RenderTexture& inputTexture)
+  sf::RenderTexture * FeedbackShader::applyShader(const sf::RenderTexture * inputTexture)
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR("Failed to resize feedback textures");
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
 
-    const auto targetSize = sf::Vector2f{ inputTexture.getSize() };
+    const auto targetSize = sf::Vector2f{ inputTexture->getSize() };
 
     const auto clampedEasing = std::clamp( m_easing.getEasing(), 0.f, 1.f );
 
@@ -93,12 +87,12 @@ namespace nx
     m_outputTexture.draw(m_fadeQuad, sf::BlendAlpha);
 
     // Step 2: Draw new input frame on top
-    m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), sf::BlendAdd);
+    m_outputTexture.draw(sf::Sprite(inputTexture->getTexture()), sf::BlendAdd);
 
     m_outputTexture.display();
 
     return m_blender.applyShader( inputTexture,
-                                  m_outputTexture,
+                                  m_outputTexture.get(),
                                   m_data.mixFactor.first );
   }
 

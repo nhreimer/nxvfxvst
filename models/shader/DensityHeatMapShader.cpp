@@ -70,18 +70,12 @@ namespace nx
   bool DensityHeatMapShader::isShaderActive() const { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture & DensityHeatMapShader::applyShader( const sf::RenderTexture &inputTexture )
+  sf::RenderTexture * DensityHeatMapShader::applyShader( const sf::RenderTexture * inputTexture )
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize density heat map texture" );
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
 
-    m_shader.setUniform("u_densityTexture", inputTexture.getTexture());
-    m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
+    m_shader.setUniform("u_densityTexture", inputTexture->getTexture());
+    m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture->getSize() });
     m_shader.setUniform("u_falloff", m_data.falloff.first * m_easing.getEasing() );
 
     m_outputTexture.clear( sf::Color::Transparent );
@@ -98,11 +92,11 @@ namespace nx
     m_shader.setUniform( "u_colorMaxStart", ColorHelper::convertFromVec4( m_data.colorMaxStart.first ) );
     m_shader.setUniform( "u_colorMaxEnd", ColorHelper::convertFromVec4( m_data.colorMaxEnd.first ) );
 
-    m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
+    m_outputTexture.draw( sf::Sprite( inputTexture->getTexture() ), &m_shader );
     m_outputTexture.display();
 
     return m_blender.applyShader( inputTexture,
-                            m_outputTexture,
+                            m_outputTexture.get(),
                             m_data.mixFactor.first );
   }
 

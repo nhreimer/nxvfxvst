@@ -24,6 +24,13 @@ public:
 
   void deleteModifier( const int position );
 
+  void destroyTextures()
+  {
+    // ONLY the modifier pipeline has a texture that all the modifiers pass
+    // their data to
+    m_outputTexture.destroy();
+  }
+
   nlohmann::json saveModifierPipeline() const;
 
   void loadModifierPipeline( const nlohmann::json& j );
@@ -32,7 +39,7 @@ public:
 
   void processMidiEvent( const Midi_t& midiEvent ) const;
 
-  sf::RenderTexture& applyModifiers(
+  sf::RenderTexture * applyModifiers(
     const ParticleLayoutData_t& particleLayoutData,
     std::deque< TimedParticle_t* >& particles );
 
@@ -80,7 +87,8 @@ private:
 
   PipelineContext& m_ctx;
 
-  sf::RenderTexture m_outputTexture;
+  //sf::RenderTexture m_outputTexture;
+  LazyTexture m_outputTexture;
 
   bool m_isBypassed { false };
   sf::BlendMode m_blendMode { sf::BlendAdd };

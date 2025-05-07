@@ -33,17 +33,11 @@ namespace nx
     drawShaderPipeline();
   }
 
-  sf::RenderTexture& ShaderPipeline::draw( const sf::RenderTexture& inTexture )
+  sf::RenderTexture * ShaderPipeline::draw( const sf::RenderTexture * inTexture )
   {
-    if ( m_outputTexture.getSize() != m_ctx.globalInfo.windowSize )
-    {
-      if ( !m_outputTexture.resize( inTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize shader pipeline texture!" );
-      }
-    }
+    m_outputTexture.ensureSize( inTexture->getSize() );
 
-    const sf::RenderTexture * currentTexture = &inTexture;
+    const sf::RenderTexture * currentTexture = inTexture;
 
     for ( const auto& shader : m_shaders )
     {
@@ -55,7 +49,7 @@ namespace nx
     m_outputTexture.draw( sf::Sprite( currentTexture->getTexture() ) );
     m_outputTexture.display();
 
-    return m_outputTexture;
+    return m_outputTexture.get();
   }
 
   ///////////////////////////////////////////////////////

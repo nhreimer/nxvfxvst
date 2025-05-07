@@ -18,12 +18,15 @@ namespace nx
 
     virtual void drawMenu() = 0;
 
+    // this is used for the shutdown process
+    virtual void destroyTextures() = 0;
+
     [[nodiscard]]
     virtual bool isShaderActive() const = 0;
 
     [[nodiscard]]
-    virtual sf::RenderTexture& applyShader(
-      const sf::RenderTexture& inputTexture ) = 0;
+    virtual sf::RenderTexture * applyShader(
+      const sf::RenderTexture * inputTexture ) = 0;
   };
 
 }

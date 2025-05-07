@@ -78,21 +78,15 @@ namespace nx
   bool RumbleShader::isShaderActive() const { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture & RumbleShader::applyShader(const sf::RenderTexture &inputTexture)
+  sf::RenderTexture * RumbleShader::applyShader(const sf::RenderTexture * inputTexture)
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize rumble texture" );
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
 
     const float time = m_clock.getElapsedTime().asSeconds();
     const float pulse = m_easing.getEasing();
 
-    m_shader.setUniform("texture", inputTexture.getTexture());
-    m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
+    m_shader.setUniform("texture", inputTexture->getTexture());
+    m_shader.setUniform("resolution", sf::Vector2f(inputTexture->getSize()));
     m_shader.setUniform("time", time);
 
     m_shader.setUniform("rumbleStrength", m_data.rumbleStrength.first);
@@ -107,11 +101,11 @@ namespace nx
     //m_shader.setUniform("colorDesync", m_data.colorDesync);
 
     m_outputTexture.clear();
-    m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
+    m_outputTexture.draw(sf::Sprite(inputTexture->getTexture()), &m_shader);
     m_outputTexture.display();
 
     return m_blender.applyShader( inputTexture,
-                                  m_outputTexture,
+                                  m_outputTexture.get(),
                                   m_data.mixFactor.first );
   }
 

@@ -26,4 +26,6 @@
 
 #include "helpers/SerialHelper.hpp"
 
+#include "utils/LazyTexture.hpp"
+
 #include "log/Logger.hpp"

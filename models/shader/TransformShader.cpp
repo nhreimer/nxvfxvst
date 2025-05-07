@@ -88,33 +88,20 @@ namespace nx
 
     if ( !m_timedCursorShift.hasExpired() )
       m_timedCursorShift.drawPosition();
-
-    // if ( !m_timedCursorStretch.hasExpired() )
-    //   m_timedCursorStretch.drawPosition();
   }
 
   [[nodiscard]]
   bool TransformShader::isShaderActive() const { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture & TransformShader::applyShader(const sf::RenderTexture &inputTexture)
+  sf::RenderTexture * TransformShader::applyShader(const sf::RenderTexture * inputTexture)
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize transform texture" );
-      }
-      else
-      {
-        LOG_INFO( "resized transform texture" );
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
 
     auto const easing = m_easing.getEasing();
 
-    m_shader.setUniform("u_texture", inputTexture.getTexture());
-    m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture.getSize() });
+    m_shader.setUniform("u_texture", inputTexture->getTexture());
+    m_shader.setUniform("u_resolution", sf::Vector2f { inputTexture->getSize() });
     m_shader.setUniform("u_offset", sf::Glsl::Vec2( m_data.shift.first ) );
     m_shader.setUniform("u_scale", m_data.scale.first * easing );
 
@@ -123,11 +110,11 @@ namespace nx
     m_shader.setUniform("u_flipY", m_data.flipY.first);
 
     m_outputTexture.clear();
-    m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
+    m_outputTexture.draw(sf::Sprite(inputTexture->getTexture()), &m_shader);
     m_outputTexture.display();
 
     return m_blender.applyShader( inputTexture,
-                            m_outputTexture,
+                            m_outputTexture.get(),
                             m_data.mixFactor.first );
   }
 

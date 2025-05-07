@@ -39,6 +39,13 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
     ~DualKawaseBlurShader() override;
 
+    void destroyTextures() override
+    {
+      m_pingTexture.destroy();
+      m_pongTexture.destroy();
+      m_compositeTexture.destroy();
+    }
+
     ///////////////////////////////////////////////////////
     /// ISERIALIZABLE
     ///////////////////////////////////////////////////////
@@ -60,7 +67,7 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
     bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture& applyShader(const sf::RenderTexture& inputTexture) override;
+    sf::RenderTexture * applyShader(const sf::RenderTexture * inputTexture) override;
 
   private:
 
@@ -70,9 +77,9 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
     sf::Shader m_compositeShader;
 
     // ping-pong texture strategy for n passes + composite for mixing
-    sf::RenderTexture m_pingTexture;
-    sf::RenderTexture m_pongTexture;
-    sf::RenderTexture m_compositeTexture;
+    LazyTexture m_pingTexture;
+    LazyTexture m_pongTexture;
+    LazyTexture m_compositeTexture;
 
     DKBlurData_t m_data;
 

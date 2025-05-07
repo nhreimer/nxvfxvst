@@ -85,26 +85,16 @@ namespace nx
   bool KaleidoscopeShader::isShaderActive() const { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture & KaleidoscopeShader::applyShader(
-    const sf::RenderTexture& inputTexture )
+  sf::RenderTexture * KaleidoscopeShader::applyShader(
+    const sf::RenderTexture * inputTexture )
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize kaleidoscope texture" );
-      }
-      else
-      {
-        LOG_INFO( "kaleidoscope texture resized" );
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
 
     m_shader.setUniform( "u_time", m_easing.getEasing() );
 
-    m_shader.setUniform("u_texture", inputTexture.getTexture());
+    m_shader.setUniform("u_texture", inputTexture->getTexture());
     m_shader.setUniform("u_intensity", m_data.masterGain.first);
-    m_shader.setUniform("u_resolution", sf::Vector2f(inputTexture.getSize()));
+    m_shader.setUniform("u_resolution", sf::Vector2f(inputTexture->getSize()));
 
     // Custom control knobs
     m_shader.setUniform("u_kaleidoSlices", m_data.slices.first);
@@ -118,11 +108,11 @@ namespace nx
     m_shader.setUniform("u_noiseStrength", m_data.noiseStrength.first);
 
     m_outputTexture.clear( sf::Color::Transparent );
-    m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
+    m_outputTexture.draw( sf::Sprite( inputTexture->getTexture() ), &m_shader );
     m_outputTexture.display();
 
     return m_blender.applyShader( inputTexture,
-                                  m_outputTexture,
+                                  m_outputTexture.get(),
                                   m_data.mixFactor.first );
   }
 

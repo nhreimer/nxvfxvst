@@ -27,7 +27,22 @@ namespace nx
 
     void drawMenu();
 
-    sf::RenderTexture& draw( const sf::RenderTexture& inTexture );
+    void destroyTextures()
+    {
+      std::unique_lock lock(m_mutex);
+      m_outputTexture.destroy();
+
+      // TODO: this might interfere with serialization
+      for ( auto& shader : m_shaders )
+      {
+        shader->destroyTextures();
+        shader.reset();
+      }
+
+      m_shaders.clear();
+    }
+
+    sf::RenderTexture * draw( const sf::RenderTexture * inTexture );
 
     ///////////////////////////////////////////////////////
     /// Shader management
@@ -74,7 +89,10 @@ namespace nx
     PipelineContext& m_ctx;
 
     std::vector< std::unique_ptr< IShader > > m_shaders;
-    sf::RenderTexture m_outputTexture;
+    //sf::RenderTexture m_outputTexture;
+    LazyTexture m_outputTexture;
+
+    std::mutex m_mutex;
   };
 
 }
