@@ -2,7 +2,6 @@
 
 #include "models/data/GlobalInfo_t.hpp"
 #include "vst/VSTStateContext.hpp"
-#include "vst/params/VSTParamBindingManager.hpp"
 
 namespace nx
 {

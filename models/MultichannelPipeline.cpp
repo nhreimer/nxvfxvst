@@ -12,8 +12,15 @@ namespace nx
     : m_ctx( context )
   {
     for ( int32_t i = 0; i < m_channels.size(); ++i )
+    {
       m_channels[ i ] = std::make_unique< ChannelPipeline >( context, i );
-
+      m_channelWorkers[ i ] = std::make_unique< ChannelWorker >(
+       [ this, i ]
+       {
+         // run all the tasks but ONLY on this thread
+         m_channels[ i ]->runTasks();
+       } );
+    }
     m_messageClock.setMessage( "...welcome to nxvst..." );
   }
 
@@ -27,6 +34,7 @@ namespace nx
       j[ i ] = m_channels[ i ]->saveChannelPipeline();
       LOG_INFO( j[ i ].dump() );
     }
+
     return j;
   }
 
@@ -46,28 +54,41 @@ namespace nx
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
   {
-    m_renderTimer.restart();
-    // get data from each channel and store it in a Priority Queue, so we
-    // know the drawing order
-    for ( const auto& channel: m_channels )
+    m_totalRenderAverage.startTimer();
+
+    // add a render update request and then start all the channel pipelines
+    for ( int i = 0; i < m_channels.size(); ++i )
     {
-      if ( channel->isBypassed() ) continue;
+      // skip the channel if it's bypassed
+      if ( m_channels[ i ]->isBypassed() ) continue;
+
+      m_channels[ i ]->requestRenderUpdate();
+      m_channelWorkers[ i ]->requestPipelineRun();
 
       m_drawingPrioritizer.emplace( ChannelDrawingData_t
       {
-        .priority = channel->getDrawPriority(),
-        .texture = &channel->draw(),
-        .blendMode = &channel->getChannelBlendMode()
+        .priority = m_channels[ i ]->getDrawPriority(),
+        .channel = m_channels[ i ].get(),
+        .channelWorker = m_channelWorkers[ i ].get()
       } );
     }
 
-    // draw each item in order
+    // // wait for the pipelines to finish and draw each item in order
     while ( !m_drawingPrioritizer.empty() )
     {
       const auto& top = m_drawingPrioritizer.top();
-      window.draw( sf::Sprite( top.texture->getTexture() ),
-                   *top.blendMode );
-      m_drawingPrioritizer.pop();
+      top.channelWorker->waitUntilComplete();
+      const auto * texture = top.channel->getOutputTexture();
+      if ( texture != nullptr )
+      {
+        window.draw( sf::Sprite( texture->getTexture() ),
+                     top.channel->getChannelBlendMode() );
+        m_drawingPrioritizer.pop();
+      }
+      else
+      {
+        LOG_ERROR( "render thread draw failed" );
+      }
     }
 
     // now that we have a final image, send it to the video encoder
@@ -82,7 +103,10 @@ namespace nx
       }
     }
 
-    m_renderTime = m_renderTimer.getElapsedTime().asMilliseconds();
+    // video encoding gets added whenever available,
+    // but there's no separate one right now for video encoding
+    // unless it becomes a problem
+    m_totalRenderAverage.stopTimerAndAddSample();
   }
 
   void MultichannelPipeline::update( const sf::Time &deltaTime )
@@ -91,6 +115,20 @@ namespace nx
 
     for ( const auto& channel: m_channels )
       channel->update( deltaTime );
+  }
+
+  void MultichannelPipeline::shutdown() const
+  {
+    LOG_INFO( "Issuing shutdown requests..." );
+    for ( int i = 0; i < m_channels.size(); ++i )
+    {
+      m_channels[ i ]->requestShutdown();
+      m_channelWorkers[ i ]->requestPipelineRun();
+      m_channelWorkers[ i ]->waitUntilComplete();
+      LOG_INFO( "Channel {} shutdown completed", i + 1 );
+    }
+
+    LOG_INFO( "Shutdown requests completed" );
   }
 
   void MultichannelPipeline::drawMenu()
@@ -214,12 +252,19 @@ namespace nx
                      ImGuiWindowFlags_NoFocusOnAppearing |
                      ImGuiWindowFlags_NoNav);
     {
-
-      // ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
-      // TODO: add multithreaded render output
-
-      ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
       ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
+
+      ImGui::SeparatorText( "Render Times (Avg)" );
+
+      for ( int32_t i = 0; i < m_channelWorkers.size(); ++i )
+      {
+        const auto metrics = m_channelWorkers[ i ]->getMetrics();
+        ImGui::Text( "Channel %d: %0.2f ms", i + 1, metrics );
+      }
+
+      ImGui::Text( "Total Time: %0.2f ms", m_totalRenderAverage.getAverage() );
+      ImGui::Text( "Cycle Time: %0.2f ms", m_totalRenderAverage.getCycleTimeInMs() );
+      ImGui::Text( "Cycle Size: %d samples", RENDER_SAMPLES_COUNT );
 
       m_frameDiagnostics.drawMenu();
     }

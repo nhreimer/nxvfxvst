@@ -84,17 +84,11 @@ namespace nx
     }
   }
 
-  sf::RenderTexture& ModifierPipeline::applyModifiers(
+  sf::RenderTexture * ModifierPipeline::applyModifiers(
     const ParticleLayoutData_t& particleLayoutData,
     std::deque< TimedParticle_t* >& particles )
   {
-    if ( m_outputTexture.getSize() != m_ctx.globalInfo.windowSize )
-    {
-      if ( !m_outputTexture.resize( m_ctx.globalInfo.windowSize ) )
-      {
-        LOG_ERROR( "Failed to resize modifier pipeline texture" );
-      }
-    }
+    m_outputTexture.ensureSize( m_ctx.globalInfo.windowSize );
 
     std::deque< sf::Drawable* > newArtifacts;
 
@@ -110,7 +104,7 @@ namespace nx
     drawParticles( particles, particleLayoutData.blendMode );
 
     m_outputTexture.display();
-    return m_outputTexture;
+    return m_outputTexture.get();
   }
 
   void ModifierPipeline::drawModifierPipelineMenu()

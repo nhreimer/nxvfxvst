@@ -39,6 +39,12 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
 
     ~ColorShader() override;
 
+    void destroyTextures() override
+    {
+      m_outputTexture.destroy();
+      m_blender.destroyTextures();
+    }
+
     [[nodiscard]]
     nlohmann::json serialize() const override;
     void deserialize(const nlohmann::json &j) override;
@@ -56,7 +62,7 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
     bool isShaderActive() const override { return m_data.isActive; }
 
     [[nodiscard]]
-    sf::RenderTexture &applyShader(const sf::RenderTexture &inputTexture) override;
+    sf::RenderTexture * applyShader(const sf::RenderTexture * inputTexture) override;
 
   private:
     PipelineContext& m_ctx;
@@ -64,7 +70,7 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
     ColorData_t m_data;
 
     sf::Shader m_shader;
-    sf::RenderTexture m_outputTexture;
+    LazyTexture m_outputTexture;
 
     BlenderShader m_blender;
     MidiNoteControl m_midiNoteControl;

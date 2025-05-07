@@ -18,6 +18,7 @@ namespace nx
       LOG_DEBUG( "Color fragment shader loaded successfully" );
     }
 
+    m_easing.setEasingType( E_TimeEasingType::E_Disabled );
     EXPAND_SHADER_VST_BINDINGS(COLOR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
   }
 
@@ -77,24 +78,13 @@ namespace nx
   }
 
   [[nodiscard]]
-  sf::RenderTexture & ColorShader::applyShader(const sf::RenderTexture &inputTexture)
+  sf::RenderTexture * ColorShader::applyShader(const sf::RenderTexture * inputTexture)
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize color texture" );
-      }
-      else
-      {
-        LOG_INFO( "color transform texture" );
-        m_easing.setEasingType( E_TimeEasingType::E_Disabled );
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
 
     const auto easing = m_easing.getEasing();
 
-    m_shader.setUniform("u_texture", inputTexture.getTexture());
+    m_shader.setUniform("u_texture", inputTexture->getTexture());
     m_shader.setUniform( "u_brightness", m_data.brightness.first * easing );
     m_shader.setUniform( "u_saturation", m_data.saturation.first * easing );
     m_shader.setUniform( "u_contrast", m_data.contrast.first );
@@ -102,12 +92,12 @@ namespace nx
     m_shader.setUniform( "u_gain", m_data.colorGain.first );
 
     m_outputTexture.clear(sf::Color::Transparent);
-    m_outputTexture.draw(sf::Sprite( inputTexture.getTexture() ), &m_shader);
+    m_outputTexture.draw(sf::Sprite( inputTexture->getTexture() ), &m_shader);
     m_outputTexture.display();
 
     //return m_outputTexture;
     return m_blender.applyShader( inputTexture,
-                                  m_outputTexture,
+                                  m_outputTexture.get(),
                                   m_data.mixFactor.first );
   }
 

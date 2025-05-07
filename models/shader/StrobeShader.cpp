@@ -81,30 +81,20 @@ namespace nx
   bool StrobeShader::isShaderActive() const { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture & StrobeShader::applyShader( const sf::RenderTexture &inputTexture )
+  sf::RenderTexture * StrobeShader::applyShader( const sf::RenderTexture * inputTexture )
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize strobe texture" );
-      }
-      else
-      {
-        LOG_INFO( "resized strobe texture" );
-      }
-    }
+    m_outputTexture.ensureSize( inputTexture->getSize() );
 
-    m_shader.setUniform( "texture", inputTexture.getTexture() );
+    m_shader.setUniform( "texture", inputTexture->getTexture() );
     m_shader.setUniform("flashAmount", m_data.flashAmount.first * m_easing.getEasing()); // or assigned easing
     m_shader.setUniform("flashColor", sf::Glsl::Vec4(m_data.flashColor.first));
 
     m_outputTexture.clear( sf::Color::Transparent );
-    m_outputTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_shader );
+    m_outputTexture.draw( sf::Sprite( inputTexture->getTexture() ), &m_shader );
     m_outputTexture.display();
 
     return m_blender.applyShader( inputTexture,
-                            m_outputTexture,
+                            m_outputTexture.get(),
                             m_data.mixFactor.first );
   }
 }

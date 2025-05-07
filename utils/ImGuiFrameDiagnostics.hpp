@@ -45,7 +45,9 @@ namespace nx
     void drawMenu() const
     {
       const float expectedFps = static_cast<float>(vsyncRateHz);
-      const bool droppingFrames = (smoothedFps < expectedFps * (1.f - tolerance));
+      const bool droppingFrames = smoothedFps < expectedFps * (1.f - m_tolerance);
+
+      ImGui::SeparatorText( "Frame Rate Metrics" );
 
       // Flash red if frames are dropping
       if (droppingFrames)
@@ -53,7 +55,7 @@ namespace nx
       else
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(200, 255, 200, 255));
 
-      ImGui::Text("Δ Time:  %.2f ms", currentDeltaMs);
+      ImGui::Text("Delta:   %.2f ms", currentDeltaMs);
       ImGui::Text("FPS:     %.2f (smoothed)", smoothedFps);
       ImGui::Text("VSync:   %.2f Hz", vsyncRateHz);
 
@@ -63,10 +65,7 @@ namespace nx
   private:
 
     // Determine FPS health
-    inline static const float tolerance = 0.15f; // Allow 15% frame drift
-
-
-
+    static constexpr float m_tolerance = 0.15f; // Allow 15% frame drift
     static constexpr float m_maxVSyncRefreshWaitInSecs = 10.f;
     float m_lastRefreshTime = 10.f;
   };

@@ -12,15 +12,17 @@
 
 #include "helpers/Definitions.hpp"
 
+#include "utils/TaskQueue.hpp"
+
 namespace nx
 {
-  class ChannelPipeline final
+  class ChannelPipeline final : public TaskQueueRequestSink
   {
 
   public:
 
     ChannelPipeline( PipelineContext& context, const int32_t channelId );
-    ~ChannelPipeline() = default;
+    ~ChannelPipeline() override = default;
 
     void toggleBypass() { m_isBypassed = !m_isBypassed; }
     bool isBypassed() const { return m_isBypassed; }
@@ -35,10 +37,36 @@ namespace nx
     void processEvent( const sf::Event &event ) const {}
 
     void update( const sf::Time& deltaTime ) const;
-
-    const sf::RenderTexture& draw();
+    //
+    // const sf::RenderTexture& draw();
 
     void drawMenu();
+
+    void requestShutdown() override
+    {
+      request( [ this ]
+      {
+        // this asks all other pipelines to shut down
+        m_modifierPipeline.destroyTextures();
+        m_shaderPipeline.destroyTextures();
+      } );
+    }
+
+    void requestRenderUpdate() override
+    {
+      // this comes in on the main thread,
+      // but we need to move it to the render thread
+      request( [ this ]
+      {
+        const auto * modifierTexture = m_modifierPipeline.applyModifiers(
+          m_particleLayout.getParticleOptions(),
+          m_particleLayout.getParticles() );
+
+        m_outputTexture = m_shaderPipeline.draw( modifierTexture );
+      } );
+    }
+
+    sf::RenderTexture * getOutputTexture() const { return m_outputTexture; }
 
     int32_t getDrawPriority() const { return m_drawPriority; }
     const sf::BlendMode& getChannelBlendMode() const { return m_blendMode; }
@@ -57,6 +85,8 @@ namespace nx
     ParticleLayoutManager m_particleLayout;
     ModifierPipeline m_modifierPipeline;
     ShaderPipeline m_shaderPipeline;
+
+    sf::RenderTexture * m_outputTexture { nullptr };
 
     bool m_isBypassed { false };
 

@@ -16,31 +16,21 @@ namespace nx
   }
 
   [[nodiscard]]
-  sf::RenderTexture& BlenderShader::applyShader(const sf::RenderTexture& originalTexture,
-                                const sf::RenderTexture& effectTexture,
+  sf::RenderTexture * BlenderShader::applyShader(const sf::RenderTexture * originalTexture,
+                                const sf::RenderTexture * effectTexture,
                                 const float mixFactor )
   {
-    if ( m_outputTexture.getSize() != originalTexture.getSize() )
-    {
-      if ( !m_outputTexture.resize( originalTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize blender texture" );
-      }
-      else
-      {
-        LOG_INFO( "resized blender texture" );
-      }
-    }
+    m_outputTexture.ensureSize( originalTexture->getSize() );
 
-    m_shader.setUniform("originalTex", originalTexture.getTexture());
-    m_shader.setUniform("effectTex", effectTexture.getTexture());
+    m_shader.setUniform("originalTex", originalTexture->getTexture());
+    m_shader.setUniform("effectTex", effectTexture->getTexture());
     m_shader.setUniform("mixFactor", mixFactor);
 
     m_outputTexture.clear();
-    m_outputTexture.draw(sf::Sprite(originalTexture.getTexture()), &m_shader);
+    m_outputTexture.draw(sf::Sprite(originalTexture->getTexture()), &m_shader);
     m_outputTexture.display();
 
-    return m_outputTexture;
+    return m_outputTexture.get();
   }
 
 };

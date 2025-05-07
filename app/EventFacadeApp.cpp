@@ -47,6 +47,8 @@ namespace nx
 
     for ( auto& midiGen : m_midiGen )
       midiGen.stop();
+
+    m_pipelines.shutdown();
   }
 
   // gets called whenever the OS indicates it's time to update
@@ -96,7 +98,7 @@ namespace nx
 
       ImGui::SFML::Render( window );
 
-      // window.setView( m_windowInfo.windowView );
+      window.setView( m_ctx.globalInfo.windowView );
       window.display();
     }
 
@@ -108,6 +110,9 @@ namespace nx
     m_globalInfo.windowSize = { width, height };
     m_globalInfo.windowView.setSize( { static_cast< float >(width),
                                             static_cast< float >(height) } );
+
+    m_globalInfo.windowView.setCenter( m_globalInfo.windowView.getSize() / 2.f );
+
     m_globalInfo.windowHalfSize = { static_cast< float >(width) / 2, static_cast< float >(height) / 2 };
   }
 

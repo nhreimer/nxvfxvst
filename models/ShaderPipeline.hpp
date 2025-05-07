@@ -5,12 +5,17 @@
 namespace nx
 {
 
+  class RequestSink;
+
   class ShaderPipeline final
   {
   public:
-
-    explicit ShaderPipeline( PipelineContext& context )
-      : m_ctx( context )
+    ///
+    /// @param context
+    /// @param requestSink required for requesting render-thread cleanups
+    ShaderPipeline( PipelineContext& context, RequestSink& requestSink )
+      : m_ctx( context ),
+        m_requestSink( requestSink )
     {}
 
     ~ShaderPipeline() = default;
@@ -27,7 +32,22 @@ namespace nx
 
     void drawMenu();
 
-    sf::RenderTexture& draw( const sf::RenderTexture& inTexture );
+    void destroyTextures()
+    {
+      std::unique_lock lock(m_mutex);
+      m_outputTexture.destroy();
+
+      // TODO: this might interfere with serialization
+      for ( auto& shader : m_shaders )
+      {
+        shader->destroyTextures();
+        shader.reset();
+      }
+
+      m_shaders.clear();
+    }
+
+    sf::RenderTexture * draw( const sf::RenderTexture * inTexture );
 
     ///////////////////////////////////////////////////////
     /// Shader management
@@ -74,7 +94,11 @@ namespace nx
     PipelineContext& m_ctx;
 
     std::vector< std::unique_ptr< IShader > > m_shaders;
-    sf::RenderTexture m_outputTexture;
+    LazyTexture m_outputTexture;
+
+    RequestSink& m_requestSink;
+
+    std::mutex m_mutex;
   };
 
 }

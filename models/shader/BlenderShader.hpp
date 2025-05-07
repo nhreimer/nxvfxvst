@@ -13,14 +13,19 @@ namespace nx
     BlenderShader();
 
     [[nodiscard]]
-    sf::RenderTexture& applyShader(const sf::RenderTexture& originalTexture,
-                                  const sf::RenderTexture& effectTexture,
+    sf::RenderTexture * applyShader(const sf::RenderTexture * originalTexture,
+                                  const sf::RenderTexture * effectTexture,
                                   const float mixFactor );
+
+    void destroyTextures()
+    {
+      m_outputTexture.destroy();
+    }
 
   private:
 
     sf::Shader m_shader;
-    sf::RenderTexture m_outputTexture;
+    LazyTexture m_outputTexture;
 
     inline static const std::string m_fragmentShader = R"(uniform sampler2D originalTex;
 uniform sampler2D effectTex;

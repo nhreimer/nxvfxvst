@@ -13,6 +13,7 @@
 #include "models/shader/SmearShader.hpp"
 #include "models/shader/StrobeShader.hpp"
 #include "models/shader/TransformShader.hpp"
+#include "utils/TaskQueue.hpp"
 
 namespace nx
 {
@@ -33,29 +34,23 @@ namespace nx
     drawShaderPipeline();
   }
 
-  sf::RenderTexture& ShaderPipeline::draw( const sf::RenderTexture& inTexture )
+  sf::RenderTexture * ShaderPipeline::draw( const sf::RenderTexture * inTexture )
   {
-    if ( m_outputTexture.getSize() != m_ctx.globalInfo.windowSize )
-    {
-      if ( !m_outputTexture.resize( inTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize shader pipeline texture!" );
-      }
-    }
+    m_outputTexture.ensureSize( inTexture->getSize() );
 
-    const sf::RenderTexture * currentTexture = &inTexture;
+    const sf::RenderTexture * currentTexture = inTexture;
 
     for ( const auto& shader : m_shaders )
     {
       if ( shader->isShaderActive() )
-        currentTexture = &shader->applyShader( *currentTexture );
+        currentTexture = shader->applyShader( currentTexture );
     }
 
     m_outputTexture.clear( sf::Color::Transparent );
     m_outputTexture.draw( sf::Sprite( currentTexture->getTexture() ) );
     m_outputTexture.display();
 
-    return m_outputTexture;
+    return m_outputTexture.get();
   }
 
   ///////////////////////////////////////////////////////
@@ -65,6 +60,29 @@ namespace nx
   void ShaderPipeline::deleteShader( const int position )
   {
     assert( position >= 0 && position < m_shaders.size() );
+
+    // get the unique_ptr
+    auto& shader = m_shaders[ position ];
+
+    // we do NOT want the unique_ptr to go out of scope and then
+    // delete our shader. we need to manually control it.
+    // the real question might be "why use unique_ptr at all" in
+    // this case. the reason is that it's a good debug warning
+    // in our logger if unique_ptr handles the destruction.
+    auto * rawPtrShader = shader.release();
+
+    // create a request task for destroying the texture and then
+    // the pointer
+    m_requestSink.request(
+      [ rawPtrShader ]()
+      {
+        LOG_INFO( "Shader delete task running" );
+        rawPtrShader->destroyTextures();
+        delete rawPtrShader;
+      } );
+
+    // remove the empty unique_ptr from the vector now because we don't
+    // want a nullptr dereference, and we don't want our UI to handle it
     m_shaders.erase( m_shaders.begin() + position );
   }
 
@@ -284,7 +302,10 @@ namespace nx
     }
 
     if ( deletePos > -1 )
-      m_shaders.erase( m_shaders.begin() + deletePos );
+    {
+      deleteShader( deletePos );
+      // m_shaders.erase( m_shaders.begin() + deletePos );
+    }
     else if ( swapA > -1 && swapB > -1 && swapA < m_shaders.size() && swapB < m_shaders.size() )
       std::swap( m_shaders[ swapA ], m_shaders[ swapB ] );
   }

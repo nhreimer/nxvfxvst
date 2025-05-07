@@ -8,7 +8,7 @@ namespace nx
       m_drawPriority( channelId ),    // the ID is the initial priority. it serves no other purpose.
       m_particleLayout( context ),
       m_modifierPipeline( context ),
-      m_shaderPipeline( context )
+      m_shaderPipeline( context, *this )
   {
     // check the 0th value to see whether the static values haven't been written yet
     if ( m_drawPriorityNames[ 0 ].empty() )
@@ -78,15 +78,6 @@ namespace nx
     m_particleLayout.update( deltaTime );
     m_modifierPipeline.update( deltaTime );
     m_shaderPipeline.update( deltaTime );
-  }
-
-  const sf::RenderTexture& ChannelPipeline::draw()
-  {
-    const auto& modifierTexture = m_modifierPipeline.applyModifiers(
-      m_particleLayout.getParticleOptions(),
-      m_particleLayout.getParticles() );
-
-    return m_shaderPipeline.draw( modifierTexture );
   }
 
   void ChannelPipeline::drawMenu()

@@ -85,27 +85,17 @@ namespace nx
   bool DualKawaseBlurShader::isShaderActive() const  { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture& DualKawaseBlurShader::applyShader(const sf::RenderTexture& inputTexture)
+  sf::RenderTexture * DualKawaseBlurShader::applyShader(const sf::RenderTexture * inputTexture)
   {
-    if ( m_pingTexture.getSize() != inputTexture.getSize() )
-    {
-      if ( !m_pingTexture.resize( inputTexture.getSize() ) ||
-           !m_pongTexture.resize( inputTexture.getSize() ) ||
-           !m_compositeTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "Failed to resize DK Blur Texture(s) texture" );
-      }
-      else
-      {
-        LOG_INFO( "Resized DK Blur Textures" );
-      }
-    }
+    m_pingTexture.ensureSize( inputTexture->getSize() );
+    m_pongTexture.ensureSize( inputTexture->getSize() );
+    m_compositeTexture.ensureSize( inputTexture->getSize() );
 
-    sf::RenderTexture* src = &m_pingTexture;
-    sf::RenderTexture* dst = &m_pongTexture;
+    sf::RenderTexture* src = m_pingTexture.get();
+    sf::RenderTexture* dst = m_pongTexture.get();
 
     m_pingTexture.clear();
-    m_pingTexture.draw(sf::Sprite(inputTexture.getTexture()));
+    m_pingTexture.draw(sf::Sprite(inputTexture->getTexture()));
     m_pingTexture.display();
 
     const auto easing = m_easing.getEasing();
@@ -115,8 +105,9 @@ namespace nx
       dst->clear();
 
       m_shader.setUniform("u_texture", src->getTexture());
-      m_shader.setUniform("u_texelSize", sf::Glsl::Vec2(1.f / inputTexture.getSize().x, 1.f / inputTexture.getSize().y));
-      m_shader.setUniform("u_offset", m_data.offset.first + i); // optional increase per pass
+      m_shader.setUniform("u_texelSize", sf::Glsl::Vec2(1.f / static_cast< float >(inputTexture->getSize().x),
+                                                 1.f / static_cast< float >(inputTexture->getSize().y)));
+      m_shader.setUniform("u_offset", m_data.offset.first + static_cast< float >(i)); // optional increase per pass
       m_shader.setUniform("u_bloomGain", m_data.bloomGain.first * easing);     // user/MIDI-driven
       m_shader.setUniform("u_brightness", m_data.brightness.first * easing);   // compensate blur
 
@@ -128,14 +119,14 @@ namespace nx
 
     // Composite final bloom with original
     m_compositeTexture.clear();
-    m_compositeShader.setUniform("u_scene", inputTexture.getTexture());
+    m_compositeShader.setUniform("u_scene", inputTexture->getTexture());
     m_compositeShader.setUniform("u_bloom", src->getTexture());
     m_compositeShader.setUniform("u_mixFactor", m_data.mixFactor.first * easing);
 
-    m_compositeTexture.draw( sf::Sprite( inputTexture.getTexture() ), &m_compositeShader );
+    m_compositeTexture.draw( sf::Sprite( inputTexture->getTexture() ), &m_compositeShader );
     m_compositeTexture.display();
 
-    return m_compositeTexture;
+    return m_compositeTexture.get();
   }
 
 }

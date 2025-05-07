@@ -96,15 +96,9 @@ namespace nx
     bool LayeredGlitchShader::isShaderActive() const { return m_data.isActive; }
 
     [[nodiscard]]
-    sf::RenderTexture& LayeredGlitchShader::applyShader( const sf::RenderTexture &inputTexture )
+    sf::RenderTexture * LayeredGlitchShader::applyShader( const sf::RenderTexture * inputTexture )
     {
-      if (m_outputTexture.getSize() != inputTexture.getSize())
-      {
-        if (!m_outputTexture.resize(inputTexture.getSize()))
-        {
-          LOG_ERROR("failed to resize glitch texture");
-        }
-      }
+      m_outputTexture.ensureSize( inputTexture->getSize() );
 
       const float cumulative = m_burstManager.getEasing();
       const float boostedStrength = m_data.glitchBaseStrength.first + cumulative * m_data.glitchPulseBoost.first;
@@ -121,8 +115,8 @@ namespace nx
 
       m_shader.setUniform("glitchStrength", boostedStrength);
 
-      m_shader.setUniform("texture", inputTexture.getTexture());
-      m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize()));
+      m_shader.setUniform("texture", inputTexture->getTexture());
+      m_shader.setUniform("resolution", sf::Vector2f(inputTexture->getSize()));
 
       m_shader.setUniform("glitchAmount", m_data.glitchAmount.first);
       // m_shader.setUniform("scanlineIntensity", m_data.scanlineIntensity);
@@ -131,11 +125,11 @@ namespace nx
       m_shader.setUniform("bandCount", m_data.bandCount.first);
 
       m_outputTexture.clear();
-      m_outputTexture.draw(sf::Sprite(inputTexture.getTexture()), &m_shader);
+      m_outputTexture.draw(sf::Sprite(inputTexture->getTexture()), &m_shader);
       m_outputTexture.display();
 
       return m_blender.applyShader( inputTexture,
-                              m_outputTexture,
+                              m_outputTexture.get(),
                               m_data.mixFactor.first );
     }
 

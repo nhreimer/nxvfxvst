@@ -79,28 +79,24 @@ namespace nx
   bool SmearShader::isShaderActive() const { return m_data.isActive; }
 
   [[nodiscard]]
-  sf::RenderTexture & SmearShader::applyShader(const sf::RenderTexture &inputTexture)
+  sf::RenderTexture * SmearShader::applyShader(const sf::RenderTexture * inputTexture)
   {
-    if ( m_outputTexture.getSize() != inputTexture.getSize() )
+    m_outputTexture.ensureSize( inputTexture->getSize() );
+
+    if ( !m_feedbackTexture.isInitialized() )
     {
-      if ( !m_outputTexture.resize( inputTexture.getSize() ) ||
-           !m_feedbackTexture.resize( inputTexture.getSize() ) )
-      {
-        LOG_ERROR( "failed to resize smear texture" );
-      }
-      else
-      {
-        m_feedbackTexture.clear( sf::Color::Black );
-        m_feedbackTexture.display();
-        m_feedbackFadeShape.setSize( { static_cast< float >(inputTexture.getSize().x),
-                                          static_cast< float >(inputTexture.getSize().y) } );
-      }
+      m_feedbackTexture.ensureSize( inputTexture->getSize() );
+      // we only want to draw this once
+      m_feedbackTexture.clear( sf::Color::Black );
+      m_feedbackTexture.display();
     }
+    else
+      m_feedbackTexture.ensureSize( inputTexture->getSize() );
 
     const float easing = m_easing.getEasing();
 
-    m_shader.setUniform("texture", inputTexture.getTexture());
-    m_shader.setUniform("resolution", sf::Vector2f(inputTexture.getSize() ) );
+    m_shader.setUniform("texture", inputTexture->getTexture());
+    m_shader.setUniform("resolution", sf::Vector2f(inputTexture->getSize() ) );
     m_shader.setUniform("smearLength", m_data.length.first);
     m_shader.setUniform("smearIntensity", m_data.intensity.first);
     m_shader.setUniform("sampleCount", m_data.sampleCount.first);
@@ -149,7 +145,7 @@ namespace nx
     // 6. Output the feedback as final result
     //return m_feedbackTexture;
     return m_blender.applyShader( inputTexture,
-                            m_feedbackTexture,
+                            m_feedbackTexture.get(),
                                   m_data.mixFactor.first );
   }
 

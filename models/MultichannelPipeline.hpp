@@ -8,6 +8,7 @@
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
 #include "utils/ImGuiFrameDiagnostics.hpp"
+#include "utils/ChannelWorker.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
@@ -23,8 +24,8 @@ namespace nx
     struct ChannelDrawingData_t
     {
       int32_t priority { 0 };
-      const sf::RenderTexture * texture { nullptr };
-      const sf::BlendMode * blendMode { nullptr };
+      ChannelPipeline * channel { nullptr };
+      ChannelWorker * channelWorker { nullptr };
 
       // Overload '<' for std::priority_queue (max-heap)
       // Lower priority value = higher actual priority
@@ -54,6 +55,8 @@ namespace nx
 
     void update(const sf::Time &deltaTime);
 
+    void shutdown() const;
+
   private:
 
     void drawPipelineMenu();
@@ -64,6 +67,8 @@ namespace nx
     PipelineContext m_ctx;
 
     std::array< std::unique_ptr< ChannelPipeline >, MAX_CHANNELS > m_channels;
+    std::array< std::unique_ptr< ChannelWorker >, MAX_CHANNELS > m_channelWorkers;
+
     TimedMessage m_messageClock;
 
     int m_selectedChannel { 0 };
@@ -78,10 +83,8 @@ namespace nx
 
     std::priority_queue< ChannelDrawingData_t > m_drawingPrioritizer;
 
-    sf::Clock m_renderTimer;
-    float m_renderTime { 0.f };
-
     ImGuiFrameDiagnostics m_frameDiagnostics;
+    RingBufferAverager m_totalRenderAverage { RENDER_SAMPLES_COUNT };
 
   };
 

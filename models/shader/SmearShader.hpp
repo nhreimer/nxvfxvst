@@ -47,6 +47,13 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
     ~SmearShader() override;
 
+    void destroyTextures() override
+    {
+      m_outputTexture.destroy();
+      m_feedbackTexture.destroy();
+      m_blender.destroyTextures();
+    }
+
     [[nodiscard]]
     nlohmann::json serialize() const override;
 
@@ -65,7 +72,7 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     bool isShaderActive() const override;
 
     [[nodiscard]]
-    sf::RenderTexture & applyShader(const sf::RenderTexture &inputTexture) override;
+    sf::RenderTexture * applyShader(const sf::RenderTexture * inputTexture) override;
 
   private:
     PipelineContext& m_ctx;
@@ -75,8 +82,8 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     sf::Clock m_clock;
     sf::Shader m_shader;
 
-    sf::RenderTexture m_outputTexture;
-    sf::RenderTexture m_feedbackTexture;
+    LazyTexture m_outputTexture;
+    LazyTexture m_feedbackTexture;
 
     BlenderShader m_blender;
     TimeEasing m_easing;
