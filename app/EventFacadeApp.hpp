@@ -60,7 +60,8 @@ namespace nx
     // the following two are dummy vars for the app since there is no automation to perform
     VSTParamBindingManager m_paramBindingManager
     {
-      []( const int32_t paramId, const float normalizedValue ) {}
+      []( const int32_t paramId, const float normalizedValue ) {},
+      []( const int32_t paramId ) {}
     };
 
     VSTStateContext m_stateContext { m_paramBindingManager };

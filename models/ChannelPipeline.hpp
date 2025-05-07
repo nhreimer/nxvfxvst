@@ -66,6 +66,8 @@ namespace nx
       } );
     }
 
+    sf::RenderTexture * getOutputTexture() const { return m_outputTexture; }
+
     int32_t getDrawPriority() const { return m_drawPriority; }
     const sf::BlendMode& getChannelBlendMode() const { return m_blendMode; }
 

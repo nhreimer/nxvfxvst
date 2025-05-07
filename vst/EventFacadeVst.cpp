@@ -132,6 +132,7 @@ namespace nx
     {
       LOG_INFO( "shutting down event receiver" );
       ImGui::SFML::Shutdown( window );
+      m_pipelines.shutdown();
     }
 
     bool EventFacadeVst::executeFrame( sf::RenderWindow & window )

@@ -47,6 +47,8 @@ namespace nx
 
     for ( auto& midiGen : m_midiGen )
       midiGen.stop();
+
+    m_pipelines.shutdown();
   }
 
   // gets called whenever the OS indicates it's time to update
