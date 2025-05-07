@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include "data/PipelineContext.hpp"
 
 namespace nx

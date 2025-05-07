@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 #include <memory>
+#include <thread>
 
 namespace nx
 {
