@@ -2,7 +2,7 @@
 
 ## Description
 
-A flexible and modular Video Effects Engine VST3 Plugin for midi events. 
+A flexible, modular, multithreaded rendering VST3 Video Effects Engine Plugin for midi events. 
 
 ## Goal
 
@@ -12,22 +12,25 @@ Synchronize midi events to highly customizable visuals.
 
 * Ability to run in Standalone and VST3 Plugin
   * In Standalone (testing only, no audio)
-    * Midi Generator that pushes events on different threads in order to
+    * Midi Generator that pushes events on different threads to
       simulate DAW Processor threads and stress testing
 * Multichannel support
   * Route midi output to independent VFX chains
   * Infinite shader and modifier chaining per channel
+  * Ability to prioritize rendering order for each channel
 * Each effect can be assigned user-specified midi notes for triggers
 * DAW Automation controls for effects
   * Dynamically names and resets names of parameters for DAW visibility
 * JSON serialization for importing/exporting (via clipboard at the moment)
-* Real-time VFX Engine that synchronize to midi events
+* Real-time VFX Engine that synchronizes to midi events
   * Effects
   * Particle generator
   * Particle modifiers
   * Easings (for time decays)
   * Triggers at multiple stages of a pipeline (for time synchronization)
 * Real-time video encoder (Raw RGBA with Frame Rate Locking)
+* Multithreaded rendering
+  * Each channel renders on its own thread
 
 ---
 
@@ -54,7 +57,7 @@ Synchronize midi events to highly customizable visuals.
           ▼
 +---------------------+
 |  ChannelPipeline    |
-|        1..n         |  Each midi channel is independent of the other
+|        1..n         |  Each midi channel is independent
 +---------------------+
           │
           ▼
@@ -82,15 +85,15 @@ Synchronize midi events to highly customizable visuals.
           │
           ▼
 +------------------+
-|   Video Encoder  |
+|   Video Encoder  |  Optional video encoder that locks to specified FPS
 +------------------+
 
 
 ```
 
-## VST Controller and VST Processor
+## VST3 Information and Limitations
 
-### VST3 Refresh Rate
+### VST3 Refresh Rate (Windows)
 
 __TL;DR__:
 
@@ -114,9 +117,10 @@ Games and full-screen apps manage to bypass this by:
     They create their own top-level HWND and control the swap chain directly
 
 By default, the plugin will attempt to use 120 FPS, but it will match the reported refresh rate.
-The logs will then report any frames that are dropped according to the matched refresh rate. 
+The logs will then report any frames that are dropped according to the matched refresh rate. If
+the framerate drops by 10% then the Frame Diagnostics will appear in red.
 
-### VST3 Design Overview 
+### VST3 Design Overview: The Controller and the Processor
 
 The VST3 API is composed of two components: the controller and the processor. 
 Each one runs on a different thread and communication is handled through a message-passing 
@@ -258,6 +262,7 @@ Applies post-processing shaders to the result of the modifier stack.
 | Pulse            |             |
 | Ripple           |             |
 | Rumble           |             |
+| Shock Bloom      |             |
 | Smear            |             |
 | Strobe           |             |
 | Transform        |             |
@@ -267,9 +272,11 @@ added to almost all shaders to provide mixing between the original input and the
 
 ## Video Encoder
 
-There are two video encoders:
-1. RawRGBA, which saves an image of every frame (MASSIVE file sizes). it will produce a json meta file too.
-You can use ffmpeg on the command line to convert it, e.g.,
+At the moment, there is only one video encoder:
+
+1. RawRGBA, which saves an image of every frame (MASSIVE file sizes). it will produce two json meta files.
+
+You can use ffmpeg on the command line to convert the RawRGBA file, e.g.,
 
 ```bash
   ffmpeg.exe -f rawvideo -pix_fmt rgba -s 1280x768 -r 60 -i video_in.rbga -c:v libx264 -pix_fmt yuv420p video_out.mp4
@@ -311,7 +318,6 @@ timing, and energy into each animation.
 Each easing function takes a normalized time value t in the range [0.0, 1.0] and returns a value that modulates the strength or visibility of an effect at that point in time.
 
 At the moment, the easings are either built into the Shader code or assigned manually to certain shader controls. 
-In the future, it would be nice to have these specified by the user.
 
 ### Use Cases:
 
@@ -352,12 +358,12 @@ Additionally, there is a Cumulative Easing, that can combine multiple easings, b
 ## Dependencies
 
 * C++20
+* VST3 SDK
 * SFML v3 (graphics: small patch required)
-* ImGui (menus)
+* ImGui (real-time menus)
 * nlohmann json (serialization and state management)
 * spdlog (logging)
-* VST3 SDK
-* FFmpeg (mp4 video encoding)
+* Moody Camel (portable concurrent queue)
 
 The VST3 SDK can be downloaded from here https://www.steinberg.net/vst3sdk
 
@@ -467,8 +473,6 @@ Contributions, ideas, bug reports, and suggestions are welcome!
   * More information/intuitive control naming
   * Controls work directly with BPM
 * Rehydrate dynamically assigned parameters
-* Save audio with video for full A/V synchronization
-* Multithreaded rendering by channel
 
 # Media
 
