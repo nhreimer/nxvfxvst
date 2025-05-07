@@ -83,11 +83,8 @@ namespace nx
 
     std::priority_queue< ChannelDrawingData_t > m_drawingPrioritizer;
 
-    sf::Clock m_renderTimer;
-    float m_renderTime { 0.f };
-
     ImGuiFrameDiagnostics m_frameDiagnostics;
-
+    TimedAverager m_totalRenderAverage { std::chrono::seconds( RENDER_AVERAGE_SECONDS ) };
   };
 
 } // namespace nx

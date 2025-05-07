@@ -6,6 +6,11 @@
 #include <mutex>
 #include <thread>
 
+#include "utils/TimedAverager.hpp"
+#include "utils/ProfileMetics.hpp"
+
+#include "helpers/Definitions.hpp"
+
 namespace nx
 {
 
@@ -13,17 +18,6 @@ namespace nx
   {
   public:
     using PipelineFn = std::function< void() >;
-
-    struct ProfileMetrics
-    {
-      std::chrono::steady_clock::time_point startTime;
-      std::chrono::steady_clock::time_point endTime;
-
-      double elapsedMilliseconds() const
-      {
-        return std::chrono::duration< double, std::milli >(endTime - startTime).count();
-      }
-    };
 
     explicit ChannelWorker(PipelineFn pipelineFunc) : m_pipelineFunc(std::move(pipelineFunc))
     {
@@ -64,10 +58,10 @@ namespace nx
     }
 
     // Returns the latest profiling metrics
-    const ProfileMetrics& getLastMetrics()
+    const TimedAverager& getMetrics()
     {
       std::lock_guard lock(m_metricsMutex);
-      return m_lastMetrics;
+      return m_timedAverager;
     }
 
   private:
@@ -95,7 +89,7 @@ namespace nx
 
         {
           std::lock_guard metricsLock(m_metricsMutex);
-          m_lastMetrics = metrics;
+          m_timedAverager.addValue( metrics.elapsedMilliseconds() );
         }
 
         {
@@ -103,15 +97,6 @@ namespace nx
           m_pipelineComplete = true;
         }
         m_pipelineCompleteCv.notify_one();
-
-        // removed this for now
-        // Run deferred cleanup after pipeline tasks
-        // {
-        //   std::lock_guard cleanupLock(m_mutex);
-        //   for (auto &fn: m_cleanupQueue)
-        //     fn();
-        //   m_cleanupQueue.clear();
-        // }
       }
     }
 
@@ -127,7 +112,8 @@ namespace nx
     bool m_pipelineComplete = true;
 
     std::vector< std::function< void() > > m_cleanupQueue;
-    ProfileMetrics m_lastMetrics;
+    //ProfileMetrics m_lastMetrics;
+    TimedAverager m_timedAverager { std::chrono::seconds( RENDER_AVERAGE_SECONDS ) };
   };
 
 

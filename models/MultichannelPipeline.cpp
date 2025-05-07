@@ -53,7 +53,8 @@ namespace nx
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
   {
-    m_renderTimer.restart();
+    ProfileMetrics metrics;
+    metrics.startTime = std::chrono::steady_clock::now();
 
     // add a render update request and then start all the channel pipelines
     for ( int i = 0; i < m_channels.size(); ++i )
@@ -90,6 +91,8 @@ namespace nx
       }
     }
 
+    metrics.endTime = std::chrono::steady_clock::now();
+
     // now that we have a final image, send it to the video encoder
     // and make sure we start at the right time
     if ( m_encoder )
@@ -102,7 +105,7 @@ namespace nx
       }
     }
 
-    m_renderTime = m_renderTimer.getElapsedTime().asMilliseconds();
+    m_totalRenderAverage.addValue( metrics.elapsedMilliseconds() );
   }
 
   void MultichannelPipeline::update( const sf::Time &deltaTime )
@@ -248,12 +251,18 @@ namespace nx
                      ImGuiWindowFlags_NoFocusOnAppearing |
                      ImGuiWindowFlags_NoNav);
     {
-
-      // ImGui::Text( "Framerate: %.2f", ImGui::GetIO().Framerate );
-      // TODO: add multithreaded render output
-
-      ImGui::Text( "Render Time (MS): %0.2f", m_renderTime );
       ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
+
+      ImGui::SeparatorText( "Render Times (Avg)" );
+
+      for ( int32_t i = 0; i < m_channelWorkers.size(); ++i )
+      {
+        auto& metrics = m_channelWorkers[ i ]->getMetrics();
+        //ImGui::Text( "Channel %d: %d ms", ( i + 1 ), metrics.getAverage() );
+        ImGui::Text( "Channel %d: %0.2f ms", i + 1, metrics.getAverage(), metrics.getCount() );
+      }
+
+      ImGui::Text( "Total Time: %0.2f ms", m_totalRenderAverage.getAverage(), m_totalRenderAverage.getCount() );
 
       m_frameDiagnostics.drawMenu();
     }

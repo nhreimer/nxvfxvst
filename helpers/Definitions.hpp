@@ -8,4 +8,6 @@ namespace nx
   constexpr float PLAYHEAD_INTERVAL_IN_SECS = 0.25f;
 
   constexpr int32_t PARAMETERS_ENABLED = 256;
+
+  constexpr int32_t RENDER_AVERAGE_SECONDS = 3;
 }
