@@ -87,16 +87,12 @@ if ( BUILD_PLUGIN )
     DESCRIPTION "nxvfxvst VST 3 Plug-in"
   )
 
-#  set(SFML_STATIC_LIBRARIES TRUE)
-#  find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
+  set(SFML_STATIC_LIBRARIES TRUE)
+  find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
 #  find_package(spdlog CONFIG REQUIRED)
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
-#  find_package(FFMPEG REQUIRED)
   find_package(unofficial-concurrentqueue CONFIG REQUIRED)
-#  target_include_directories(main PRIVATE ${FFMPEG_INCLUDE_DIRS})
-#  target_link_directories(main PRIVATE ${FFMPEG_LIBRARY_DIRS})
-#  target_link_libraries(main PRIVATE ${FFMPEG_LIBRARIES})
 
   option(SMTG_ENABLE_VST3_PLUGIN_EXAMPLES "Enable VST 3 Plug-in Examples" OFF)
   option(SMTG_ENABLE_VST3_HOSTING_EXAMPLES "Enable VST 3 Hosting Examples" OFF)
@@ -122,7 +118,7 @@ if ( BUILD_PLUGIN )
     PRIVATE
 
     # must used the patched version
-    C:/Precision/projects/SFML/include
+#    C:/Precision/projects/SFML/include
   )
 
   if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
@@ -136,12 +132,12 @@ if ( BUILD_PLUGIN )
       Rpcrt4.lib
       dwmapi.lib
 
-      # must use the patched version
-      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
-      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-window-s-d.lib
-      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-graphics-s-d.lib
-  #    SFML::Window
-  #    SFML::Graphics
+      # you should use the patched version in the README.MD file
+#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
+#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-window-s-d.lib
+#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-graphics-s-d.lib
+      SFML::Window
+      SFML::Graphics
       ImGui-SFML::ImGui-SFML
       spdlog::spdlog_header_only
       nlohmann_json::nlohmann_json
@@ -159,12 +155,8 @@ if ( BUILD_PLUGIN )
       dwmapi.lib
 
       nlohmann_json::nlohmann_json
-      # must use the patched version
-      C:/Precision/projects/SFML/cmake-build-release/lib/sfml-system-s.lib
-      C:/Precision/projects/SFML/cmake-build-release/lib/sfml-window-s.lib
-      C:/Precision/projects/SFML/cmake-build-release/lib/sfml-graphics-s.lib
-      #    SFML::Window
-      #    SFML::Graphics
+      SFML::Window
+      SFML::Graphics
       ImGui-SFML::ImGui-SFML
 
       unofficial::concurrentqueue::concurrentqueue
@@ -202,8 +194,6 @@ else()
 
   # keep this set no matter what because we rely on some Vst constructs even in the
   # application version.
-  # TODO: this should be set on the CLI
-  # set(vst3sdk_SOURCE_DIR "C:/Precision/projects/VST_SDKs/VST_SDK_3.7.12/vst3sdk")
 
   set(SFML_STATIC_LIBRARIES TRUE)
   find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
@@ -221,7 +211,6 @@ else()
   )
   target_link_directories( ${PROJECT_NAME}
     PRIVATE
-#    ${FFMPEG_LIBRARY_DIRS}
     unofficial::concurrentqueue::concurrentqueue
   )
 
