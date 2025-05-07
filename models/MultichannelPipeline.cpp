@@ -258,11 +258,13 @@ namespace nx
 
       for ( int32_t i = 0; i < m_channelWorkers.size(); ++i )
       {
-        auto metrics = m_channelWorkers[ i ]->getMetrics();
+        const auto metrics = m_channelWorkers[ i ]->getMetrics();
         ImGui::Text( "Channel %d: %0.2f ms", i + 1, metrics );
       }
 
       ImGui::Text( "Total Time: %0.2f ms", m_totalRenderAverage.getAverage() );
+      ImGui::Text( "Cycle Time: %0.2f ms", m_totalRenderAverage.getCycleTimeInMs() );
+      ImGui::Text( "Cycle Size: %d samples", RENDER_SAMPLES_COUNT );
 
       m_frameDiagnostics.drawMenu();
     }

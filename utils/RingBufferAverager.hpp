@@ -19,7 +19,9 @@ namespace nx
 
     explicit RingBufferAverager(const size_t capacity)
       : m_buffer(capacity, 0.0)
-    {}
+    {
+      m_cycleTime = Clock::now();
+    }
 
     void addSample(const double value)
     {
@@ -36,8 +38,15 @@ namespace nx
           m_isBufferFull = true;
           LOG_DEBUG("buffer ring full: {}", m_buffer.size());
         }
+
+        const auto now = Clock::now();
+        const Duration duration = now - m_cycleTime;
+        m_cycleTime = now;
+        m_cycleDurationInMs = duration.count() * 1000.0;
       }
     }
+
+    double getCycleTimeInMs() const { return m_cycleDurationInMs; }
 
     void startTimer()
     {
@@ -93,6 +102,9 @@ namespace nx
     TimePoint m_activeTime { EMPTY_TIME };
 
     static constexpr TimePoint EMPTY_TIME {};
+
+    TimePoint m_cycleTime {};
+    double m_cycleDurationInMs { 0.0 };
   };
 
 }

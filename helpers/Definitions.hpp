@@ -16,5 +16,5 @@ namespace nx
   constexpr int32_t RENDER_AVERAGE_SECONDS = 3;
 
   // the max samples allowed for an average
-  constexpr int32_t RENDER_SAMPLES_COUNT = 128;
+  constexpr int32_t RENDER_SAMPLES_COUNT = 64;
 }
