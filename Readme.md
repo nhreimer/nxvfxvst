@@ -52,7 +52,7 @@ Synchronize midi events to highly customizable visuals.
 * [ImGui-SFML](https://github.com/SFML/imgui-sfml)
 * [nlohmann json](https://github.com/nlohmann/json)
 * [spdlog](https://github.com/gabime/spdlog)
-* [Moody Camel](https://github.com/KjellKod/Moody-Camel-s-concurrentqueue)
+* [Moody Camel](https://github.com/cameron314/concurrentqueue)
 
 # Getting Started
 
