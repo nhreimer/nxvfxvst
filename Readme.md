@@ -488,26 +488,6 @@ Contributions, ideas, bug reports, and suggestions are welcome!
 ### Reaper v7.28. nxvfxvst v1.0.1.0 pre-alpha. 1 channel, 2 effects
 ![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWd1ZXEwMHl0NDJlczVmYnQ3YzAzY2w3bGU3dDE1M3QwZjloY3JiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJvrv2p5RFCdWlpItl/giphy.gif)
 
----
+### Reaper v7.28 nxvfxst v1.0.8.0 pre-alpha. 1 channel, 4 effects
+![Alt Text](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaTA1NWt5YW15bjh6bnU5bmN4a3VuMjZtdmt0NDA0MzF6bms3MGk0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Os4AJXRxO7AV5TygMO/giphy.gif)
 
-# Tips
-
-## Layouts
-
-## Behaviors
-
-## Modifiers
-
-## Effects
-
-### Density Heat Map
-
-Requires blurring to get good results
-
-1. add blur before the density heat map
-2. increase particle size
-3. play with particle timeout
-4. play with falloff in density heat map
-
-Bonus: add ripple before density heat map to get lava lamp vibes
-Bonus: add smear afterward, set blend mode to "alpha" and play with settings
