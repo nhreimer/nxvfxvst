@@ -5,12 +5,17 @@
 namespace nx
 {
 
+  class RequestSink;
+
   class ShaderPipeline final
   {
   public:
-
-    explicit ShaderPipeline( PipelineContext& context )
-      : m_ctx( context )
+    ///
+    /// @param context
+    /// @param requestSink required for requesting render-thread cleanups
+    ShaderPipeline( PipelineContext& context, RequestSink& requestSink )
+      : m_ctx( context ),
+        m_requestSink( requestSink )
     {}
 
     ~ShaderPipeline() = default;
@@ -89,8 +94,9 @@ namespace nx
     PipelineContext& m_ctx;
 
     std::vector< std::unique_ptr< IShader > > m_shaders;
-    //sf::RenderTexture m_outputTexture;
     LazyTexture m_outputTexture;
+
+    RequestSink& m_requestSink;
 
     std::mutex m_mutex;
   };
