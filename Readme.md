@@ -1,5 +1,10 @@
 # nxvfx VST3
 
+## License
+
+This software is licensed under the GNU AGPLv3 for non-commercial use only.  
+See [LICENSE](./LICENSE) for full terms and third-party dependency notices.
+
 ## Description
 
 A flexible, modular, multithreaded rendering VST3 Video Effects Engine Plugin for midi events. 
