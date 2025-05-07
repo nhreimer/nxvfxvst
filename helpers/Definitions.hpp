@@ -2,12 +2,19 @@
 
 namespace nx
 {
+  // the number of channel pipelines to set up
+  // the large the number, the more resources utilized
   constexpr int32_t MAX_CHANNELS = 4;
 
-  // every 250ms
-  constexpr float PLAYHEAD_INTERVAL_IN_SECS = 0.25f;
+  // the refresh rate for getting the playhead
+  constexpr float PLAYHEAD_INTERVAL_IN_SECS = 0.25f; // 0.25f = 250ms
 
+  // the number of VST3 parameters to pre-allocate
   constexpr int32_t PARAMETERS_ENABLED = 256;
 
+  // the average window size used for collecting rendering stats
   constexpr int32_t RENDER_AVERAGE_SECONDS = 3;
+
+  // the max samples allowed for an average
+  constexpr int32_t RENDER_SAMPLES_COUNT = 128;
 }

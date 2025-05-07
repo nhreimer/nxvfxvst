@@ -6,8 +6,7 @@
 #include <mutex>
 #include <thread>
 
-#include "utils/TimedAverager.hpp"
-#include "utils/ProfileMetics.hpp"
+#include "utils/RingBufferAverager.hpp"
 
 #include "helpers/Definitions.hpp"
 
@@ -58,10 +57,10 @@ namespace nx
     }
 
     // Returns the latest profiling metrics
-    const TimedAverager& getMetrics()
+    double getMetrics() const
     {
-      std::lock_guard lock(m_metricsMutex);
-      return m_timedAverager;
+      //std::lock_guard lock( m_metricsMutex );
+      return m_averager.getAverage();
     }
 
   private:
@@ -79,18 +78,12 @@ namespace nx
         m_triggered = false;
         lock.unlock();
 
-        ProfileMetrics metrics;
-        metrics.startTime = std::chrono::steady_clock::now();
+        m_averager.startTimer();
 
         if (m_pipelineFunc)
           m_pipelineFunc();
 
-        metrics.endTime = std::chrono::steady_clock::now();
-
-        {
-          std::lock_guard metricsLock(m_metricsMutex);
-          m_timedAverager.addValue( metrics.elapsedMilliseconds() );
-        }
+        m_averager.stopTimerAndAddSample();
 
         {
           std::lock_guard completeLock(m_mutex);
@@ -112,8 +105,7 @@ namespace nx
     bool m_pipelineComplete = true;
 
     std::vector< std::function< void() > > m_cleanupQueue;
-    //ProfileMetrics m_lastMetrics;
-    TimedAverager m_timedAverager { std::chrono::seconds( RENDER_AVERAGE_SECONDS ) };
+    RingBufferAverager m_averager { RENDER_SAMPLES_COUNT };
   };
 
 

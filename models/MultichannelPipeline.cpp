@@ -34,6 +34,7 @@ namespace nx
       j[ i ] = m_channels[ i ]->saveChannelPipeline();
       LOG_INFO( j[ i ].dump() );
     }
+
     return j;
   }
 
@@ -53,8 +54,7 @@ namespace nx
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
   {
-    ProfileMetrics metrics;
-    metrics.startTime = std::chrono::steady_clock::now();
+    m_totalRenderAverage.startTimer();
 
     // add a render update request and then start all the channel pipelines
     for ( int i = 0; i < m_channels.size(); ++i )
@@ -91,8 +91,6 @@ namespace nx
       }
     }
 
-    metrics.endTime = std::chrono::steady_clock::now();
-
     // now that we have a final image, send it to the video encoder
     // and make sure we start at the right time
     if ( m_encoder )
@@ -105,7 +103,10 @@ namespace nx
       }
     }
 
-    m_totalRenderAverage.addValue( metrics.elapsedMilliseconds() );
+    // video encoding gets added whenever available,
+    // but there's no separate one right now for video encoding
+    // unless it becomes a problem
+    m_totalRenderAverage.stopTimerAndAddSample();
   }
 
   void MultichannelPipeline::update( const sf::Time &deltaTime )
@@ -257,12 +258,11 @@ namespace nx
 
       for ( int32_t i = 0; i < m_channelWorkers.size(); ++i )
       {
-        auto& metrics = m_channelWorkers[ i ]->getMetrics();
-        //ImGui::Text( "Channel %d: %d ms", ( i + 1 ), metrics.getAverage() );
-        ImGui::Text( "Channel %d: %0.2f ms", i + 1, metrics.getAverage(), metrics.getCount() );
+        auto metrics = m_channelWorkers[ i ]->getMetrics();
+        ImGui::Text( "Channel %d: %0.2f ms", i + 1, metrics );
       }
 
-      ImGui::Text( "Total Time: %0.2f ms", m_totalRenderAverage.getAverage(), m_totalRenderAverage.getCount() );
+      ImGui::Text( "Total Time: %0.2f ms", m_totalRenderAverage.getAverage() );
 
       m_frameDiagnostics.drawMenu();
     }

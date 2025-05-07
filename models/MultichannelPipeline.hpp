@@ -84,7 +84,8 @@ namespace nx
     std::priority_queue< ChannelDrawingData_t > m_drawingPrioritizer;
 
     ImGuiFrameDiagnostics m_frameDiagnostics;
-    TimedAverager m_totalRenderAverage { std::chrono::seconds( RENDER_AVERAGE_SECONDS ) };
+    RingBufferAverager m_totalRenderAverage { RENDER_SAMPLES_COUNT };
+
   };
 
 } // namespace nx
