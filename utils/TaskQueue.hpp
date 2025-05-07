@@ -6,8 +6,9 @@ namespace nx
 {
 
   ///////////////////////////////////////////////////////////
-  struct RequestSink
+  class RequestSink
   {
+  public:
     virtual ~RequestSink() = default;
 
     // we don’t need the interface to know about std::function
