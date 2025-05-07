@@ -302,7 +302,10 @@ namespace nx
     }
 
     if ( deletePos > -1 )
-      m_shaders.erase( m_shaders.begin() + deletePos );
+    {
+      deleteShader( deletePos );
+      // m_shaders.erase( m_shaders.begin() + deletePos );
+    }
     else if ( swapA > -1 && swapB > -1 && swapA < m_shaders.size() && swapB < m_shaders.size() )
       std::swap( m_shaders[ swapA ], m_shaders[ swapB ] );
   }
