@@ -15,6 +15,9 @@ Synchronize midi events to highly customizable visuals.
 
 ## Features
 
+### Right-click to hide/show menus!
+
+
 * Ability to run in Standalone and VST3 Plugin
   * In Standalone (testing only, no audio)
     * Midi Generator that pushes events on different threads to
