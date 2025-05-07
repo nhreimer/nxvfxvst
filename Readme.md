@@ -149,12 +149,16 @@ so we utilize a simple producer-consumer pattern
 for immediately pushing events from the Processor thread into a concurrent queue in the controller, 
 and then we allow the Controller thread to consume events on every frame.
 
-### Limitations of VST3 that affect this plugin
+### VST3 Parameters
 
 __TL;DR__:
 
-Parameters are limited to 256 slots. Parameter names in DAW show as "Param_N" until a control takes over and renames it. 
-Parameters are limited to 0 - 1.
+Parameters are limited to a number of slots on initialization. 
+Parameter names in DAW show as "Param_N" until a control takes over and renames it. 
+Parameters are limited to 0 - 1, but the real value is still provided to the DAW. 
+
+Dynamic assignment of parameters are ephemeral by nature, so the order you add and 
+remove modifiers, behaviors, or effects impacts the parameter assignment. 
 
 __DETAILS__:
 
@@ -163,13 +167,13 @@ however, creates dynamic effects and each effect has a number of controls. There
 (that I can tell) to change the VST parameter type or parameter name after creation. As a result, 
 the plugin registers a block of parameters during plugin instantiation, which is why you'll see 
 "Param_0" to "Param_255" appear as parameters. Those parameters get assigned dynamically whenever 
-an effect is created but the name does not change.
+an effect is created, and the name will be updated.
 
 Additionally, all parameters are of the same Ranged Type, where the values are normalized between 
-0 and 1 because we cannot change the parameter type. 
+0 and 1 because we cannot change the parameter type. The name and the "real" value of the parameter 
+will be updated whenever using automation.
 
-As a workaround, the user interface, shows the parameter ID that belongs to each control. Additionally, 
-whenever using automation, we can adjust the name and the denormalized value for clarity. 
+# NXVFX Components
 
 ## EventFacadeVST
 
