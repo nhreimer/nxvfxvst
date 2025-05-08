@@ -153,17 +153,7 @@ namespace nx
     }
 
     for ( auto& midiGen : m_midiGen )
-    {
-      ImGui::PushID( &midiGen );
-      bool isMuted = midiGen.isMuted();
-      if ( ImGui::Checkbox( "mute channel", &isMuted ) ) midiGen.toggleMute();
-      ImGui::SameLine();
-      if ( ImGui::Button( "send midi" ) )
-      {
-        midiGen.next();
-      }
-      ImGui::PopID();
-    }
+      midiGen.drawMenu();
 
     ImGui::End();
 
@@ -180,34 +170,32 @@ namespace nx
 
   void EventFacadeApp::drawDebugOverlay( const sf::RenderWindow & window )
   {
+    const auto& io = ImGui::GetIO();
+
+    ImGui::SetNextWindowBgAlpha(0.25f); // semi-transparent
+    ImGui::SetNextWindowPos(ImVec2(5, 5), ImGuiCond_Always);
+    ImGui::Begin("Input Debug Overlay", nullptr,
+                 ImGuiWindowFlags_NoTitleBar |
+                 ImGuiWindowFlags_AlwaysAutoResize |
+                 ImGuiWindowFlags_NoMove |
+                 ImGuiWindowFlags_NoSavedSettings |
+                 ImGuiWindowFlags_NoFocusOnAppearing);
+
+    ImGui::Text("Window Focus:    %s", window.hasFocus() ? "Yes" : "No");
+    ImGui::Text("ImGui  Mouse:    %s", io.WantCaptureMouse ? "Yes" : "No");
+    ImGui::Text("ImGui  Keyboard: %s", io.WantCaptureKeyboard ? "Yes" : "No");
+
+    if (!window.hasFocus())
     {
-      const auto& io = ImGui::GetIO();
-
-      ImGui::SetNextWindowBgAlpha(0.35f); // semi-transparent
-      ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
-      ImGui::Begin("Input Debug Overlay", nullptr,
-                   ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_AlwaysAutoResize |
-                   ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoSavedSettings |
-                   ImGuiWindowFlags_NoFocusOnAppearing);
-
-      ImGui::Text("Focus: %s", window.hasFocus() ? "Yes" : "No");
-      ImGui::Text("ImGui Mouse: %s", io.WantCaptureMouse ? "Yes" : "No");
-      ImGui::Text("ImGui Keyboard: %s", io.WantCaptureKeyboard ? "Yes" : "No");
-
-      if (!window.hasFocus())
-      {
-        ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Window lost focus!");
-      }
-
-      if (!io.WantCaptureMouse && !io.WantCaptureKeyboard && window.hasFocus())
-      {
-        ImGui::TextColored(ImVec4(1, 0.7f, 0.2f, 1), "Input not captured!");
-      }
-
-      ImGui::End();
+      ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Window lost focus!");
     }
+
+    if (!io.WantCaptureMouse && !io.WantCaptureKeyboard && window.hasFocus())
+    {
+      ImGui::TextColored(ImVec4(1, 0.7f, 0.2f, 1), "Input not captured!");
+    }
+
+    ImGui::End();
   }
 
 }

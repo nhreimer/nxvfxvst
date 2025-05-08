@@ -10,7 +10,9 @@ namespace nx::test
 
   public:
 
-    MidiGenerator( int16_t channel, int32_t maxDelay, const std::function< void( const Steinberg::Vst::Event& ) >& onEvent )
+    MidiGenerator( const int16_t channel,
+                   const int32_t maxDelay,
+                   const std::function< void( const Steinberg::Vst::Event& ) >& onEvent )
       : m_rand( ++m_seed ),
         m_channel( channel ),
         m_maxDelay( maxDelay ),
@@ -21,6 +23,20 @@ namespace nx::test
 
     bool isMuted() const { return m_isMuted; }
     void toggleMute() { m_isMuted = !m_isMuted; }
+
+    void drawMenu()
+    {
+      ImGui::PushID( this );
+
+      if ( ImGui::Checkbox( "mute channel", &m_isMuted ) ) toggleMute();
+      ImGui::SameLine();
+      if ( ImGui::Button( "send midi" ) ) next();
+
+      ImGui::SetNextItemWidth( 186.f );
+      ImGui::SliderInt( "##Max Delay", &m_maxDelay, 0, 5000, "Delay %d" );
+
+      ImGui::PopID();
+    }
 
     void next()
     {

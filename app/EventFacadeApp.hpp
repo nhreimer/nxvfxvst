@@ -39,7 +39,8 @@ namespace nx
 
     void consumeMidiEvents();
 
-    void drawDebugOverlay(const sf::RenderWindow& window);
+    // ONLY exists in the standalone for debugging purposes
+    static void drawDebugOverlay(const sf::RenderWindow& window);
 
   private:
 
