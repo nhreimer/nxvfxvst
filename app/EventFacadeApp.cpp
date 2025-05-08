@@ -104,6 +104,7 @@ namespace nx
       {
         drawMenu();
         drawDebugOverlay( window );
+        m_serialGenerator.drawMenu();
       }
 
       ImGui::SFML::Render( window );
@@ -181,8 +182,8 @@ namespace nx
                  ImGuiWindowFlags_NoSavedSettings |
                  ImGuiWindowFlags_NoFocusOnAppearing);
 
-    ImGui::Text("Window Focus:    %s", window.hasFocus() ? "Yes" : "No");
-    ImGui::Text("ImGui  Mouse:    %s", io.WantCaptureMouse ? "Yes" : "No");
+    ImGui::Text("Window Focus:    %s", window.hasFocus()      ? "Yes" : "No");
+    ImGui::Text("ImGui  Mouse:    %s", io.WantCaptureMouse    ? "Yes" : "No");
     ImGui::Text("ImGui  Keyboard: %s", io.WantCaptureKeyboard ? "Yes" : "No");
 
     if (!window.hasFocus())

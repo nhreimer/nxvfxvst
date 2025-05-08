@@ -10,7 +10,8 @@
 #include "models/MultichannelPipeline.hpp"
 
 #include "models/data/PipelineContext.hpp"
-#include "MidiGenerator.hpp"
+#include "app/MidiGenerator.hpp"
+#include "app/SerialGenerator.hpp" // used for serial/deserial testing
 
 namespace nx
 {
@@ -88,6 +89,8 @@ namespace nx
     // receives midi events on the processor thread
     // and processes them on the controller thread
     moodycamel::ConcurrentQueue< Midi_t > m_queue;
+
+    SerialGenerator m_serialGenerator;
 
   };
 
