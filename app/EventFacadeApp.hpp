@@ -39,6 +39,8 @@ namespace nx
 
     void consumeMidiEvents();
 
+    void drawDebugOverlay(const sf::RenderWindow& window);
+
   private:
 
     bool m_midiGenIsRunning { false };

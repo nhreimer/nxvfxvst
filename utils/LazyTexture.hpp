@@ -1,74 +1,37 @@
-// LazyTexture.hpp
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
+
 #include <memory>
 #include <thread>
 
 namespace nx
 {
 
-  class LazyTexture
+  ///
+  /// Lazy initialization of the sf::RenderTexture, so that any time the texture is operated
+  /// on it gets initialized. This allows LazyTexture to be declared but for threads that
+  /// need to use it to take ownership of it.
+  ///
+  /// It uses a double-buffer strategy along with glFlush() to allow OpenGL to update
+  /// the screen. As a consequence, two textures are always allocated. The alternative
+  /// would be to use glFinish(), which is not an optimal solution.
+  class LazyTexture final
   {
   public:
     LazyTexture() = default;
 
     // this must be called from the thread that created it
-    void destroy( const bool isFromDestructor = false )
-    {
-      if ( m_textures[ 0 ] )
-      {
-        // this is probably a mistake if this occurs
-        if ( isFromDestructor )
-        {
-          LOG_WARN( "destructing thread should not destroy texture" );
-        }
-        ensureOwner();
-        m_textures[ 0 ].reset();
-        m_textures[ 1 ].reset();
-      }
-    }
+    void destroy( const bool isFromDestructor = false );
 
-    void ensureSize(const sf::Vector2u &size)
-    {
-      ensureInitialized();
-      ensureOwner();
+    void ensureSize(const sf::Vector2u &size);
 
-      for (auto &tex: m_textures)
-      {
-        if (tex->getSize() != size)
-        {
-          if (!tex->resize(size))
-          {
-            LOG_ERROR("Failed to resize render texture");
-          }
-        }
-      }
-    }
+    void clear(const sf::Color &color = sf::Color::Transparent);
 
-    void clear(const sf::Color &color = sf::Color::Transparent)
-    {
-      ensureInitialized();
-      ensureOwner();
-      getBack()->clear(color);
-    }
+    void display();
 
-    void display()
-    {
-      ensureInitialized();
-      ensureOwner();
-      getBack()->display();
-      std::swap(m_frontIndex, m_backIndex); // Swap after render completes
-      glFlush(); // <-- lightweight, non-blocking flush
-    }
-
-    void draw(const sf::Drawable &drawable, const sf::RenderStates &states = sf::RenderStates::Default)
-    {
-      ensureInitialized();
-      ensureOwner();
-      getBack()->draw(drawable, states);
-    }
+    void draw(const sf::Drawable &drawable,
+              const sf::RenderStates &states = sf::RenderStates::Default);
 
     [[nodiscard]]
     sf::Vector2u getSize() const { return m_textures[ 0 ]->getSize(); }
@@ -89,17 +52,7 @@ namespace nx
     }
 
   private:
-    void ensureInitialized()
-    {
-      if (!m_textures[ 0 ])
-      {
-        for (auto &tex: m_textures)
-        {
-          tex = std::make_unique< sf::RenderTexture >();
-        }
-        m_ownerThreadId = std::this_thread::get_id();
-      }
-    }
+    void ensureInitialized();
 
     void ensureOwner() const
     {

@@ -8,7 +8,7 @@
 namespace nx
 {
   // this assumes fixed intervals. it's possible that a time-weighted
-  // one will give a more accurate picture.
+  // one will give a more accurate picture, but this is most likely good enough
   class RingBufferAverager final
   {
   public:
