@@ -76,6 +76,9 @@ namespace nx
 
     sf::Clock m_timer;
 
+    // used for ensuring that ImGui doesn't lock whenever the focus is lost
+    sf::Clock m_focusTimer;
+
     // only one right now
     MultichannelPipeline m_pipelines;
 

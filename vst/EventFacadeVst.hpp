@@ -66,6 +66,9 @@ namespace nx
 
     sf::Clock m_clock;
 
+    // used for ensuring that ImGui doesn't lock whenever the focus is lost
+    sf::Clock m_focusTimer;
+
     // receives midi events on the processor thread
     // and processes them on the controller thread
     //Concurrency::concurrent_queue< Midi_t > m_queue;

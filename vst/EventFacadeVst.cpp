@@ -139,6 +139,13 @@ namespace nx
     {
       if ( !window.isOpen() ) return false;
 
+      // don't anger the OS gods by spamming it too much
+      if ( !window.hasFocus() && m_focusTimer.getElapsedTime().asSeconds() > 2.0f )
+      {
+        window.requestFocus();
+        m_focusTimer.restart();
+      }
+
       while ( const std::optional event = window.pollEvent() )
       {
         // post events

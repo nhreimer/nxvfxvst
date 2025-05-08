@@ -86,6 +86,9 @@ namespace nx
     ImGuiFrameDiagnostics m_frameDiagnostics;
     RingBufferAverager m_totalRenderAverage { RENDER_SAMPLES_COUNT };
 
+    float m_mainWindowOpacity { 0.5f };
+    float m_metricsWindowOpacity { 0.3f };
+
   };
 
 } // namespace nx

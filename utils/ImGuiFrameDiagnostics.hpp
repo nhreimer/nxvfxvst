@@ -44,7 +44,7 @@ namespace nx
 
     void drawMenu() const
     {
-      const float expectedFps = static_cast<float>(vsyncRateHz);
+      const auto expectedFps = static_cast<float>(vsyncRateHz);
       const bool droppingFrames = smoothedFps < expectedFps * (1.f - m_tolerance);
 
       ImGui::SeparatorText( "Frame Rate Metrics" );

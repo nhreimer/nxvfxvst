@@ -139,7 +139,8 @@ namespace nx
 
   void MultichannelPipeline::drawPipelineMenu()
   {
-    ImGui::SetNextWindowBgAlpha(0.3f); // semi-transparent background
+    // semi-transparent background
+    ImGui::SetNextWindowBgAlpha( m_mainWindowOpacity );
 
     ImGui::Begin(
       FULL_PRODUCT_NAME,
@@ -148,6 +149,7 @@ namespace nx
 
     int32_t offsetChannel = m_selectedChannel + 1;
 
+    ImGui::SliderFloat( "Window Opacity##1", &m_mainWindowOpacity, 0.f, 1.f );
     ImGui::Text( "BPM: %0.2f", m_ctx.globalInfo.bpm );
     ImGui::Text( "Playhead: %0.5f", m_ctx.globalInfo.playhead );
 
@@ -244,7 +246,8 @@ namespace nx
 
   void MultichannelPipeline::drawPipelineMetrics()
   {
-    ImGui::SetNextWindowBgAlpha(0.3f); // semi-transparent background
+    // semi-transparent background
+    ImGui::SetNextWindowBgAlpha( m_metricsWindowOpacity );
 
     ImGui::Begin("Frame Diagnostics", nullptr,
                      ImGuiWindowFlags_AlwaysAutoResize |
@@ -252,6 +255,7 @@ namespace nx
                      ImGuiWindowFlags_NoFocusOnAppearing |
                      ImGuiWindowFlags_NoNav);
     {
+      ImGui::SliderFloat( "Window Opacity##2", &m_metricsWindowOpacity, 0.075f, 1.f );
       ImGui::Text( "Window Size: %d, %d", m_ctx.globalInfo.windowSize.x, m_ctx.globalInfo.windowSize.y );
 
       ImGui::SeparatorText( "Render Times (Avg)" );

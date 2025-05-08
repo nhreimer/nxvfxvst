@@ -70,6 +70,7 @@ namespace nx
       getBack()->draw(drawable, states);
     }
 
+    [[nodiscard]]
     sf::Vector2u getSize() const { return m_textures[ 0 ]->getSize(); }
 
     sf::RenderTexture * get() { return getFront(); }
@@ -110,6 +111,8 @@ namespace nx
 
     sf::RenderTexture *getFront() { return m_textures[ m_frontIndex ].get(); }
     sf::RenderTexture *getBack() { return m_textures[ m_backIndex ].get(); }
+
+    [[nodiscard]]
     const sf::RenderTexture *getFront() const { return m_textures[ m_frontIndex ].get(); }
 
     std::unique_ptr< sf::RenderTexture > m_textures[ 2 ];
