@@ -8,6 +8,8 @@
 #include "models/particle/behavior/MagneticBehavior.hpp"
 #include "models/particle/behavior/RadialSpreaderBehavior.hpp"
 
+#include "models/shader/BlurShader.hpp"
+
 namespace nx
 {
 
@@ -18,8 +20,8 @@ namespace nx
     SerialGenerator()
       : m_pipelineContext( { m_globalInfo, m_vstState } )
     {
-
-      initializeBehaviors();
+      // initializeBehaviors();
+      initializeShaders();
     }
 
     void drawMenu() const
@@ -28,7 +30,8 @@ namespace nx
                     nullptr,
                     ImGuiWindowFlags_AlwaysAutoResize );
       {
-        drawBehaviorMenus();
+        //drawMenus< IParticleBehavior >( "Behavior Serializers", m_behaviorSerializers );
+        drawMenus< IShader >( "Shader Serializers", m_shaderSerializers );
       }
 
       ImGui::End();
@@ -37,33 +40,44 @@ namespace nx
   private:
 
     template < typename T >
-    void addBehavior( const int32_t position )
+    void addBehavior()
     {
-      m_behaviorSerializers[ position ] =
-        std::make_unique< T >( m_pipelineContext );
+      m_behaviorSerializers.emplace_back( std::make_unique< T >( m_pipelineContext ) );
     }
 
     void initializeBehaviors()
     {
-      addBehavior<ColorMorphBehavior>( 0 );
-      addBehavior<FreeFallBehavior>( 1 );
-      addBehavior<JitterBehavior>( 2 );
-      addBehavior<MagneticAttractorBehavior>( 3 );
-      addBehavior<RadialSpreaderBehavior>( 4 );
+      addBehavior<ColorMorphBehavior>();
+      addBehavior<FreeFallBehavior>();
+      addBehavior<JitterBehavior>();
+      addBehavior<MagneticAttractorBehavior>();
+      addBehavior<RadialSpreaderBehavior>();
     }
 
-    void drawBehaviorMenus() const
+    template < typename T >
+    void addShader()
     {
+      m_shaderSerializers.emplace_back( std::make_unique< T >( m_pipelineContext ) );
+    }
 
-      if ( ImGui::TreeNode( "Behavior Serialization" ) )
+    void initializeShaders()
+    {
+      addShader<BlurShader>();
+    }
+
+    template < typename T, typename TEnum  >
+    void drawMenus(
+      const std::string& serializerTypeName,
+      const std::vector< std::unique_ptr< ISerializable< TEnum > > >& serializers ) const
+    {
+      if ( ImGui::TreeNode( serializerTypeName.c_str() ) )
       {
-        for ( int i = 0; i < m_behaviorSerializers.size(); ++i )
+        for ( int i = 0; i < serializers.size(); ++i )
         {
-
           if ( i > 0 )
             ImGui::Separator();
 
-          auto * ptr = m_behaviorSerializers[ i ].get();
+          auto * ptr = serializers[ i ].get();
 
           ImGui::PushID( ptr );
           {
@@ -74,7 +88,7 @@ namespace nx
             if ( ImGui::SmallButton( "paste" ) )
               deserializeFromClipboard( ptr );
 
-            auto * behavior = static_cast< IParticleBehavior * >( ptr );
+            auto * behavior = static_cast< T * >( ptr );
             behavior->drawMenu();
           }
           ImGui::PopID();
@@ -92,6 +106,7 @@ namespace nx
     {
       const auto json = serializer->serialize();
       ImGui::SetClipboardText( json.dump().c_str() );
+      LOG_INFO( json.dump() );
     }
 
     template < typename TEnum >
@@ -121,8 +136,6 @@ namespace nx
 
   private:
 
-    std::array< std::unique_ptr< ISerializable< E_BehaviorType > >, 5 > m_behaviorSerializers;
-
     ///////////////////////////////////////////////////////
     /// TEST SETUP
 
@@ -145,6 +158,12 @@ namespace nx
     };
 
     PipelineContext m_pipelineContext;
+
+    ///////////////////////////////////////////////////////
+    /// DATA SETUP
+
+    std::vector< std::unique_ptr< ISerializable< E_BehaviorType > > > m_behaviorSerializers;
+    std::vector< std::unique_ptr< ISerializable< E_ShaderType > > > m_shaderSerializers;
 
   };
 

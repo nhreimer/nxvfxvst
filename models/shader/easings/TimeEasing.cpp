@@ -5,14 +5,19 @@ namespace nx
 
   nlohmann::json TimeEasing::serialize() const
   {
-    nlohmann::json json = m_data.easingType;
-    return json;
+    return
+    {
+      { "easingType", SerialHelper::serializeEnum( m_data.easingType ) },
+      { "decayRate", m_data.decayRate },
+      { "intensity", m_data.intensity }
+    };
   }
 
   void TimeEasing::deserialize( const nlohmann::json& j )
   {
-    m_data.easingType = j.get< E_TimeEasingType >();
-    setEasingFunction( m_data.easingType );
+    m_data.easingType = SerialHelper::deserializeEnum< E_TimeEasingType >( j.value( "easingType", "easeLinear" ) );
+    m_data.decayRate = j.value( "decayRate", 0.15f );
+    m_data.intensity = j.value( "intensity", 0.1f );
   }
 
   void TimeEasing::setEasingType( const E_TimeEasingType easingType )
