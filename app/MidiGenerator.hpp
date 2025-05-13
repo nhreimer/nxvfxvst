@@ -46,7 +46,7 @@ namespace nx::test
         vstEvent.type = Steinberg::Vst::Event::kNoteOnEvent;
         vstEvent.noteOn.channel = m_channel;
         vstEvent.noteOn.pitch = m_rand() % 88 + 21;
-        vstEvent.noteOn.velocity = std::max( ( m_rand() % 100 ) / 100.f, .5f );
+        vstEvent.noteOn.velocity = 127.f; //std::max( ( m_rand() % 100 ) / 100.f, .5f );
         m_onEvent( vstEvent );
       }
     }

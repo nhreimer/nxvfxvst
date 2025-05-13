@@ -33,19 +33,23 @@ namespace nx
 
   /////////////////////////////////////////////////////////
   /// PUBLIC
-  void ColorMorphBehavior::applyOnSpawn( TimedParticle_t * p,
-                                         const Midi_t& midi )
+  void ColorMorphBehavior::applyOnSpawn( IParticle * p,
+                       const Midi_t& midiEvent,
+                       const ParticleData_t& particleData,
+                       const sf::Vector2f& position )
   {
     // Optionally inject random hue offset based on pitch
     m_data.hueOffset.first = (m_data.useHueOffset.first)
-      ? static_cast<float>(midi.pitch % 128) / 127.f * 360.f
+      ? static_cast<float>(midiEvent.pitch % 128) / 127.f * 360.f
       : 0.f;
   }
 
   /////////////////////////////////////////////////////////
   /// PUBLIC
-  void ColorMorphBehavior::applyOnUpdate( TimedParticle_t * p,
-                                          const sf::Time& deltaTime )
+  void ColorMorphBehavior::applyOnUpdate( IParticle * p,
+                        const sf::Time& deltaTime,
+                        const ParticleData_t& particleData,
+                        const sf::Vector2f& position )
   {
     if ( m_data.useSkittles.first )
       applySkittlesMorphing( p, deltaTime );
@@ -70,35 +74,38 @@ namespace nx
   /////////////////////////////////////////////////////////
   /// PRIVATE
   /////////////////////////////////////////////////////////
-  void ColorMorphBehavior::applyBicolorMorphing( TimedParticle_t * p,
+  void ColorMorphBehavior::applyBicolorMorphing( IParticle * p,
                                                  const sf::Time& deltaTime ) const
   {
-    const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
+    const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->getSpawnTimeInSeconds();
     const float t = elapsed / m_data.morphDuration.first;
-
-    const auto morphed = ColorHelper::lerpColor(p->initialColor, m_data.morphToColor.first, t);
-    p->shape.setFillColor(morphed);
+    const auto colors = p->getColors();
+    const auto morphedStart = ColorHelper::lerpColor( colors.first, m_data.morphToColor.first, t);
+    const auto morphedEnd = ColorHelper::lerpColor(colors.second, m_data.morphToColor.first, t);
+    p->setColorPattern(morphedStart, morphedEnd);
   }
 
   /////////////////////////////////////////////////////////
   /// PRIVATE
-  void ColorMorphBehavior::applyBicolorMorphingReverse( TimedParticle_t * p,
+  void ColorMorphBehavior::applyBicolorMorphingReverse( IParticle * p,
                                                         const sf::Time& deltaTime ) const
   {
-    const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
+    const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->getSpawnTimeInSeconds();
 
     const float t = 0.5f * (1.f + std::sin(elapsed * m_data.speed.first * NX_TAU));
-    const auto morphed = ColorHelper::lerpColor( p->initialColor, m_data.morphToColor.first, t );
-    p->shape.setFillColor(morphed);
+    const auto colors = p->getColors();
+    const auto morphedStart = ColorHelper::lerpColor(colors.first, m_data.morphToColor.first, t);
+    const auto morphedEnd = ColorHelper::lerpColor(colors.second, m_data.morphToColor.first, t);
+    p->setColorPattern(morphedStart, morphedEnd);
   }
 
   /////////////////////////////////////////////////////////
   /// PRIVATE
-  void ColorMorphBehavior::applySkittlesMorphing( TimedParticle_t * p,
+  void ColorMorphBehavior::applySkittlesMorphing( IParticle * p,
                                                   const sf::Time& deltaTime ) const
   {
     // How long the particle has existed
-    const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->spawnTime;
+    const float elapsed = m_ctx.globalInfo.elapsedTimeSeconds - p->getSpawnTimeInSeconds();
 
     // Base hue animation based on time and speed
     const float hueBase = std::fmod(elapsed * m_data.speed.first * 360.f, 360.f);
@@ -111,10 +118,12 @@ namespace nx
       finalHue = std::floor(finalHue / m_data.quantizeStep.first) * m_data.quantizeStep.first;
 
     // Preserve alpha from original color
-    const auto morphed = hsvToRgb(finalHue, m_data.saturation.first, m_data.brightness.first, p->initialColor.a);
+    const auto colors = p->getColors();
+    const auto morphedStart = hsvToRgb(finalHue, m_data.saturation.first, m_data.brightness.first, colors.first.a);
+    const auto morphedEnd = hsvToRgb(finalHue, m_data.saturation.first, m_data.brightness.first, colors.second.a);
 
     // Apply the new color
-    p->shape.setFillColor(morphed);
+    p->setColorPattern(morphedStart, morphedEnd);
   }
 
   /////////////////////////////////////////////////////////
@@ -124,9 +133,9 @@ namespace nx
                                          const float v,
                                          const uint8_t alpha)
   {
-    float c = v * s;
-    float x = c * (1 - std::fabs(std::fmod(h / 60.0f, 2) - 1));
-    float m = v - c;
+    const float c = v * s;
+    const float x = c * (1 - std::fabs(std::fmod(h / 60.0f, 2) - 1));
+    const float m = v - c;
 
     float r, g, b;
     if      (h < 60)  { r = c; g = x; b = 0; }

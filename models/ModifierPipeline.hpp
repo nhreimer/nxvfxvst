@@ -41,15 +41,15 @@ public:
 
   sf::RenderTexture * applyModifiers(
     const ParticleLayoutData_t& particleLayoutData,
-    std::deque< TimedParticle_t* >& particles );
+    std::deque< IParticle* >& particles );
 
 private:
 
-  void drawParticles( const std::deque< TimedParticle_t* >& particles,
+  void drawParticles( const std::deque< IParticle* >& particles,
                       const sf::BlendMode& blendMode )
   {
     for ( const auto * particle : particles )
-      m_outputTexture.draw( particle->shape, blendMode );
+      m_outputTexture.draw( *particle, blendMode );
   }
 
   void drawArtifacts( const std::deque< sf::Drawable* >& artifacts,

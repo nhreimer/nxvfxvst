@@ -59,7 +59,8 @@ X(enablePulse,   bool,    true,     0,      1,        "Enable pulse alpha animat
     bool isActive() const override { return m_data.isActive; }
     void processMidiEvent(const Midi_t &) override {}
 
-    void modify(const ParticleLayoutData_t &, std::deque< TimedParticle_t * > &particles,
+    void modify(const ParticleLayoutData_t &,
+                std::deque< IParticle * > &particles,
                 std::deque< sf::Drawable * > &outArtifacts) override;
 
   private:
@@ -72,8 +73,8 @@ X(enablePulse,   bool,    true,     0,      1,        "Enable pulse alpha animat
     }
 
     void setLineColors( CurvedLine * line,
-                        const TimedParticle_t * pointA,
-                        const TimedParticle_t * pointB,
+                        const IParticle * pointA,
+                        const IParticle * pointB,
                         const sf::Color pulsedColor = sf::Color::Transparent ) const;
 
   private:

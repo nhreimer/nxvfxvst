@@ -58,16 +58,22 @@ namespace nx
     }
   }
 
-  void ParticleBehaviorPipeline::applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) const
+  void ParticleBehaviorPipeline::applyOnSpawn( IParticle * p,
+                                               const Midi_t& midi,
+                                               const ParticleData_t& particleData,
+                                               const sf::Vector2f& position ) const
   {
     for ( const auto& behavior : m_particleBehaviors )
-      behavior->applyOnSpawn( p, midi );
+      behavior->applyOnSpawn( p, midi, particleData, position );
   }
 
-  void ParticleBehaviorPipeline::applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) const
+  void ParticleBehaviorPipeline::applyOnUpdate( IParticle * p,
+                                                const sf::Time& deltaTime,
+                                                const ParticleData_t& particleData,
+                                                const sf::Vector2f& position ) const
   {
     for ( const auto& behavior : m_particleBehaviors )
-      behavior->applyOnUpdate( p, deltaTime );
+      behavior->applyOnUpdate( p, deltaTime, particleData, position );
   }
 
   void ParticleBehaviorPipeline::drawMenu()

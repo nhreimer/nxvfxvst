@@ -20,7 +20,7 @@ namespace nx
     /// @param outArtifacts Ownership is handed off. do NOT manage memory. artifacts are ephemeral.
     virtual void modify(
        const ParticleLayoutData_t& particleLayoutData,
-       std::deque< TimedParticle_t* >& particles,
+       std::deque< IParticle* >& particles,
        std::deque< sf::Drawable* >& outArtifacts ) = 0;
   };
 }

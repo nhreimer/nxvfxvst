@@ -43,14 +43,20 @@ X(jitterMultiplier  , float, 0.5f, 0.f, 5.f, "Amount of jitter", true)
 
     E_BehaviorType getType() const override { return E_BehaviorType::E_JitterBehavior; }
 
-    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override;
+    void applyOnSpawn( IParticle * p,
+                       const Midi_t& midi,
+                       const ParticleData_t& particleData,
+                       const sf::Vector2f& position ) override;
 
-    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override;
+    void applyOnUpdate( IParticle * p,
+                        const sf::Time& deltaTime,
+                        const ParticleData_t& particleData,
+                        const sf::Vector2f& position ) override;
 
     void drawMenu() override;
 
   private:
-    sf::Vector2f getJitterPosition( const TimedParticle_t * p );
+    sf::Vector2f getJitterPosition( const IParticle * p );
 
   private:
       PipelineContext& m_ctx;

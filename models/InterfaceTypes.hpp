@@ -54,4 +54,11 @@ namespace nx
     E_ColorMorphBehavior,
     E_MagneticBehavior
   };
+
+  enum class E_ParticleType : int8_t
+  {
+    E_InvalidParticle,
+    E_CircleParticle,
+    E_RingParticle
+  };
 }

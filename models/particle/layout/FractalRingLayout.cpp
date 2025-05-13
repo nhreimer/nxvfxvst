@@ -1,6 +1,4 @@
-#include "models/particle/FractalRingLayout.hpp"
-
-#include "helpers/ColorHelper.hpp"
+#include "models/particle/layout/FractalRingLayout.hpp"
 
 namespace nx
 {
@@ -9,7 +7,11 @@ namespace nx
   [[nodiscard]]
   nlohmann::json FractalRingLayout::serialize() const
   {
-    auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+    nlohmann::json j =
+    {
+     { "type", SerialHelper::serializeEnum( getType() ) }
+    };
+
     j[ "depthLimit" ] = m_data.depthLimit;
     j[ "radialSpread" ] = m_data.radialSpread;
     j[ "baseRingCount" ] = m_data.baseRingCount;
@@ -17,12 +19,12 @@ namespace nx
     j[ "delayFractalFadesMultiplier" ] = m_data.delayFractalFadesMultiplier;
     j[ "enableFractalFades" ] = m_data.enableFractalFades;
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    j[ "particleGenerator" ] = m_particleGenerator->serialize();
     return j;
   }
 
   void FractalRingLayout::deserialize(const nlohmann::json &j)
   {
-    ParticleHelper::deserialize( m_data, j );
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
       m_data.depthLimit = j["depthLimit"];
@@ -39,6 +41,8 @@ namespace nx
 
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j["behaviors"] );
+    if ( j.contains( "particleGenerator" ) )
+      m_particleGenerator->deserialize( j.at( "particleGenerator" ) );
   }
 
   void FractalRingLayout::addMidiEvent( const Midi_t &midiEvent )
@@ -54,13 +58,13 @@ namespace nx
     // spawnFractalRing( midiEvent, m_data.depthLimit, m_data.radius, pos );
 
     // Only spawn one level of fractal on each MIDI note
-    spawnFractalRing(midiEvent, m_currentDepth, m_data.radius, pos);
+    spawnFractalRing(midiEvent, m_currentDepth, m_particleGenerator->getData().radius, pos);
 
     // Advance or reset depth
     switch (m_data.fractalDepthTraversalMode)
     {
       case E_FractalDepthTraversalMode::E_Forward:
-        m_currentDepth++;
+        ++m_currentDepth;
         if (m_currentDepth > m_data.depthLimit)
           m_currentDepth = 1;
         break;
@@ -90,38 +94,12 @@ namespace nx
     }
   }
 
-  void FractalRingLayout::update( const sf::Time &deltaTime )
-  {
-    for ( auto i = 0; i < m_particles.size(); ++i )
-    {
-      const auto& timeParticle = m_particles[ i ];
-      timeParticle->timeLeft += deltaTime.asMilliseconds();
-      const auto percentage = static_cast< float >( timeParticle->timeLeft ) /
-                         static_cast< float >( m_data.timeoutInMS );
-
-      if ( percentage < 1.f )
-      {
-        const auto nextColor =
-          ColorHelper::getNextColor(
-            timeParticle->initialColor,
-            m_data.endColor,
-            percentage );
-
-        timeParticle->shape.setFillColor( nextColor );
-      }
-      else
-      {
-        delete m_particles[ i ];
-        m_particles.erase( m_particles.begin() + i );
-      }
-    }
-  }
-
   void FractalRingLayout::drawMenu()
   {
     if ( ImGui::TreeNode( "Fractal Ring Layout" ) )
     {
-      ParticleHelper::drawMenu( m_data );
+      m_particleGenerator->drawMenu();
+
       ImGui::Separator();
       ImGui::SliderInt("Spawn Depth", &m_data.depthLimit, 0, 4);
       ImGui::SliderInt("Base Ring Count", &m_data.baseRingCount, 0, 8);
@@ -160,18 +138,18 @@ namespace nx
                          const sf::Vector2f& lastPosition )
   {
     // base case
-    // if ( depth <= 0 ) return;
-
     if (depth <= 0)
       return;
 
     const float lastRadius = adjustedRadius / m_data.radiusAdjustment;
 
-    const float angleStep = NX_TAU / m_data.baseRingCount;
+    const float angleStep = NX_TAU / static_cast< float >(m_data.baseRingCount);
+
+    auto& particleData = m_particleGenerator->getData();
 
     for (int i = 0; i < m_data.baseRingCount; ++i)
     {
-      const float angle = i * angleStep;
+      const float angle = static_cast< float >(i) * angleStep;
 
       sf::Vector2f pos =
       {
@@ -179,11 +157,17 @@ namespace nx
         lastPosition.y + std::sin(angle) * ( ( adjustedRadius + lastRadius ) * m_data.radialSpread )
       };
 
-      auto* p = createParticle(midiEvent, pos, adjustedRadius);
-      p->shape.setPosition(pos);
+      auto* p = createParticle(midiEvent, adjustedRadius);
+      p->setPosition(pos);
 
       if ( m_data.enableFractalFades )
-        p->timeLeft -= ( m_data.delayFractalFadesMultiplier * depth * m_data.timeoutInMS );
+      {
+        p->setExpirationTimeInSeconds(
+          p->getExpirationTimeInSeconds() - static_cast< int32_t >(
+          m_data.delayFractalFadesMultiplier *
+          static_cast< float >(depth) *
+          static_cast< float >(particleData.timeoutInSeconds)) );
+      }
 
       spawnFractalRing(
         midiEvent,
@@ -195,25 +179,16 @@ namespace nx
 
   }
 
-  TimedParticle_t* FractalRingLayout::createParticle( const Midi_t& midiEvent,
-                                   const sf::Vector2f& position,
-                                   const float adjustedRadius )
+  IParticle * FractalRingLayout::createParticle( const Midi_t& midiEvent,
+                                                 const float adjustedRadius )
   {
-    auto * p = m_particles.emplace_back( new TimedParticle_t() );
-    p->spawnTime = m_ctx.globalInfo.elapsedTimeSeconds;
+    auto * p = m_particles.emplace_back(
+      m_particleGenerator->createParticle(
+        midiEvent,
+        m_ctx.globalInfo.elapsedTimeSeconds,
+        adjustedRadius ) );
 
-    p->initialColor = ColorHelper::getColorPercentage(
-        m_data.startColor,
-        std::min( midiEvent.velocity + m_data.boostVelocity, 1.f ) );
-
-    auto& shape = p->shape;
-    shape.setPosition( position );
-    shape.setRadius( adjustedRadius );
-    shape.setFillColor( p->initialColor );
-
-    shape.setOutlineThickness( m_data.outlineThickness );
-    shape.setOutlineColor( m_data.outlineColor );
-    shape.setOrigin( shape.getGlobalBounds().size / 2.f );
+    notifyBehaviorOnSpawn( p, midiEvent );
 
     return p;
   }

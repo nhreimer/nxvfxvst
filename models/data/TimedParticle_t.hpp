@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics/CircleShape.hpp>
+#include "shapes/CircleParticle.hpp"
 
 namespace nx
 {
@@ -13,7 +13,8 @@ namespace nx
       : shape( other.shape ),
         timeLeft( other.timeLeft ),
         spawnTime( other.spawnTime ), // must keep the time the same or uncoordinated events occur
-        initialColor( other.initialColor ),
+        initialStartColor( other.initialStartColor ),
+        initialEndColor( other.initialEndColor ),
         originalPosition( other.originalPosition )
     {}
 
@@ -22,12 +23,14 @@ namespace nx
       shape = other.shape;
       timeLeft = other.timeLeft;
       spawnTime = other.spawnTime;
-      initialColor = other.initialColor;
+      initialStartColor = other.initialStartColor;
+      initialEndColor = other.initialEndColor;
       originalPosition = other.originalPosition;
       return *this;
     }
 
-    sf::CircleShape shape;
+    //Particle shape;
+    IParticle * shape;
 
     int32_t timeLeft { 0 };
 
@@ -35,7 +38,8 @@ namespace nx
     float spawnTime { 0.f };
 
     // this is the initial color. it shouldn't change once set.
-    sf::Color initialColor { sf::Color::White };
+    sf::Color initialStartColor { sf::Color::White };
+    sf::Color initialEndColor { sf::Color::Black };
 
     // provided by layout
     sf::Vector2f originalPosition;

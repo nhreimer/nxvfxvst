@@ -65,7 +65,7 @@ X(perlinColor,       sf::Color, sf::Color(255, 255, 255, 100), 0, 255, "Fallback
 
     void modify(
        const ParticleLayoutData_t& particleLayoutData,
-       std::deque< TimedParticle_t* >& particles,
+       std::deque< IParticle* >& particles,
        std::deque< sf::Drawable* >& outArtifacts ) override;
 
   private:

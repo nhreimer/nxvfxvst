@@ -24,14 +24,20 @@ namespace nx
     }
   }
 
-  void JitterBehavior::applyOnSpawn( TimedParticle_t * p, const Midi_t& midi )
+  void JitterBehavior::applyOnSpawn( IParticle * p,
+                                     const Midi_t& midi,
+                                     const ParticleData_t& particleData,
+                                     const sf::Vector2f& position )
   {
-    p->shape.setPosition( getJitterPosition( p ) );
+    p->setPosition( getJitterPosition( p ) );
   }
 
-  void JitterBehavior::applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime )
+  void JitterBehavior::applyOnUpdate( IParticle * p,
+                                      const sf::Time& deltaTime,
+                                      const ParticleData_t& particleData,
+                                      const sf::Vector2f& position )
   {
-    p->shape.setPosition( getJitterPosition( p ) );
+    p->setPosition( getJitterPosition( p ) );
   }
 
   void JitterBehavior::drawMenu()
@@ -44,7 +50,7 @@ namespace nx
     }
   }
 
-  sf::Vector2f JitterBehavior::getJitterPosition( const TimedParticle_t * p )
+  sf::Vector2f JitterBehavior::getJitterPosition( const IParticle * p )
   {
     // add jitter to the position
     // 1. get the circular offset by calculating a random angle [0 - 360)
@@ -52,12 +58,12 @@ namespace nx
 
     // 2. get the deviation amount
     // we have to add 1.f here to prevent the radius from ever being 0 and having a div/0 error.
-    auto safeRadius = static_cast< uint32_t >( p->shape.getRadius() );
+    auto safeRadius = static_cast< uint32_t >( p->getRadius() );
     if ( safeRadius == 0 ) ++safeRadius;
 
     const auto jitterAmount = m_data.jitterMultiplier.first *
                                    static_cast< float >( m_rand() % safeRadius );
-    return p->shape.getPosition() +
+    return p->getPosition() +
       sf::Vector2f { std::cos( jitterAngle ) * jitterAmount, std::sin( jitterAngle ) * jitterAmount };
   }
 

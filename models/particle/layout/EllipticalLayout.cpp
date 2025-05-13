@@ -1,4 +1,4 @@
-#include "models/particle/EllipticalLayout.hpp"
+#include "models/particle/layout/EllipticalLayout.hpp"
 
 namespace nx
 {
@@ -6,8 +6,11 @@ namespace nx
   [[nodiscard]]
   nlohmann::json EllipticalLayout::serialize() const
   {
-    auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
-    j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    nlohmann::json j =
+    {
+      { "type", SerialHelper::serializeEnum( getType() ) }
+    };
+
     j[ "radiusX" ] = m_data.radiusX;
     j[ "radiusY" ] = m_data.radiusY;
     j[ "arcSpreadDegrees" ] = m_data.arcSpreadDegrees;
@@ -15,6 +18,10 @@ namespace nx
     j[ "sequential" ] = m_data.sequential;
     j[ "slices" ] = m_data.slices;
     j[ "centerOffset" ] = { { "x", m_data.centerOffset.x }, { "y", m_data.centerOffset.y } };
+
+    j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    j[ "particleGenerator" ] = m_particleGenerator->serialize();
+
     return j;
   }
 
@@ -22,7 +29,6 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      ParticleHelper::deserialize( m_data, j );
       m_data.radiusX = j.value( "radiusX", 300.f );
       m_data.radiusY = j.value( "radiusY", 200.f );
       m_data.arcSpreadDegrees = j.value( "arcSpreadDegrees", 360.f );
@@ -33,6 +39,10 @@ namespace nx
       m_data.centerOffset = sf::Vector2f { j[ "centerOffset" ].value( "x", 0.f ),
                                              j[ "centerOffset" ].value( "y", 0.f ) };
     }
+
+    if ( j.contains( "particleGenerator" ) )
+      m_particleGenerator->deserialize( j.at( "particleGenerator" ) );
+
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
   }
@@ -47,7 +57,7 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Elliptical Layout" ) )
     {
-      ParticleHelper::drawMenu(*reinterpret_cast< ParticleLayoutData_t * >(&m_data));
+      m_particleGenerator->drawMenu();
 
       ImGui::SeparatorText( "Elliptical Options" );
 
@@ -80,10 +90,13 @@ namespace nx
 
     const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
 
-    auto * p = m_particles.emplace_back( new TimedParticle_t() );
-    p->shape.setPosition(pos);
+    auto * p = m_particles.emplace_back(
+      m_particleGenerator->createParticle(
+        midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
-    ParticleLayoutBase::initializeParticle( p, midiEvent );
+    p->setPosition( pos );
+
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
 
     // advance cursor
     m_angleCursor += 1.f / m_data.slices; // 12 evenly spaced notes per full ring
@@ -104,10 +117,13 @@ namespace nx
 
     const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
 
-    auto * p = m_particles.emplace_back( new TimedParticle_t() );
-    p->shape.setPosition(pos);
+    auto * p = m_particles.emplace_back(
+      m_particleGenerator->createParticle(
+        midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
-    ParticleLayoutBase::initializeParticle( p, midiEvent );
+    p->setPosition( pos );
+
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
   }
 
 }

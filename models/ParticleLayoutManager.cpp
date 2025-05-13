@@ -1,14 +1,14 @@
 #include "models/ParticleLayoutManager.hpp"
 
-#include "models/particle/EmptyParticleLayout.hpp"
-#include "models/particle/SpiralParticleLayout.hpp"
-#include "models/particle/RandomParticleLayout.hpp"
+#include "models/particle/layout/EmptyParticleLayout.hpp"
+#include "models/particle/layout/SpiralParticleLayout.hpp"
+#include "models/particle/layout/RandomParticleLayout.hpp"
 
-#include "models/particle/LissajousCurveLayout.hpp"
-#include "models/particle/FractalRingLayout.hpp"
-#include "models/particle/LSystemCurveLayout.hpp"
-#include "models/particle/GoldenSpiralLayout.hpp"
-#include "models/particle/EllipticalLayout.hpp"
+#include "models/particle/layout/LSystemCurveLayout.hpp"
+#include "models/particle/layout/LissajousCurveLayout.hpp"
+#include "models/particle/layout/EllipticalLayout.hpp"
+#include "models/particle/layout/FractalRingLayout.hpp"
+#include "models/particle/layout/GoldenSpiralLayout.hpp"
 
 namespace nx
 {
@@ -35,10 +35,10 @@ namespace nx
 
   const ParticleLayoutData_t& ParticleLayoutManager::getParticleOptions() const
   {
-    return m_particleLayout->getParticleOptions();
+    return m_particleLayout->getParticleLayoutData();
   }
 
-  std::deque< TimedParticle_t* >& ParticleLayoutManager::getParticles() const
+  std::deque< IParticle* >& ParticleLayoutManager::getParticles() const
   {
     return m_particleLayout->getParticles();
   }

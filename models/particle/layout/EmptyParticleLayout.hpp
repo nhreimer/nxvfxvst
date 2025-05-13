@@ -1,7 +1,5 @@
 #pragma once
 
-#include "models/particle/ParticleLayoutBase.hpp"
-
 namespace nx
 {
 
@@ -37,21 +35,30 @@ namespace nx
         ImGui::Spacing();
       }
     }
-    [[nodiscard]] const ParticleLayoutData_t &getParticleOptions() const override
+
+    [[nodiscard]]
+    const ParticleLayoutData_t &getParticleLayoutData() const override
     {
-      return m_data;
+      return m_layoutData;
     }
 
     [[nodiscard]]
-    std::deque< TimedParticle_t * > &getParticles() override
+    const ParticleData_t &getParticleData() const override
+    {
+      return m_particleData;
+    }
+
+    [[nodiscard]]
+    std::deque< IParticle * > &getParticles() override
     {
       return m_particles;
     }
 
   private:
 
-    ParticleLayoutData_t m_data;
-    std::deque< TimedParticle_t * > m_particles;
+    ParticleData_t m_particleData;
+    ParticleLayoutData_t m_layoutData;
+    std::deque< IParticle * > m_particles;
   };
 
 }

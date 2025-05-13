@@ -45,10 +45,16 @@ X(magnetLocation,   sf::Vector2f, sf::Vector2f({0.5f, 0.5f}), 0.f, 0.f, "Locatio
     [[nodiscard]]
     E_BehaviorType getType() const override { return E_BehaviorType::E_MagneticBehavior; }
 
-    void applyOnSpawn(TimedParticle_t *, const Midi_t&) override
+    void applyOnSpawn(IParticle *,
+                      const Midi_t&,
+                      const ParticleData_t& particleData,
+                      const sf::Vector2f& position ) override
     {}
 
-    void applyOnUpdate(TimedParticle_t * p, const sf::Time& dt) override;
+    void applyOnUpdate(IParticle * p,
+                       const sf::Time& dt,
+                       const ParticleData_t& particleData,
+                       const sf::Vector2f& position ) override;
 
     void drawMenu() override;
 

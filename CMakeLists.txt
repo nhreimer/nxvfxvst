@@ -45,13 +45,13 @@ set( NX_CPP_FILES
   models/particle/behavior/MagneticAttractorBehavior.cpp
   models/particle/behavior/RadialSpreaderBehavior.cpp
 
-  models/particle/EllipticalLayout.cpp
-  models/particle/FractalRingLayout.cpp
-  models/particle/GoldenSpiralLayout.cpp
-  models/particle/LissajousCurveLayout.cpp
-  models/particle/LSystemCurveLayout.cpp
-  models/particle/RandomParticleLayout.cpp
-  models/particle/SpiralParticleLayout.cpp
+  models/particle/layout/EllipticalLayout.cpp
+  models/particle/layout/FractalRingLayout.cpp
+  models/particle/layout/GoldenSpiralLayout.cpp
+  models/particle/layout/LissajousCurveLayout.cpp
+  models/particle/layout/LSystemCurveLayout.cpp
+  models/particle/layout/RandomParticleLayout.cpp
+  models/particle/layout/SpiralParticleLayout.cpp
 
   models/ChannelPipeline.cpp
   models/ModifierPipeline.cpp

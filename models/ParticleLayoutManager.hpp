@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/particle/SpiralParticleLayout.hpp"
+#include "particle/layout/SpiralParticleLayout.hpp"
 
 #include "data/PipelineContext.hpp"
 
@@ -23,7 +23,7 @@ namespace nx
     void processMidiEvent( const Midi_t& midiEvent ) const;
 
     const ParticleLayoutData_t& getParticleOptions() const;
-    std::deque< TimedParticle_t* >& getParticles() const;
+    std::deque< IParticle* >& getParticles() const;
 
     void drawMenu();
 

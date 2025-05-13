@@ -60,13 +60,13 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
 
     void modify(
        const ParticleLayoutData_t& particleLayoutData,
-       std::deque< TimedParticle_t* >& particles,
+       std::deque< IParticle* >& particles,
        std::deque< sf::Drawable* >& outArtifacts ) override;
   private:
 
     void setLineColors( CurvedLine * line,
-                        const TimedParticle_t * pointA,
-                        const TimedParticle_t * pointB ) const;
+                        const IParticle * pointA,
+                        const IParticle * pointB ) const;
 
   private:
 

@@ -15,8 +15,15 @@ namespace nx
     nlohmann::json savePipeline() const;
     void loadPipeline( const nlohmann::json& j );
 
-    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) const;
-    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) const;
+    void applyOnSpawn( IParticle * p,
+                       const Midi_t& midi,
+                       const ParticleData_t& particleData,
+                       const sf::Vector2f& position ) const;
+
+    void applyOnUpdate( IParticle * p,
+                        const sf::Time& deltaTime,
+                        const ParticleData_t& particleData,
+                        const sf::Vector2f& position ) const;
 
     void drawMenu();
 

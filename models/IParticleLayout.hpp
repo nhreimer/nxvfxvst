@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models/IParticleModifier.hpp"
+#include "models/IParticleGenerator.hpp"
 
 namespace nx
 {
@@ -9,6 +10,10 @@ namespace nx
   class ParticleFullMeshLineModifier;
   class PassthroughParticleModifier;
 
+  // a layout has three purposes:
+  // 1. facilitate particle generation
+  // 2. position the particles
+  // 3. apply behaviors
   struct IParticleLayout : ISerializable< E_LayoutType >
   {
     ~IParticleLayout() override = default;
@@ -19,15 +24,18 @@ namespace nx
     virtual void drawMenu() = 0;
 
     [[nodiscard]]
-    virtual const ParticleLayoutData_t& getParticleOptions() const = 0;
+    virtual const ParticleLayoutData_t& getParticleLayoutData() const = 0;
 
-    /// the implementation of IParticleLayout is the owner of the TimedParticle_t
+    [[nodiscard]]
+    virtual const ParticleData_t& getParticleData() const = 0;
+
+    /// the implementation of IParticleLayout is the owner of the IParticle
     /// objects. the primary reason why they are not shared_ptr is because shared_ptr
     /// will still leak by inadvertently neglecting to remove objects from the deque.
     /// all particles in the deque get operated on by downstream objects, so if there's a
     /// null dereference then errors will immediately be known and easy to trace.
     [[nodiscard]]
-    virtual std::deque< TimedParticle_t* >& getParticles() = 0;
+    virtual std::deque< IParticle* >& getParticles() = 0;
   };
 
 }

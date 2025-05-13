@@ -1,7 +1,5 @@
 #include "models/modifier/RingZoneMeshModifier.hpp"
 
-#include "helpers/ColorHelper.hpp"
-
 namespace nx
 {
 
@@ -44,16 +42,17 @@ namespace nx
 
   /////////////////////////////////////////////////////////
   /// PUBLIC
-  void RingZoneMeshModifier::modify(const ParticleLayoutData_t &, std::deque< TimedParticle_t * > &particles,
-              std::deque< sf::Drawable * > &outArtifacts)
+  void RingZoneMeshModifier::modify(const ParticleLayoutData_t & data,
+                                    std::deque< IParticle * > &particles,
+                                    std::deque< sf::Drawable * > &outArtifacts)
   {
     float alpha = m_data.lineColor.first.a; // default static alpha
 
     if (m_data.enablePulse.first)
     {
-      float time = m_ctx.globalInfo.elapsedTimeSeconds;
-      float t = std::sin(time * m_data.pulseSpeed.first * NX_TAU); // [-1, 1]
-      float normalized = 0.5f * (t + 1.f); // [0, 1]
+      const float time = m_ctx.globalInfo.elapsedTimeSeconds;
+      const float t = std::sin(time * m_data.pulseSpeed.first * NX_TAU); // [-1, 1]
+      const float normalized = 0.5f * (t + 1.f); // [0, 1]
       alpha = m_data.minAlpha.first + (m_data.maxAlpha.first - m_data.minAlpha.first) * normalized;
     }
 
@@ -68,10 +67,10 @@ namespace nx
     const sf::Vector2f &center = m_ctx.globalInfo.windowHalfSize;
 
     // Step 1: Group particles into rings
-    std::map< int, std::vector< TimedParticle_t * > > rings;
+    std::map< int, std::vector< IParticle * > > rings;
     for (auto *p: particles)
     {
-      const float dist = length(p->shape.getPosition() - center);
+      const float dist = length(p->getPosition() - center);
       int ringIdx = static_cast< int >(dist / m_data.ringSpacing.first);
       rings[ ringIdx ].push_back(p);
     }
@@ -86,8 +85,10 @@ namespace nx
 
       // Sort particles clockwise by angle
       std::ranges::sort(
-      ringParticles, [ & ](TimedParticle_t *a, TimedParticle_t *b)
-      { return angleFromCenter(center, a->shape.getPosition()) < angleFromCenter(center, b->shape.getPosition()); });
+      ringParticles, [ & ](IParticle *a, IParticle *b)
+      {
+        return angleFromCenter(center, a->getPosition()) < angleFromCenter(center, b->getPosition());
+      });
 
       if (m_data.drawRings.first)
       {
@@ -96,14 +97,14 @@ namespace nx
           auto *p1 = ringParticles[ i ];
           auto *p2 = ringParticles[ (i + 1) % ringParticles.size() ]; // wrap around
 
-          auto * line = new CurvedLine( p1->shape.getPosition(),
-                                        p2->shape.getPosition(),
+          auto * line = new CurvedLine( p1->getPosition(),
+                                        p2->getPosition(),
                                         m_data.curvature.first,
                                         m_data.lineSegments.first );
 
           line->setWidth( m_data.lineThickness.first );
 
-          if ( p1->timeLeft > p2->timeLeft )
+          if ( p1->getExpirationTimeInSeconds() > p2->getExpirationTimeInSeconds() )
             setLineColors( line, p1, p2, pulsedColor );
           else
             setLineColors( line, p2, p1, otherPulsedColor );
@@ -120,14 +121,14 @@ namespace nx
         for (size_t i = 0; i < minCount; ++i)
         {
 
-          auto * line = new CurvedLine( ringParticles[ i ]->shape.getPosition(),
-                                        prevRing[ i ]->shape.getPosition(),
+          auto * line = new CurvedLine( ringParticles[ i ]->getPosition(),
+                                        prevRing[ i ]->getPosition(),
                                         m_data.curvature.first,
                                         m_data.lineSegments.first );
 
           line->setWidth( m_data.lineThickness.first );
 
-          if ( ringParticles[ i ]->timeLeft > prevRing[ i ]->timeLeft )
+          if ( ringParticles[ i ]->getExpirationTimeInSeconds() > prevRing[ i ]->getExpirationTimeInSeconds() )
             setLineColors( line, ringParticles[ i ], prevRing[ i ], pulsedColor );
           else
             setLineColors( line, prevRing[ i ], ringParticles[ i ], otherPulsedColor );
@@ -143,13 +144,16 @@ namespace nx
   /// PRIVATE
   /////////////////////////////////////////////////////////
   void RingZoneMeshModifier::setLineColors( CurvedLine * line,
-                      const TimedParticle_t * pointA,
-                      const TimedParticle_t * pointB,
+                      const IParticle * pointA,
+                      const IParticle * pointB,
                       const sf::Color pulsedColor ) const
   {
+
     if ( m_data.useParticleColors.first )
     {
-      line->setGradient( pointA->shape.getFillColor(), pointB->shape.getFillColor() );
+      const auto colorsA = pointA->getColors();
+      const auto colorsB = pointB->getColors();
+      line->setGradient( colorsA.first, colorsB.first );
     }
     else if ( m_data.enablePulse.first )
     {
@@ -160,5 +164,4 @@ namespace nx
       line->setGradient( m_data.lineColor.first, m_data.otherLineColor.first );
     }
   }
-
 } // namespace nx

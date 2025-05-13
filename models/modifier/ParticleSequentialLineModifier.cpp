@@ -1,7 +1,5 @@
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 
-#include "helpers/ColorHelper.hpp"
-
 namespace nx
 {
 
@@ -47,7 +45,7 @@ namespace nx
   /// PUBLIC
   void ParticleSequentialLineModifier::modify(
      const ParticleLayoutData_t& particleLayoutData,
-     std::deque< TimedParticle_t* >& particles,
+     std::deque< IParticle* >& particles,
      std::deque< sf::Drawable* >& outArtifacts )
   {
     for ( int i = 0; i < particles.size(); ++i )
@@ -55,14 +53,14 @@ namespace nx
       if ( m_data.isActive && i > 0 )
       {
         auto * line = dynamic_cast< CurvedLine* >( outArtifacts.emplace_back(
-          new CurvedLine( particles[ i - 1 ]->shape.getPosition(),
-            particles[ i ]->shape.getPosition(),
+          new CurvedLine( particles[ i - 1 ]->getPosition(),
+            particles[ i ]->getPosition(),
             m_data.curvature.first,
             m_data.lineSegments.first ) ) );
 
         line->setWidth( m_data.lineThickness.first );
 
-        if ( particles[ i ]->timeLeft > particles[ i - 1 ]->timeLeft )
+        if ( particles[ i ]->getExpirationTimeInSeconds() > particles[ i - 1 ]->getExpirationTimeInSeconds() )
         {
           setLineColors( line, particles[ i ], particles[ i - 1 ] );
         }
@@ -78,12 +76,14 @@ namespace nx
   /// PRIVATE
   /////////////////////////////////////////////////////////
   void ParticleSequentialLineModifier::setLineColors( CurvedLine * line,
-                      const TimedParticle_t * pointA,
-                      const TimedParticle_t * pointB ) const
+                      const IParticle * pointA,
+                      const IParticle * pointB ) const
   {
     if ( m_data.useParticleColors.first )
     {
-      line->setGradient( pointA->shape.getFillColor(), pointB->shape.getFillColor() );
+      const auto colorsA = pointA->getColors();
+      const auto colorsB = pointB->getColors();
+      line->setGradient( colorsA.first, colorsB.first );
     }
     else
     {

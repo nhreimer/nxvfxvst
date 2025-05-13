@@ -64,7 +64,7 @@ X(mirrorOutlineColor, sf::Color, sf::Color::White, 0, 255, "Outline color for mi
     }
 
     void modify(const ParticleLayoutData_t & layoutData,
-                std::deque< TimedParticle_t * > &particles,
+                std::deque< IParticle * > &particles,
                 std::deque< sf::Drawable * > &outArtifacts) override;
 
   private:
