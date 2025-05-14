@@ -24,7 +24,8 @@ namespace nx
     E_Impulse,
     E_SparkleFlicker,
     E_PulsePing,
-    E_PulseSine
+    E_PulseSine,
+    E_Elastic
   };
 
   class TimeEasing
@@ -64,10 +65,6 @@ namespace nx
     void drawMenu();
 
   private:
-
-    bool drawRadio( const std::string& label,
-                    const E_TimeEasingType easingType,
-                    const bool useSameLine = false );
 
     void setEasingFunction( const E_TimeEasingType easingType );
 
@@ -178,12 +175,70 @@ namespace nx
       return sinf(12.f * t) * expf(-4.0f * t);
     }
 
+    static float easeOutElastic(float t)
+    {
+      constexpr float c4 = NX_TAU / 3.f; //(2.0f * 3.14159265f) / 3.0f;
+
+      if (t == 0.0f)
+        return 0.0f;
+      if (t == 1.0f)
+        return 1.0f;
+
+      return powf(2.0f, -10.0f * t) * sinf((t * 10.0f - 0.75f) * c4) + 1.0f;
+    }
+
   private:
 
     float m_timeTriggeredInSeconds { 0.f };
     TimeEasingData_t m_data;
     sf::Clock m_clock;
     std::function< float( float t ) > m_easingFunction { useNone };
+
+    int32_t m_selectedComboIndex { 4 };
+
+    inline static std::array< const char *, 18 > m_easingFunctionNames =
+    {
+      "Disabled",
+      "Fixed",
+      "TimeContinuous",
+      "TimeIntervallic",
+      "Linear",
+      "Quadratic",
+      "Cubic",
+      "Quartic",
+      "Sine",
+      "Expo",
+      "Bounce",
+      "Back",
+      "SmoothPulse",
+      "Impulse",
+      "SparkleFlicker",
+      "PulsePing",
+      "PulseSine",
+      "Elastic"
+    };
+
+    inline static std::array< E_TimeEasingType, 18 > m_easingTypes =
+    {
+      E_TimeEasingType::E_Disabled,
+      E_TimeEasingType::E_Fixed,
+      E_TimeEasingType::E_TimeContinuous,
+      E_TimeEasingType::E_TimeIntervallic,
+      E_TimeEasingType::E_Linear,
+      E_TimeEasingType::E_Quadratic,
+      E_TimeEasingType::E_Cubic,
+      E_TimeEasingType::E_Quartic,
+      E_TimeEasingType::E_Sine,
+      E_TimeEasingType::E_Expo,
+      E_TimeEasingType::E_Bounce,
+      E_TimeEasingType::E_Back,
+      E_TimeEasingType::E_SmoothPulseDecay,
+      E_TimeEasingType::E_Impulse,
+      E_TimeEasingType::E_SparkleFlicker,
+      E_TimeEasingType::E_PulsePing,
+      E_TimeEasingType::E_PulseSine,
+      E_TimeEasingType::E_Elastic
+    };
 
     NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
     {
@@ -203,7 +258,8 @@ namespace nx
       { E_TimeEasingType::E_Impulse, "Impulse" },
       { E_TimeEasingType::E_SparkleFlicker, "SparkleFlicker" },
       { E_TimeEasingType::E_PulsePing, "PulsePing" },
-      { E_TimeEasingType::E_PulseSine, "PulseSine" }
+      { E_TimeEasingType::E_PulseSine, "PulseSine" },
+      { E_TimeEasingType::E_Elastic, "Elastic" }
     })
 
   };

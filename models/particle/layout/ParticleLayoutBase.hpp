@@ -31,9 +31,7 @@ namespace nx
 
     void update( const sf::Time &deltaTime ) override
     {
-      //auto percentageEasing = m_fadeEasing.getEasing();
-
-      for ( auto i = 0; i < m_particles.size(); ++i )
+        for ( auto i = 0; i < m_particles.size(); ++i )
       {
         IParticle * timeParticle = m_particles[ i ];
 
