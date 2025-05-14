@@ -6,8 +6,8 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Glsl.hpp>
 
+#include "models/easings/EasingsBase.hpp"
 #include "models/InterfaceTypes.hpp"
-#include "models/shader/easings/TimeEasing.hpp"
 
 
 // Customer JSON converters belong in this namespace
@@ -147,31 +147,6 @@ namespace nx
         }
       }
 
-      else if constexpr ( std::is_same_v< Enum, E_TimeEasingType > )
-      {
-        switch ( e )
-        {
-          case E_TimeEasingType::E_Disabled: return "easeDisabled";
-          case E_TimeEasingType::E_Fixed: return "easeFixed";
-          case E_TimeEasingType::E_TimeContinuous: return "easeTimeContinuous";
-          case E_TimeEasingType::E_TimeIntervallic: return "easeTimeInterval";
-          case E_TimeEasingType::E_Linear: return "easeLinear";
-          case E_TimeEasingType::E_Quadratic: return "easeOutQuad";
-          case E_TimeEasingType::E_Cubic: return "easeOutCubic";
-          case E_TimeEasingType::E_Quartic: return "easeOutQuart";
-          case E_TimeEasingType::E_Sine: return "easeOutSine";
-          case E_TimeEasingType::E_Expo: return "easeOutExpo";
-          case E_TimeEasingType::E_Bounce: return "easeOutBounce";
-          case E_TimeEasingType::E_Back: return "easeOutBack";
-          case E_TimeEasingType::E_PulsePing: return "easePulsePing";
-          case E_TimeEasingType::E_PulseSine: return "easePulseSine";
-          case E_TimeEasingType::E_Impulse: return "easeImpulse";
-          case E_TimeEasingType::E_SparkleFlicker: return "easeSparkleFlicker";
-          case E_TimeEasingType::E_SmoothPulseDecay: return "easeSmoothDecayPulse";
-          default: break;
-        }
-      }
-
       return "UNKNOWN";
     }
 
@@ -224,27 +199,6 @@ namespace nx
         if ( typeName == "ColorMorphBehavior" ) return E_BehaviorType::E_ColorMorphBehavior;
         if ( typeName == "MagneticBehavior" ) return E_BehaviorType::E_MagneticBehavior;
         return E_BehaviorType::E_InvalidBehavior;
-      }
-      else if constexpr ( std::is_same_v< TEnum, E_TimeEasingType > )
-      {
-        if ( typeName == "easeDisabled" ) return E_TimeEasingType::E_Disabled;
-        if ( typeName == "easeFixed" ) return E_TimeEasingType::E_Fixed;
-        if ( typeName == "easeTimeContinuous" ) return E_TimeEasingType::E_TimeContinuous;
-        if ( typeName == "easeTimeInterval" ) return E_TimeEasingType::E_TimeIntervallic;
-        if ( typeName == "easeLinear" ) return E_TimeEasingType::E_Linear;
-        if ( typeName == "easeOutQuad" ) return E_TimeEasingType::E_Quadratic;
-        if ( typeName == "easeOutCubic" ) return E_TimeEasingType::E_Cubic;
-        if ( typeName == "easeOutQuart" ) return E_TimeEasingType::E_Quartic;
-        if ( typeName == "easeOutSine" ) return E_TimeEasingType::E_Sine;
-        if ( typeName == "easeOutExpo" ) return E_TimeEasingType::E_Expo;
-        if ( typeName == "easeOutBounce" ) return E_TimeEasingType::E_Bounce;
-        if ( typeName == "easeOutBack" ) return E_TimeEasingType::E_Back;
-        if ( typeName == "easePulsePing" ) return E_TimeEasingType::E_PulsePing;
-        if ( typeName == "easePulseSine" ) return E_TimeEasingType::E_PulseSine;
-        if ( typeName == "easeImpulse" ) return E_TimeEasingType::E_Impulse;
-        if ( typeName == "easeSparkleFlicker" ) return E_TimeEasingType::E_SparkleFlicker;
-        if ( typeName == "easeSmoothDecayPulse" ) return E_TimeEasingType::E_SmoothPulseDecay;
-        return E_TimeEasingType::E_Linear;
       }
     }
 

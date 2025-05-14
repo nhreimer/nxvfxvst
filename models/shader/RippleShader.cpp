@@ -12,7 +12,7 @@ namespace nx
       else
       {
         LOG_INFO( "Ripple fragment shader loaded" );
-        m_easing.setEasingType( E_TimeEasingType::E_Linear );
+        m_easing.setEasingType( E_EasingType::E_Linear );
       }
 
       EXPAND_SHADER_VST_BINDINGS(RIPPLE_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)

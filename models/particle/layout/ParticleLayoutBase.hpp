@@ -3,6 +3,7 @@
 #include "helpers/ColorHelper.hpp"
 
 #include "models/ParticleBehaviorPipeline.hpp"
+#include "models/easings/PercentageEasing.hpp"
 
 namespace nx
 {
@@ -39,7 +40,7 @@ namespace nx
 
         if ( !timeParticle->hasExpired() )
         {
-          const auto percentage = timeParticle->getTimeRemainingPercentage();
+          const auto percentage = timeParticle->getTimeRemainingPercentage(); //m_fadeEasing.getEasing( 1.f - timeParticle->getTimeRemainingPercentage() );
 
           updateFillColor( timeParticle, percentage );
           updateOutlineColor( timeParticle, percentage );
@@ -86,7 +87,7 @@ namespace nx
         m_data.layoutOriginalPosition );
     }
 
-    TimeEasing& getEasing() { return m_fadeEasing; }
+    PercentageEasing& getEasing() { return m_fadeEasing; }
 
   private:
     virtual void updateFillColor( IParticle * particle, const float percentage )
@@ -136,7 +137,7 @@ namespace nx
     ParticleBehaviorPipeline m_behaviorPipeline;
     std::unique_ptr< IParticleGenerator > m_particleGenerator;
 
-    TimeEasing m_fadeEasing;
+    PercentageEasing m_fadeEasing;
   };
 
 }

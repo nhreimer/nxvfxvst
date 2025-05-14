@@ -74,8 +74,6 @@ set( NX_CPP_FILES
   models/shader/SmearShader.cpp
   models/shader/StrobeShader.cpp
   models/shader/TransformShader.cpp
-
-  models/shader/easings/TimeEasing.cpp
 )
 
 if ( BUILD_PLUGIN )

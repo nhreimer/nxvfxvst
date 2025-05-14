@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/shader/easings/TimeEasing.hpp"
+#include "../easings/TimeEasing.hpp"
 
 namespace nx
 {
@@ -8,7 +8,7 @@ namespace nx
   struct ParticleData_t
   {
     // and you can apply easings to it
-    E_TimeEasingType colorEasing { E_TimeEasingType::E_Linear };
+    E_EasingType colorEasing { E_EasingType::E_Linear };
 
     float outlineThickness { 0.f };
 
