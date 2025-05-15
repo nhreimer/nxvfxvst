@@ -6,6 +6,7 @@
 #include "models/easings/PercentageEasing.hpp"
 
 #include "models/particle/generator/CircleParticleGenerator.hpp"
+#include "models/particle/generator/StarburstParticleGenerator.hpp"
 
 namespace nx
 {
@@ -23,7 +24,7 @@ namespace nx
     explicit ParticleLayoutBase( PipelineContext& context )
       : m_ctx( context ),
         m_behaviorPipeline( context ),
-        m_particleGenerator( std::make_unique< CircleParticleGenerator >() )
+        m_particleGenerator( std::make_unique< StarburstParticleGenerator >() )
     {}
 
     ~ParticleLayoutBase() override

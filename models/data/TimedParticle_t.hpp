@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shapes/CircleParticle.hpp"
+#include "../particle/particles/CircleParticle.hpp"
 
 namespace nx
 {

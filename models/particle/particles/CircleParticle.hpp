@@ -9,13 +9,15 @@
 #include "helpers/ColorHelper.hpp"
 #include "log/Logger.hpp"
 
+#include "models/IParticle.hpp"
 #include "models/data/ParticleData_t.hpp"
-#include "shapes/IParticle.hpp"
+
+#include "models/particle/particles/TimedParticleBase.hpp"
 
 namespace nx
 {
 
-  class CircleParticle final : public IParticle
+  class CircleParticle final : public TimedParticleBase
   {
   public:
 
@@ -50,40 +52,6 @@ namespace nx
       auto * p = new CircleParticle( m_data, timeStampInSeconds, m_radiusOverride );
       p->m_spawnTimeInSeconds = timeStampInSeconds;
       return p;
-    }
-
-    float getTimeRemainingPercentage() const override
-    {
-      return m_timeAliveInSeconds / ( m_expirationTimeInSeconds - m_spawnTimeInSeconds );
-    }
-
-    bool hasExpired() const override { return getTimeRemainingPercentage() >= 1.0f; }
-
-    float getTimeAliveInSeconds() const override { return m_timeAliveInSeconds; }
-
-    void update( const sf::Time& deltaTime ) override
-    {
-      m_timeAliveInSeconds += deltaTime.asSeconds();
-    }
-
-    float getSpawnTimeInSeconds() const override
-    {
-      return m_spawnTimeInSeconds;
-    }
-
-    void setSpawnTimeInSeconds(const float newSpawnTime) override
-    {
-      m_spawnTimeInSeconds = newSpawnTime;
-    }
-
-    float getExpirationTimeInSeconds() const override
-    {
-      return m_expirationTimeInSeconds;
-    }
-
-    void setExpirationTimeInSeconds(const float expirationTime) override
-    {
-      m_expirationTimeInSeconds = expirationTime;
     }
 
     uint8_t getPointCount() const override { return m_data.pointCount; }
@@ -274,10 +242,6 @@ namespace nx
 
     const ParticleData_t& m_data;
     const float m_radiusOverride { 0.f };
-
-    float m_spawnTimeInSeconds { 0.f };
-    float m_expirationTimeInSeconds { 0.f };
-    float m_timeAliveInSeconds { 0.f };
 
     sf::VertexArray m_vertices        { sf::PrimitiveType::TriangleFan   };
     sf::VertexArray m_outlineVertices { sf::PrimitiveType::TriangleStrip };

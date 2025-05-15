@@ -7,7 +7,7 @@
 #include "models/data/ParticleData_t.hpp"
 #include "models/data/Midi_t.hpp"
 
-#include "shapes/CircleParticle.hpp"
+#include "models/particle/particles/CircleParticle.hpp"
 
 namespace nx
 {
@@ -19,7 +19,8 @@ namespace nx
     E_ParticleType getType() const override { return E_ParticleType::E_CircleParticle; }
 
     [[nodiscard]]
-    IParticle * createParticle( const Midi_t& midiEvent, const float timeStampInSeconds ) override
+    IParticle * createParticle( const Midi_t& midiEvent,
+                                const float timeStampInSeconds ) override
     {
       auto * particle = new CircleParticle( getData(), timeStampInSeconds );
       initialize( particle, midiEvent, timeStampInSeconds );
@@ -28,8 +29,8 @@ namespace nx
 
     [[nodiscard]]
     IParticle * createParticle( const Midi_t& midiEvent,
-                                    float timeStampInSeconds,
-                                    float radius ) override
+                                const float timeStampInSeconds,
+                                const float radius ) override
     {
       auto * particle = new CircleParticle( getData(), timeStampInSeconds, radius );
       initialize( particle, midiEvent, timeStampInSeconds );

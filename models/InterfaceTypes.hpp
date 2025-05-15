@@ -58,6 +58,6 @@ namespace nx
   {
     E_InvalidParticle,
     E_CircleParticle,
-    E_RingParticle
+    E_StarburstParticle
   };
 }

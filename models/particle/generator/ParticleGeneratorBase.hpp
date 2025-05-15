@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shapes/IParticle.hpp"
+#include "models/IParticle.hpp"
 #include "models/IParticleGenerator.hpp"
 
 #include "helpers/ColorHelper.hpp"
