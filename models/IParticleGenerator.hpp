@@ -22,7 +22,6 @@ namespace nx
                                         float radius ) = 0;
   };
 
-
   template < typename TData >
   class ParticleGeneratorBase : public IParticleGenerator
   {

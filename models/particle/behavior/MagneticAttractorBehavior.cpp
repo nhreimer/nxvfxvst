@@ -5,8 +5,7 @@ namespace nx
 
   void MagneticAttractorBehavior::applyOnUpdate(IParticle * p,
                                                 const sf::Time& dt,
-                                                const ParticleData_t& particleData,
-                                                const sf::Vector2f& position )
+                                                const ParticleData_t& particleData )
   {
     const sf::Vector2f pos = p->getPosition();
 

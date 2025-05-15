@@ -45,13 +45,11 @@ X(jitterMultiplier  , float, 0.5f, 0.f, 5.f, "Amount of jitter", true)
 
     void applyOnSpawn( IParticle * p,
                        const Midi_t& midi,
-                       const ParticleData_t& particleData,
-                       const sf::Vector2f& position ) override;
+                       const ParticleData_t& particleData ) override;
 
     void applyOnUpdate( IParticle * p,
                         const sf::Time& deltaTime,
-                        const ParticleData_t& particleData,
-                        const sf::Vector2f& position ) override;
+                        const ParticleData_t& particleData ) override;
 
     void drawMenu() override;
 

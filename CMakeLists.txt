@@ -43,7 +43,6 @@ set( NX_CPP_FILES
   models/particle/behavior/FreeFallBehavior.cpp
   models/particle/behavior/JitterBehavior.cpp
   models/particle/behavior/MagneticAttractorBehavior.cpp
-  models/particle/behavior/RadialSpreaderBehavior.cpp
 
   models/particle/layout/EllipticalLayout.cpp
   models/particle/layout/FractalRingLayout.cpp

@@ -50,13 +50,11 @@ X(morphToColor,  sf::Color, sf::Color::Black, 0, 255, "Target color for hue morp
 
     void applyOnSpawn( IParticle * p,
                        const Midi_t& midiEvent,
-                       const ParticleData_t& particleData,
-                       const sf::Vector2f& position ) override;
+                       const ParticleData_t& particleData ) override;
 
     void applyOnUpdate( IParticle * p,
                         const sf::Time& deltaTime,
-                        const ParticleData_t& particleData,
-                        const sf::Vector2f& position ) override;
+                        const ParticleData_t& particleData ) override;
 
     void drawMenu() override;
 

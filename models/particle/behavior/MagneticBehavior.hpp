@@ -47,14 +47,12 @@ X(magnetLocation,   sf::Vector2f, sf::Vector2f({0.5f, 0.5f}), 0.f, 0.f, "Locatio
 
     void applyOnSpawn(IParticle *,
                       const Midi_t&,
-                      const ParticleData_t& particleData,
-                      const sf::Vector2f& position ) override
+                      const ParticleData_t& particleData ) override
     {}
 
     void applyOnUpdate(IParticle * p,
                        const sf::Time& dt,
-                       const ParticleData_t& particleData,
-                       const sf::Vector2f& position ) override;
+                       const ParticleData_t& particleData ) override;
 
     void drawMenu() override;
 

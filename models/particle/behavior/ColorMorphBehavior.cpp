@@ -35,8 +35,7 @@ namespace nx
   /// PUBLIC
   void ColorMorphBehavior::applyOnSpawn( IParticle * p,
                        const Midi_t& midiEvent,
-                       const ParticleData_t& particleData,
-                       const sf::Vector2f& position )
+                       const ParticleData_t& particleData )
   {
     // Optionally inject random hue offset based on pitch
     m_data.hueOffset.first = (m_data.useHueOffset.first)
@@ -48,8 +47,7 @@ namespace nx
   /// PUBLIC
   void ColorMorphBehavior::applyOnUpdate( IParticle * p,
                         const sf::Time& deltaTime,
-                        const ParticleData_t& particleData,
-                        const sf::Vector2f& position )
+                        const ParticleData_t& particleData )
   {
     if ( m_data.useSkittles.first )
       applySkittlesMorphing( p, deltaTime );

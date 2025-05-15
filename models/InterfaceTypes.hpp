@@ -48,7 +48,6 @@ namespace nx
   enum class E_BehaviorType : int8_t
   {
     E_InvalidBehavior,
-    E_RadialSpreaderBehavior,
     E_FreeFallBehavior,
     E_JitterBehavior,
     E_ColorMorphBehavior,

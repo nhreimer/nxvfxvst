@@ -26,16 +26,14 @@ namespace nx
 
   void JitterBehavior::applyOnSpawn( IParticle * p,
                                      const Midi_t& midi,
-                                     const ParticleData_t& particleData,
-                                     const sf::Vector2f& position )
+                                     const ParticleData_t& particleData )
   {
     p->setPosition( getJitterPosition( p ) );
   }
 
   void JitterBehavior::applyOnUpdate( IParticle * p,
                                       const sf::Time& deltaTime,
-                                      const ParticleData_t& particleData,
-                                      const sf::Vector2f& position )
+                                      const ParticleData_t& particleData )
   {
     p->setPosition( getJitterPosition( p ) );
   }

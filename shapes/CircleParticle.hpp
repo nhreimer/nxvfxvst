@@ -279,8 +279,8 @@ namespace nx
     float m_expirationTimeInSeconds { 0.f };
     float m_timeAliveInSeconds { 0.f };
 
-    sf::VertexArray m_vertices{ sf::PrimitiveType::TriangleFan };
-    sf::VertexArray m_outlineVertices{ sf::PrimitiveType::TriangleStrip };
+    sf::VertexArray m_vertices        { sf::PrimitiveType::TriangleFan   };
+    sf::VertexArray m_outlineVertices { sf::PrimitiveType::TriangleStrip };
 
     sf::FloatRect m_insideBounds;
     sf::FloatRect m_bounds;

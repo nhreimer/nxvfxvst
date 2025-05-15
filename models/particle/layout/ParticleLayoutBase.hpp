@@ -32,7 +32,7 @@ namespace nx
 
     void update( const sf::Time &deltaTime ) override
     {
-        for ( auto i = 0; i < m_particles.size(); ++i )
+      for ( auto i = 0; i < m_particles.size(); ++i )
       {
         IParticle * timeParticle = m_particles[ i ];
 
@@ -51,8 +51,7 @@ namespace nx
           m_behaviorPipeline.applyOnUpdate(
             timeParticle,
             deltaTime,
-            m_particleGenerator->getData(),
-            m_data.layoutOriginalPosition );
+            m_particleGenerator->getData() );
         }
         else
         {
@@ -83,8 +82,7 @@ namespace nx
       m_behaviorPipeline.applyOnSpawn(
         timeParticle,
         midiEvent,
-        m_particleGenerator->getData(),
-        m_data.layoutOriginalPosition );
+        m_particleGenerator->getData() );
     }
 
     PercentageEasing& getEasing() { return m_fadeEasing; }

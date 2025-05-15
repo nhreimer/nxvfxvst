@@ -3,7 +3,6 @@
 #include <imgui.h>
 #include <nlohmann/json.hpp>
 
-#include "helpers/SerialHelper.hpp"
 #include "models/easings/Easings.hpp"
 
 namespace nx
@@ -174,13 +173,13 @@ if (isSelected) ImGui::SetItemDefaultFocus();                                   
 #undef X
     };
 
-    inline static std::array<const char*, static_cast<size_t>(E_EasingType::E_Count)> kEasingTypeToString = {
+    inline static std::array< const char *, static_cast< size_t >(E_EasingType::E_Count) > kEasingTypeToString = {
 #define X(eid, label, serialLabel, func) serialLabel,
       EASING_TYPE_LIST(X)
 #undef X
     };
 
-    constexpr const char* serializeEnum(E_EasingType e) const
+    static constexpr const char* serializeEnum(E_EasingType e)
     {
       return kEasingTypeToString[static_cast<size_t>(e)];
     }
@@ -191,7 +190,7 @@ if (isSelected) ImGui::SetItemDefaultFocus();                                   
 #undef X
     };
 
-    E_EasingType deserializeEnum(const std::string_view s)
+    static E_EasingType deserializeEnum(const std::string_view s)
     {
       const auto it = kStringToEasingType.find(s);
       if (it != kStringToEasingType.end())
@@ -199,7 +198,6 @@ if (isSelected) ImGui::SetItemDefaultFocus();                                   
 
       return E_EasingType::E_Linear;
     }
-
 
     NLOHMANN_JSON_SERIALIZE_ENUM(E_EasingType,
     {

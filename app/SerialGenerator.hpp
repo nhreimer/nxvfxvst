@@ -6,7 +6,6 @@
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 #include "models/particle/behavior/JitterBehavior.hpp"
 #include "models/particle/behavior/MagneticBehavior.hpp"
-#include "models/particle/behavior/RadialSpreaderBehavior.hpp"
 
 #include "models/shader/BlurShader.hpp"
 
@@ -51,7 +50,6 @@ namespace nx
       addBehavior<FreeFallBehavior>();
       addBehavior<JitterBehavior>();
       addBehavior<MagneticAttractorBehavior>();
-      addBehavior<RadialSpreaderBehavior>();
     }
 
     template < typename T >
