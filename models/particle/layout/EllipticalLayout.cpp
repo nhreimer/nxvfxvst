@@ -20,7 +20,7 @@ namespace nx
     j[ "centerOffset" ] = { { "x", m_data.centerOffset.x }, { "y", m_data.centerOffset.y } };
 
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
-    j[ "particleGenerator" ] = m_particleGenerator->serialize();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
 
     return j;
   }
@@ -41,7 +41,7 @@ namespace nx
     }
 
     if ( j.contains( "particleGenerator" ) )
-      m_particleGenerator->deserialize( j.at( "particleGenerator" ) );
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
 
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
@@ -57,7 +57,9 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Elliptical Layout" ) )
     {
-      m_particleGenerator->drawMenu();
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       ImGui::SeparatorText( "Elliptical Options" );
 
@@ -91,7 +93,7 @@ namespace nx
     const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
 
     auto * p = m_particles.emplace_back(
-      m_particleGenerator->createParticle(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
         midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
     p->setPosition( pos );
@@ -118,7 +120,7 @@ namespace nx
     const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
 
     auto * p = m_particles.emplace_back(
-      m_particleGenerator->createParticle(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
         midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
     p->setPosition( pos );

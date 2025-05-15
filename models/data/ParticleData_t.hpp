@@ -18,7 +18,7 @@ namespace nx
     float velocitySizeMultiplier { 1.f };
     float boostVelocity { 0.f };
 
-    float timeoutInSeconds { 0.5f };
+    float timeoutInSeconds { 0.75f };
 
     int32_t colorVertexStartOffset { 1 };
     int32_t colorVertexInterval { 1 };

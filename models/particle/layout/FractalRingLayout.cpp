@@ -19,7 +19,7 @@ namespace nx
     j[ "delayFractalFadesMultiplier" ] = m_data.delayFractalFadesMultiplier;
     j[ "enableFractalFades" ] = m_data.enableFractalFades;
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
-    j[ "particleGenerator" ] = m_particleGenerator->serialize();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
     return j;
   }
 
@@ -42,7 +42,7 @@ namespace nx
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j["behaviors"] );
     if ( j.contains( "particleGenerator" ) )
-      m_particleGenerator->deserialize( j.at( "particleGenerator" ) );
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
   }
 
   void FractalRingLayout::addMidiEvent( const Midi_t &midiEvent )
@@ -58,7 +58,7 @@ namespace nx
     // spawnFractalRing( midiEvent, m_data.depthLimit, m_data.radius, pos );
 
     // Only spawn one level of fractal on each MIDI note
-    spawnFractalRing(midiEvent, m_currentDepth, m_particleGenerator->getData().radius, pos);
+    spawnFractalRing(midiEvent, m_currentDepth, m_particleGeneratorManager.getParticleGenerator()->getData().radius, pos);
 
     // Advance or reset depth
     switch (m_data.fractalDepthTraversalMode)
@@ -98,7 +98,9 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Fractal Ring Layout" ) )
     {
-      m_particleGenerator->drawMenu();
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       ImGui::Separator();
       ImGui::SliderInt("Spawn Depth", &m_data.depthLimit, 0, 4);
@@ -145,7 +147,7 @@ namespace nx
 
     const float angleStep = NX_TAU / static_cast< float >(m_data.baseRingCount);
 
-    auto& particleData = m_particleGenerator->getData();
+    auto& particleData = m_particleGeneratorManager.getParticleGenerator()->getData();
 
     for (int i = 0; i < m_data.baseRingCount; ++i)
     {
@@ -183,7 +185,7 @@ namespace nx
                                                  const float adjustedRadius )
   {
     auto * p = m_particles.emplace_back(
-      m_particleGenerator->createParticle(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
         midiEvent,
         m_ctx.globalInfo.elapsedTimeSeconds,
         adjustedRadius ) );

@@ -5,8 +5,7 @@
 #include "models/ParticleBehaviorPipeline.hpp"
 #include "models/easings/PercentageEasing.hpp"
 
-#include "models/particle/generator/CircleParticleGenerator.hpp"
-#include "models/particle/generator/StarburstParticleGenerator.hpp"
+#include "models/ParticleGeneratorManager.hpp"
 
 namespace nx
 {
@@ -23,8 +22,7 @@ namespace nx
 
     explicit ParticleLayoutBase( PipelineContext& context )
       : m_ctx( context ),
-        m_behaviorPipeline( context ),
-        m_particleGenerator( std::make_unique< StarburstParticleGenerator >() )
+        m_behaviorPipeline( context )
     {}
 
     ~ParticleLayoutBase() override
@@ -54,7 +52,7 @@ namespace nx
           m_behaviorPipeline.applyOnUpdate(
             timeParticle,
             deltaTime,
-            m_particleGenerator->getData() );
+            m_particleGeneratorManager.getParticleGenerator()->getData() );
         }
         else
         {
@@ -65,10 +63,16 @@ namespace nx
     }
 
     [[nodiscard]]
-    const ParticleLayoutData_t& getParticleLayoutData() const override { return m_data; }
+    const ParticleLayoutData_t& getParticleLayoutData() const override
+    {
+      return m_data;
+    }
 
     [[nodiscard]]
-    const ParticleData_t& getParticleData() const override { return m_particleGenerator->getData(); }
+    const ParticleData_t& getParticleData() const override
+    {
+      return m_particleGeneratorManager.getParticleGenerator()->getData();
+    }
 
     [[nodiscard]]
     std::deque< IParticle * >& getParticles() override { return m_particles; }
@@ -82,10 +86,11 @@ namespace nx
     /// @param midiEvent
     virtual void notifyBehaviorOnSpawn( IParticle * timeParticle, const Midi_t& midiEvent )
     {
+
       m_behaviorPipeline.applyOnSpawn(
         timeParticle,
         midiEvent,
-        m_particleGenerator->getData() );
+        m_particleGeneratorManager.getParticleGenerator()->getData() );
     }
 
     PercentageEasing& getEasing() { return m_fadeEasing; }
@@ -93,7 +98,8 @@ namespace nx
   private:
     virtual void updateFillColor( IParticle * particle, const float percentage )
     {
-      const auto& particleData = m_particleGenerator->getData();
+      const auto& particleData =
+        m_particleGeneratorManager.getParticleGenerator()->getData();
 
       const auto nextStartColor =
         ColorHelper::getNextColor(
@@ -112,7 +118,8 @@ namespace nx
 
     virtual void updateOutlineColor( IParticle * particle, const float percentage )
     {
-      const auto& particleData = m_particleGenerator->getData();
+      const auto& particleData =
+        m_particleGeneratorManager.getParticleGenerator()->getData();
 
       const auto nextStartColor =
         ColorHelper::getNextColor(
@@ -136,7 +143,7 @@ namespace nx
     TParticleData m_data;
 
     ParticleBehaviorPipeline m_behaviorPipeline;
-    std::unique_ptr< IParticleGenerator > m_particleGenerator;
+    ParticleGeneratorManager m_particleGeneratorManager;
 
     PercentageEasing m_fadeEasing;
   };

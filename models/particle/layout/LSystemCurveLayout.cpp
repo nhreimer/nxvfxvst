@@ -19,7 +19,7 @@ namespace nx
     j[ "depthFactor" ] = m_data.depthFactor;
     j[ "stepsPerNote" ] = m_data.stepsPerNote;
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
-    j[ "particleGenerator" ] = m_particleGenerator->serialize();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
     return j;
   }
 
@@ -43,7 +43,7 @@ namespace nx
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j["behaviors"] );
     if ( j.contains( "particleGenerator" ) )
-      m_particleGenerator->deserialize( j.at( "particleGenerator" ) );
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
   }
 
   void LSystemCurveLayout::drawMenu()
@@ -52,7 +52,9 @@ namespace nx
     ImGui::Separator();
     if (ImGui::TreeNode("L-System Particle Layout"))
     {
-      m_particleGenerator->drawMenu();
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       ImGui::Separator();
       ImGui::SliderInt("Depth", &m_data.depth, 1, 12);
@@ -126,7 +128,7 @@ namespace nx
     {
       // Final particle placement
       auto * p = m_particles.emplace_back(
-      m_particleGenerator->createParticle(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
         midiEvent,
         m_ctx.globalInfo.elapsedTimeSeconds ) );
 

@@ -17,7 +17,7 @@ namespace nx
     j[ "phaseSpread" ] = m_data.phaseSpread;
 
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
-    j[ "particleGenerator" ] = m_particleGenerator->serialize();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
 
     return j;
   }
@@ -37,7 +37,7 @@ namespace nx
     }
 
     if ( j.contains( "particleGenerator" ) )
-      m_particleGenerator->deserialize( j.at( "particleGenerator" ) );
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
 
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
@@ -47,7 +47,9 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Lissajous Curve Layout" ) )
     {
-      m_particleGenerator->drawMenu();
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       //ImGui::SliderFloat("Phase", &m_data.phase, 0.f, 1.0f);
       ImGui::SliderFloat("a Phase Step", &m_data.phaseAStep, 0.f, 5.0f);
@@ -74,7 +76,7 @@ namespace nx
     const float y = ( static_cast< float >( m_ctx.globalInfo.windowSize.y ) * m_data.phaseSpread ) * sin(b * localT);
 
     auto * p = m_particles.emplace_back(
-      m_particleGenerator->createParticle(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
         midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
     p->setPosition( { x, y } );

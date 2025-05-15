@@ -7,6 +7,8 @@
 #include "helpers/MathHelper.hpp"
 #include "models/particle/particles/TimedParticleBase.hpp"
 
+//#include "utils/DebugCenter.hpp"
+
 namespace nx
 {
 
@@ -27,18 +29,18 @@ public:
 
   StarburstParticle( const StarburstParticleData_t& data, const float timeStamp )
     : m_data( data ),
-      m_timeStamp( timeStamp ),
       m_radiusOverride( data.radius )
   {
+    m_spawnTimeInSeconds = timeStamp;
     updateShape();
   }
 
   StarburstParticle( const StarburstParticleData_t& data,
                      const float timeStamp,
                      const float radius )
-    : m_data( data ),
-      m_timeStamp( timeStamp )
+    : m_data( data )
   {
+    m_spawnTimeInSeconds = timeStamp;
     m_radiusOverride = m_data.radius * m_data.innerRadiusMultiplier; // default multiplier
     updateShape();
   }
@@ -46,8 +48,8 @@ public:
   IParticle * clone( const float timeStampInSeconds ) const override
   {
     auto * cloned = new StarburstParticle(m_data , timeStampInSeconds);
-    cloned->setColorPattern(m_fillStart, m_fillEnd);
-    cloned->setOutlineColorPattern(m_outlineStart, m_outlineEnd);
+    cloned->setColorPattern(m_data.fillStartColor, m_data.fillEndColor);
+    cloned->setOutlineColorPattern(m_data.outlineStartColor, m_data.outlineEndColor);
     return cloned;
   }
 
@@ -60,26 +62,29 @@ public:
 
   void setColorPattern(const sf::Color& startColor, const sf::Color& endColor) override
   {
-    m_fillStart = startColor;
-    m_fillEnd = endColor;
     m_shape.setFillColor(startColor);
   }
 
-  std::pair<sf::Color, sf::Color> getColors() const override { return { m_fillStart, m_fillEnd }; }
+  std::pair<sf::Color, sf::Color> getColors() const override
+  {
+    return std::make_pair( m_data.fillStartColor, m_data.fillEndColor );
+  }
 
   void setOutlineColorPattern(const sf::Color& startColor, const sf::Color& endColor) override
   {
-    m_outlineStart = startColor;
-    m_outlineEnd = endColor;
     m_shape.setOutlineColor(startColor);
   }
 
-  std::pair<sf::Color, sf::Color> getOutlineColors() const override { return { m_outlineStart, m_outlineEnd }; }
+  std::pair<sf::Color, sf::Color> getOutlineColors() const override
+  {
+    return std::make_pair( m_data.outlineStartColor, m_data.outlineEndColor );
+  }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override
   {
     states.transform *= getTransform();
     target.draw(m_shape, states);
+    // target.draw(m_shapeDebugCenter.debugCenter, states);
   }
 
 private:
@@ -100,25 +105,19 @@ private:
       m_shape.setPoint(i, pt);
     }
 
-    m_shape.setOrigin({0, 0});
-    //m_shape.setOutlineThickness(2.f);
-    m_shape.setOutlineColor(m_outlineStart);
-    m_shape.setFillColor(m_fillStart);
+    m_shape.setOutlineThickness( m_data.outlineThickness );
+    m_shape.setOutlineColor(m_data.outlineStartColor);
+    m_shape.setFillColor(m_data.fillStartColor);
   }
 
 private:
 
   const StarburstParticleData_t &m_data;
-  float m_timeStamp;
-  float m_radiusOverride{ 0.f };
+  float m_radiusOverride { 0.f };
 
   sf::ConvexShape m_shape;
 
-  sf::Color m_fillStart {};
-  sf::Color m_fillEnd {};
-
-  sf::Color m_outlineStart {};
-  sf::Color m_outlineEnd {};
+  // DebugCenter m_shapeDebugCenter;
 
 };
 
