@@ -5,6 +5,8 @@
 #include "models/ParticleBehaviorPipeline.hpp"
 #include "models/easings/PercentageEasing.hpp"
 
+#include "models/particle/generator/CircleParticleGenerator.hpp"
+
 namespace nx
 {
 
