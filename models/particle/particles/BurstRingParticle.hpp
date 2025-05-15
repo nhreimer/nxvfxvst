@@ -8,6 +8,7 @@ struct BurstRingParticleData_t : public ParticleData_t
   int32_t spokes { 4 }; // 4 - 64
   float spokeLengthMultiplier { 1.25f };
   float spokeThickness { 2.f };
+  float innerRadius { 0.f };
 };
 
 class BurstRingParticle final : public TimedParticleBase
@@ -80,13 +81,19 @@ public:
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override
   {
     states.transform *= getTransform();
-    target.draw(m_ring, states);
+    target.draw(m_donutRing, states);
     for (const auto& spoke : m_spokes)
       target.draw(spoke, states);
   }
 
 private:
   void updateShapes()
+  {
+    updateDonutRing();
+    updateSpokes();
+  }
+
+  void updateSpokes()
   {
     const float spokeLen = m_radiusOverride * m_data.spokeLengthMultiplier;
 
@@ -106,16 +113,37 @@ private:
       spoke.setSize({ spokeLen, m_data.spokeThickness });
       spoke.setOrigin({ 0.f, m_data.spokeThickness / 2.f });
       spoke.setPosition({0.f, 0.f}); // centered around particle
-      //spoke.setRotation(angle * 180.f / 3.14159265f);
       spoke.setRotation( sf::radians( angle ) );
       spoke.setFillColor( m_data.fillStartColor );
     }
   }
 
+  void updateDonutRing()
+  {
+    m_donutRing.clear();
+    constexpr int segments = 64;
+    constexpr float angleStep = NX_TAU / static_cast<float>(segments);
+
+    for (int32_t i = 0; i <= segments; ++i)
+    {
+      const float angle = i * angleStep;
+      const sf::Vector2f dir({std::cos(angle), std::sin(angle)});
+
+      const sf::Vector2f outerPoint = dir * m_radiusOverride;
+      const sf::Vector2f innerPoint = dir * m_data.innerRadius;
+
+      m_donutRing.append(sf::Vertex(outerPoint, m_data.outlineStartColor));
+      m_donutRing.append(sf::Vertex(innerPoint, m_data.outlineStartColor));
+    }
+  }
+
+
 private:
   const BurstRingParticleData_t& m_data;
 
   float m_radiusOverride { 0.f };
+
+  sf::VertexArray m_donutRing { sf::PrimitiveType::TriangleStrip };
 
   sf::CircleShape m_ring;
   std::vector< sf::RectangleShape > m_spokes;

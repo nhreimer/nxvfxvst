@@ -18,9 +18,10 @@ namespace nx
       auto &data = getData();
 
       ImGui::SeparatorText("Burst Ring Options");
-      ImGui::SliderInt( "Spikes##1", &data.spokes, 4, 64 );
+      ImGui::SliderInt( "Spikes##1", &data.spokes, 0, 64 );
       ImGui::SliderFloat( "Spike Length Multiplier##1", &data.spokeLengthMultiplier, 0.f, 10.f );
       ImGui::SliderFloat( "Spike Thickness##1", &data.spokeThickness, 0.f, 32.f );
+      ImGui::SliderFloat( "Inner Radius", &data.innerRadius, 0.f, data.radius - 1.f );
     }
 
     [[nodiscard]]
