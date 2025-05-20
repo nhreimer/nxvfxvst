@@ -1,5 +1,5 @@
 
-#include "models/particle/GoldenSpiralLayout.hpp"
+#include "models/particle/layout/GoldenSpiralLayout.hpp"
 
 namespace nx
 {
@@ -7,7 +7,11 @@ namespace nx
   [[nodiscard]]
   nlohmann::json GoldenSpiralLayout::serialize() const
   {
-    auto j = ParticleHelper::serialize(m_data, SerialHelper::serializeEnum(getType()));
+    nlohmann::json j =
+    {
+          { "type", SerialHelper::serializeEnum( getType() ) }
+    };
+
     j[ "depth" ] = m_data.depth;
     j[ "scaleFactor" ] = m_data.scaleFactor;
     j[ "angleOffset" ] = m_data.angleOffset;
@@ -17,14 +21,15 @@ namespace nx
     j[ "useRadiusFalloff" ] = m_data.useRadiusFalloff;
     j[ "radiusFalloff" ] = m_data.radiusFalloff;
     j[ "spiralInward" ] = m_data.spiralInward;
+
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
+    j[ "easings" ] = m_fadeEasing.serialize();
     return j;
   }
 
   void GoldenSpiralLayout::deserialize(const nlohmann::json &j)
   {
-    ParticleHelper::deserialize(m_data, j);
-
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
       m_data.depth = j["depth"].get<int>();
@@ -43,8 +48,14 @@ namespace nx
       LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
     }
 
-    if (j.contains("behaviors"))
-      m_behaviorPipeline.loadPipeline(j.at("behaviors"));
+    if ( j.contains( "particleGenerator" ) )
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
+
+    if ( j.contains( "behaviors" ) )
+      m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
+
+    if ( j.contains( "easings" ) )
+      m_fadeEasing.deserialize( j.at( "easings" ) );
   }
 
   void GoldenSpiralLayout::drawMenu()
@@ -53,7 +64,9 @@ namespace nx
     ImGui::Separator();
     if (ImGui::TreeNode("Golden Spiral Layout"))
     {
-      ParticleHelper::drawMenu(*reinterpret_cast< ParticleLayoutData_t * >(&m_data));
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       ImGui::SeparatorText( "Spiral Options" );
       ImGui::SliderInt("Particle Count", &m_data.depth, 1, 100);
@@ -83,13 +96,15 @@ namespace nx
 
     for ( int32_t i = 1; i <= m_data.depth; ++i )
     {
-      auto * p = m_particles.emplace_back( new TimedParticle_t() );
+      auto * p = m_particles.emplace_back(
+        m_particleGeneratorManager.getParticleGenerator()->createParticle(
+          midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
+
       const auto pos = getSpiralPosition( i * pitchSlices, m_data.depth );
-      p->shape.setPosition( pos );
-      ParticleLayoutBase::initializeParticle( p, midiEvent );
+      p->setPosition( pos );
+      ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
     }
   }
-
 
   [[nodiscard]]
   sf::Vector2f GoldenSpiralLayout::getSpiralPosition( const int index,

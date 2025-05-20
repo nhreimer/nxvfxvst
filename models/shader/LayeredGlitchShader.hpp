@@ -1,7 +1,7 @@
 #pragma once
 
+#include "models/easings/CumulativeEasing.hpp"
 #include "helpers/CommonHeaders.hpp"
-#include "models/shader/easings/CumulativeEasing.hpp"
 #include "models/shader/BlenderShader.hpp"
 
 namespace nx

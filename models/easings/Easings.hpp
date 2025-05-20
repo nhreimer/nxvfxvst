@@ -5,72 +5,9 @@
 namespace nx
 {
 
-  enum class E_TimeEasingType : int8_t
+  class Easings
   {
-    E_Disabled,        // bypass completely (always returns 1)
-    E_Fixed,           // fixed number: uses intensity only
-    E_TimeContinuous,  // elapsed time
-    E_TimeIntervallic, // time resets
-    E_Linear,
-    E_Quadratic,
-    E_Cubic,
-    E_Quartic,
-    E_Sine,
-    E_Expo,
-    E_Bounce,
-    E_Back,
-
-    E_SmoothPulseDecay,
-    E_Impulse,
-    E_SparkleFlicker,
-    E_PulsePing,
-    E_PulseSine
-  };
-
-  class TimeEasing
-  {
-
-     struct TimeEasingData_t
-    {
-      float decayRate { 0.1f };
-      float intensity { 0.f }; // used for certain ones
-
-      E_TimeEasingType easingType { E_TimeEasingType::E_Linear };
-    };
-
   public:
-
-    nlohmann::json serialize() const;
-
-    void deserialize( const nlohmann::json& j );
-
-    E_TimeEasingType getEasingType() const { return m_data.easingType; }
-
-    void setEasingType( const E_TimeEasingType easingType );
-
-    float getDecayRate() const;
-
-    void trigger();
-
-    float getElapsedTime() const;
-
-    TimeEasingData_t& getData();
-
-    void setData( const TimeEasingData_t& data );
-
-    [[nodiscard]]
-    float getEasing() const;
-
-    void drawMenu();
-
-  private:
-
-    bool drawRadio( const std::string& label,
-                    const E_TimeEasingType easingType,
-                    const bool useSameLine = false );
-
-    void setEasingFunction( const E_TimeEasingType easingType );
-
     static float useNone( const float t )
     {
       return t;
@@ -178,33 +115,16 @@ namespace nx
       return sinf(12.f * t) * expf(-4.0f * t);
     }
 
-  private:
-
-    float m_timeTriggeredInSeconds { 0.f };
-    TimeEasingData_t m_data;
-    sf::Clock m_clock;
-    std::function< float( float t ) > m_easingFunction { useNone };
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(E_TimeEasingType,
+    static float easeOutElastic(const float t)
     {
-      { E_TimeEasingType::E_Disabled, "Disabled" },
-      { E_TimeEasingType::E_Fixed, "Fixed" },
-      { E_TimeEasingType::E_TimeContinuous, "TimeContinuous" },
-      { E_TimeEasingType::E_TimeIntervallic, "TimeIntervallic" },
-      { E_TimeEasingType::E_Linear, "Linear" },
-      { E_TimeEasingType::E_Quadratic, "Quadratic" },
-      { E_TimeEasingType::E_Cubic, "Cubic" },
-      { E_TimeEasingType::E_Quartic, "Quartic" },
-      { E_TimeEasingType::E_Sine, "Sine" },
-      { E_TimeEasingType::E_Expo, "Expo" },
-      { E_TimeEasingType::E_Bounce, "Bounce" },
-      { E_TimeEasingType::E_Back, "Back" },
-      { E_TimeEasingType::E_SmoothPulseDecay, "SmoothPulse" },
-      { E_TimeEasingType::E_Impulse, "Impulse" },
-      { E_TimeEasingType::E_SparkleFlicker, "SparkleFlicker" },
-      { E_TimeEasingType::E_PulsePing, "PulsePing" },
-      { E_TimeEasingType::E_PulseSine, "PulseSine" }
-    })
+      constexpr float c4 = NX_TAU / 3.f; //(2.0f * 3.14159265f) / 3.0f;
 
+      if (t == 0.0f)
+        return 0.0f;
+      if (t == 1.0f)
+        return 1.0f;
+
+      return powf(2.0f, -10.0f * t) * sinf((t * 10.0f - 0.75f) * c4) + 1.0f;
+    }
   };
 }

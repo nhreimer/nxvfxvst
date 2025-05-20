@@ -86,7 +86,7 @@ namespace nx
 
   sf::RenderTexture * ModifierPipeline::applyModifiers(
     const ParticleLayoutData_t& particleLayoutData,
-    std::deque< TimedParticle_t* >& particles )
+    std::deque< IParticle* >& particles )
   {
     m_outputTexture.ensureSize( m_ctx.globalInfo.windowSize );
 

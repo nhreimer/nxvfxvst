@@ -172,17 +172,20 @@ target_link_libraries( ${PROJECT_NAME}
 +---------------------+
 |  ChannelPipeline    |
 |        1..n         |  Each midi channel is independent
-+---------------------+
-          │
-          ▼
-+---------------------+      +--------------------+
-|  ParticlePipeline   | ---> |  Behavior Pipeline | 
-|         1           |      |        0..n        |
-+---------------------+      +--------------------+
-          │
-          ▼
-+---------------------+
-|  ModifierPipeline   |
++---------------------+        +--------------------+
+          │                    | Particle Layout    |
+          │                    |         1          |
+          │                --> +--------------------+
+          ▼               |    
++---------------------+   |    +--------------------+        +--------------------+
+|                     | --     | Particle Generator |        |   Particle Type    |
+|  ParticlePipeline   | -----> |         1          | -----> |          1         |
+|         1           | --     +--------------------+        +--------------------+
++---------------------+   |    
+          │               |    +--------------------+
+          ▼                --> | Behavior Pipeline  |
++---------------------+        |       0..n         |
+|  ModifierPipeline   |        +--------------------+
 |       0..n          |
 +---------------------+
           │
@@ -308,6 +311,8 @@ The ChannelPipeline is the top-level coordinator for a single MIDI channel. It h
 
 ## Particle Pipeline
 
+### Particle Layout
+
 Manages the particle layout (initial placement & creation) and passes particles to the ModifierPipeline.
 
     Owns IParticleLayout (e.g., SpiralLayout, RandomBurst)
@@ -326,7 +331,16 @@ Manages the particle layout (initial placement & creation) and passes particles 
 | Fractal Ring    |                                                |
 | Elliptical      |                                                |
 
-## Particle Behavior Pipeline
+### Particle Generator
+
+Generates particles 
+
+| Particle Type | Description |
+|---------------|-------------|
+| Circles       |             |
+| Rings         |             |
+
+### Particle Behavior Pipeline
 
 Manages behaviors that change particles directly (useful for making adjustments on a single particle basis),
 e.g., Jitter, Gravity, Spread. Cannot be used for adding or removing particles.

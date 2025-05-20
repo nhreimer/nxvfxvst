@@ -48,10 +48,18 @@ namespace nx
   enum class E_BehaviorType : int8_t
   {
     E_InvalidBehavior,
-    E_RadialSpreaderBehavior,
     E_FreeFallBehavior,
     E_JitterBehavior,
     E_ColorMorphBehavior,
     E_MagneticBehavior
+  };
+
+  enum class E_ParticleType : int8_t
+  {
+    E_InvalidParticle,
+    E_CircleParticle,
+    E_StarburstParticle,
+    E_BurstRingParticle,
+    E_RingParticle
   };
 }

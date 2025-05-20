@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/particle/ParticleLayoutBase.hpp"
+#include "ParticleLayoutBase.hpp"
 
 namespace nx
 {
@@ -28,6 +28,7 @@ namespace nx
 
   protected:
 
+    [[nodiscard]]
     sf::Vector2f getNextPosition( const Midi_t& midiNote ) const;
 
   private:

@@ -62,12 +62,12 @@ namespace nx
   /// PUBLIC
   void PerlinDeformerModifier::modify(
      const ParticleLayoutData_t& particleLayoutData,
-     std::deque< TimedParticle_t* >& particles,
+     std::deque< IParticle* >& particles,
      std::deque< sf::Drawable* >& outArtifacts )
   {
     for (size_t i = 0; i < particles.size(); ++i)
     {
-      const sf::Vector2f pos = particles[ i ]->shape.getPosition();
+      const sf::Vector2f pos = particles[ i ]->getPosition();
       const float x = pos.x * m_data.noiseScale.first;
       const float y = pos.y * m_data.noiseScale.first;
 
@@ -79,15 +79,26 @@ namespace nx
       // don't get stuck in an infinite loop
       //auto *copiedParticle = particles.emplace_back(new TimedParticle_t(*particles[ i ]));
       //copiedParticle->shape.setPosition(warpedPos);
-      auto * copiedShape = dynamic_cast< sf::CircleShape * >(
-        outArtifacts.emplace_back( new sf::CircleShape( particles[ i ]->shape ) ) );
+      // auto * copiedShape = dynamic_cast< CircleParticle * >(
+      //   outArtifacts.emplace_back( new CircleParticle( particles[ i ]->shape ) ) );
+
+      auto * copiedShape = dynamic_cast< IParticle* >(
+        outArtifacts.emplace_back( particles[ i ]->clone( m_ctx.globalInfo.elapsedTimeSeconds ) ) );
 
       copiedShape->setPosition( warpedPos );
-      const auto color = ( m_data.useParticleColors.first )
-        ? copiedShape->getFillColor()
-        : m_data.perlinColor.first;
-
-      copiedShape->setFillColor( { color.r, color.g, color.b, static_cast< uint8_t >(color.a * m_data.colorFade.first) } );
+      if ( m_data.useParticleColors.first )
+      {
+        const auto colors = copiedShape->getColors();
+        copiedShape->setColorPattern(
+          { colors.first.r, colors.first.g, colors.first.b, static_cast< uint8_t >(colors.first.a * m_data.colorFade.first) },
+  { colors.second.r, colors.second.g, colors.second.b, static_cast< uint8_t >(colors.second.a * m_data.colorFade.first) } );
+      }
+      else
+      {
+        const auto& color = m_data.perlinColor.first;
+        copiedShape->setColorPattern( { color.r, color.g, color.b, static_cast< uint8_t >(color.a * m_data.colorFade.first) },
+          { color.r, color.g, color.b, static_cast< uint8_t >(color.a * m_data.colorFade.first) } );
+      }
     }
   }
 

@@ -3,9 +3,11 @@
 namespace nx
 {
 
-  void MagneticAttractorBehavior::applyOnUpdate(TimedParticle_t * p, const sf::Time& dt)
+  void MagneticAttractorBehavior::applyOnUpdate(IParticle * p,
+                                                const sf::Time& dt,
+                                                const ParticleData_t& particleData )
   {
-    const sf::Vector2f pos = p->shape.getPosition();
+    const sf::Vector2f pos = p->getPosition();
 
     const sf::Vector2f attractor { m_data.magnetLocation.first.x * static_cast< float >(m_ctx.globalInfo.windowSize.x ),
                                     m_data.magnetLocation.first.y * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
@@ -25,7 +27,7 @@ namespace nx
 
     // Apply movement offset
     const sf::Vector2f offset = normDir * force * dt.asSeconds();
-    p->shape.move( offset );
+    p->move( offset );
   }
 
   void MagneticAttractorBehavior::drawMenu()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/particle/SpiralParticleLayout.hpp"
+#include "models/particle/layout/SpiralParticleLayout.hpp"
 
 #include "helpers/MathHelper.hpp"
 #include "helpers/MidiHelper.hpp"
@@ -11,23 +11,35 @@ namespace nx
   [[nodiscard]]
   nlohmann::json SpiralParticleLayout::serialize() const
   {
-    auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+    nlohmann::json j =
+    {
+      { "type", SerialHelper::serializeEnum( getType() ) }
+    };
+
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
+    j[ "easings" ] = m_fadeEasing.serialize();
     return j;
   }
 
   void SpiralParticleLayout::deserialize(const nlohmann::json &j)
   {
-    ParticleHelper::deserialize( m_data, j );
-    if (j.contains("behaviors"))
-      m_behaviorPipeline.loadPipeline(j.at("behaviors"));
+    if ( j.contains( "particleGenerator" ) )
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
+    if ( j.contains( "behaviors" ) )
+      m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
+    if ( j.contains( "easings" ) )
+      m_fadeEasing.deserialize( j.at( "easings" ) );
   }
 
   void SpiralParticleLayout::addMidiEvent(const Midi_t &midiEvent)
   {
-    auto * p = m_particles.emplace_back( new TimedParticle_t() );
-    p->shape.setPosition( getNextPosition( midiEvent ) );
-    ParticleLayoutBase::initializeParticle( p, midiEvent );
+    auto * p = m_particles.emplace_back(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
+        midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
+
+    p->setPosition( getNextPosition( midiEvent ) );
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
   }
 
   void SpiralParticleLayout::drawMenu()
@@ -36,7 +48,10 @@ namespace nx
     ImGui::Separator();
     if ( ImGui::TreeNode( "Spiral Layout " ) )
     {
-      ParticleHelper::drawMenu( m_data );
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
+      getEasing().drawMenu();
       ImGui::Separator();
       m_behaviorPipeline.drawMenu();
 
@@ -60,7 +75,5 @@ namespace nx
     return { m_ctx.globalInfo.windowHalfSize.x + position.x,
              m_ctx.globalInfo.windowHalfSize.y + position.y };
   }
-
-;
 
 }

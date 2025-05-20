@@ -44,12 +44,12 @@ namespace nx
   /////////////////////////////////////////////////////////
   /// PUBLIC
   void MirrorModifier::modify(const ParticleLayoutData_t & layoutData,
-              std::deque< TimedParticle_t * > &particles,
+              std::deque< IParticle * > &particles,
               std::deque< sf::Drawable * > &outArtifacts)
   {
     for (const auto* p : particles)
     {
-      const sf::Vector2f origin = p->shape.getPosition();
+      const sf::Vector2f origin = p->getPosition();
       const float baseAngle =
         std::atan2(origin.y - m_ctx.globalInfo.windowHalfSize.y, origin.x - m_ctx.globalInfo.windowHalfSize.x);
       const float angleOffsetRad = m_data.angleOffsetDegrees.first * NX_D2R;
@@ -67,22 +67,24 @@ namespace nx
           origin.y + std::sin(angle) * radius
         };
 
-        auto* shape = new sf::CircleShape(p->shape); // copy
-        auto fillColor = m_data.useParticleColors.first
-          ? shape->getFillColor()
-          : m_data.mirrorColor.first;
+        auto* shape = p->clone( m_ctx.globalInfo.elapsedTimeSeconds ); // copy
+        auto fillColors = m_data.useParticleColors.first
+          ? shape->getColors()
+          : std::make_pair( m_data.mirrorColor.first, m_data.mirrorColor.first );
 
-        fillColor.a = static_cast< uint8_t >(fillColor.a * m_data.mirrorAlpha.first);
-        shape->setFillColor(fillColor);
+        fillColors.first.a = static_cast< uint8_t >(fillColors.first.a * m_data.mirrorAlpha.first);
+        fillColors.second.a = static_cast< uint8_t >(fillColors.first.a * m_data.mirrorAlpha.first);
+        shape->setColorPattern(fillColors.first, fillColors.second);
 
         if ( shape->getOutlineThickness() > 0.f )
         {
-          auto outlineColor = m_data.useParticleColors.first
-            ? shape->getOutlineColor()
-            : m_data.mirrorOutlineColor.first;
+          auto outlineColors = m_data.useParticleColors.first
+            ? shape->getOutlineColors()
+            : std::make_pair( m_data.mirrorOutlineColor.first, m_data.mirrorOutlineColor.first );
 
-          outlineColor.a = static_cast< uint8_t >(outlineColor.a * m_data.mirrorAlpha.first);
-          shape->setOutlineColor(outlineColor);
+          outlineColors.first.a = static_cast< uint8_t >(outlineColors.first.a * m_data.mirrorAlpha.first);
+          outlineColors.second.a = static_cast< uint8_t >(outlineColors.second.a * m_data.mirrorAlpha.first);
+          shape->setOutlineColorPattern(outlineColors.first, outlineColors.second);
         }
 
         shape->setPosition(mirrorPos);

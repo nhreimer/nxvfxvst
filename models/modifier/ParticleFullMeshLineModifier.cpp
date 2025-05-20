@@ -47,7 +47,7 @@ namespace nx
   /// PUBLIC
   void ParticleFullMeshLineModifier::modify(
      const ParticleLayoutData_t& particleLayoutData,
-     std::deque< TimedParticle_t* >& particles,
+     std::deque< IParticle* >& particles,
      std::deque< sf::Drawable* >& outArtifacts )
   {
     for ( int i = 0; i < particles.size(); ++i )
@@ -55,14 +55,14 @@ namespace nx
       for ( int y = i + 1; y < particles.size(); ++y )
       {
         auto * line = new CurvedLine(
-          particles[ i ]->shape.getPosition(),
-          particles[ y ]->shape.getPosition(),
+          particles[ i ]->getPosition(),
+          particles[ y ]->getPosition(),
           m_data.curvature.first,
           m_data.lineSegments.first );
 
         line->setWidth( m_data.lineThickness.first );
 
-        if ( particles[ y ]->timeLeft > particles[ i ]->timeLeft )
+        if ( particles[ y ]->getExpirationTimeInSeconds() > particles[ i ]->getExpirationTimeInSeconds() )
         {
           setLineColors( line, particles[ y ], particles[ i ] );
         }
@@ -81,12 +81,14 @@ namespace nx
   /////////////////////////////////////////////////////////
 
   void ParticleFullMeshLineModifier::setLineColors( CurvedLine * line,
-                      const TimedParticle_t * pointA,
-                      const TimedParticle_t * pointB ) const
+                      const IParticle * pointA,
+                      const IParticle * pointB ) const
   {
     if ( m_data.useParticleColors.first )
     {
-      line->setGradient( pointA->shape.getFillColor(), pointB->shape.getFillColor() );
+      const auto colorsA = pointA->getColors();
+      const auto colorsB = pointB->getColors();
+      line->setGradient( colorsA.first, colorsB.first );
     }
     else
     {

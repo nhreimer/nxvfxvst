@@ -26,10 +26,12 @@ namespace nx
     }
   }
 
-  void FreeFallBehavior::applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime )
+  void FreeFallBehavior::applyOnUpdate( IParticle * p,
+                                        const sf::Time& deltaTime,
+                                        const ParticleData_t& particleData )
   {
-    const auto trail = p->spawnTime / m_data.timeDivisor.first;
-    p->shape.setPosition( { p->shape.getPosition().x, p->shape.getPosition().y + trail } );
+    const auto trail = p->getSpawnTimeInSeconds() / m_data.timeDivisor.first;
+    p->setPosition( { p->getPosition().x, p->getPosition().y + trail } );
   }
 
   void FreeFallBehavior::drawMenu()

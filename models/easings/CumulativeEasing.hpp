@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/shader/easings/TimeEasing.hpp"
+#include "TimeEasing.hpp"
 
 namespace nx
 {
@@ -21,7 +21,7 @@ namespace nx
       return m_masterEasing.serialize();
     }
 
-    E_TimeEasingType getEasingType() const { return m_masterEasing.getEasingType(); }
+    E_EasingType getEasingType() const { return m_masterEasing.getEasingType(); }
 
     void drawMenu()
     {

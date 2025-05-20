@@ -18,7 +18,7 @@ namespace nx
       LOG_DEBUG( "Color fragment shader loaded successfully" );
     }
 
-    m_easing.setEasingType( E_TimeEasingType::E_Disabled );
+    m_easing.setEasingType( E_EasingType::E_Disabled );
     EXPAND_SHADER_VST_BINDINGS(COLOR_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)
   }
 

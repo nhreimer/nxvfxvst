@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ParticleLayoutBase.hpp"
 #include "models/ParticleBehaviorPipeline.hpp"
 
 namespace nx
@@ -26,14 +27,12 @@ struct FractalRingLayoutData_t : public ParticleLayoutData_t
 
 ///
 /// This is good for single notes because it hits the center, like a kick drum or something
-class FractalRingLayout final : public IParticleLayout
+class FractalRingLayout final : public ParticleLayoutBase< FractalRingLayoutData_t >
 {
-
 public:
 
   explicit FractalRingLayout( PipelineContext& context )
-    : m_ctx( context ),
-      m_behaviorPipeline( context )
+    : ParticleLayoutBase( context )
   {}
 
   [[nodiscard]]
@@ -46,15 +45,7 @@ public:
 
   void addMidiEvent( const Midi_t &midiEvent ) override;
 
-  void update( const sf::Time &deltaTime ) override;
-
   void drawMenu() override;
-
-  [[nodiscard]]
-  const ParticleLayoutData_t & getParticleOptions() const override { return m_data; }
-
-  [[nodiscard]]
-  std::deque< TimedParticle_t * > & getParticles() override { return m_particles; }
 
 private:
 
@@ -63,16 +54,11 @@ private:
                          const float adjustedRadius,
                          const sf::Vector2f& lastPosition );
 
-  TimedParticle_t* createParticle( const Midi_t& midiEvent,
-                                   const sf::Vector2f& position,
-                                   const float adjustedRadius );
+  IParticle * createParticle( const Midi_t& midiEvent,
+                              const float adjustedRadius );
 
 private:
-  PipelineContext& m_ctx;
-  std::deque< TimedParticle_t * > m_particles;
-  FractalRingLayoutData_t m_data;
 
-  ParticleBehaviorPipeline m_behaviorPipeline;
   int32_t m_currentDepth { 1 };
 
 };

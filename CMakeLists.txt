@@ -43,15 +43,14 @@ set( NX_CPP_FILES
   models/particle/behavior/FreeFallBehavior.cpp
   models/particle/behavior/JitterBehavior.cpp
   models/particle/behavior/MagneticAttractorBehavior.cpp
-  models/particle/behavior/RadialSpreaderBehavior.cpp
 
-  models/particle/EllipticalLayout.cpp
-  models/particle/FractalRingLayout.cpp
-  models/particle/GoldenSpiralLayout.cpp
-  models/particle/LissajousCurveLayout.cpp
-  models/particle/LSystemCurveLayout.cpp
-  models/particle/RandomParticleLayout.cpp
-  models/particle/SpiralParticleLayout.cpp
+  models/particle/layout/EllipticalLayout.cpp
+  models/particle/layout/FractalRingLayout.cpp
+  models/particle/layout/GoldenSpiralLayout.cpp
+  models/particle/layout/LissajousCurveLayout.cpp
+  models/particle/layout/LSystemCurveLayout.cpp
+  models/particle/layout/RandomParticleLayout.cpp
+  models/particle/layout/SpiralParticleLayout.cpp
 
   models/ChannelPipeline.cpp
   models/ModifierPipeline.cpp
@@ -74,8 +73,6 @@ set( NX_CPP_FILES
   models/shader/SmearShader.cpp
   models/shader/StrobeShader.cpp
   models/shader/TransformShader.cpp
-
-  models/shader/easings/TimeEasing.cpp
 )
 
 if ( BUILD_PLUGIN )
@@ -86,7 +83,7 @@ if ( BUILD_PLUGIN )
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 1.0.9.0
+    VERSION 1.1.0.0
     DESCRIPTION "nxvfxvst VST 3 Plug-in"
   )
 

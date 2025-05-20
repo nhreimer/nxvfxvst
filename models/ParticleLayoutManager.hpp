@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/particle/SpiralParticleLayout.hpp"
+#include "particle/layout/SpiralParticleLayout.hpp"
 
 #include "data/PipelineContext.hpp"
 
@@ -16,6 +16,7 @@ namespace nx
         m_particleLayout( std::make_unique< SpiralParticleLayout >( context ) )
     {}
 
+    [[nodiscard]]
     nlohmann::json serialize() const;
     void deserialize( const nlohmann::json& j ) const;
     void update( const sf::Time& deltaTime ) const;
@@ -23,7 +24,7 @@ namespace nx
     void processMidiEvent( const Midi_t& midiEvent ) const;
 
     const ParticleLayoutData_t& getParticleOptions() const;
-    std::deque< TimedParticle_t* >& getParticles() const;
+    std::deque< IParticle* >& getParticles() const;
 
     void drawMenu();
 

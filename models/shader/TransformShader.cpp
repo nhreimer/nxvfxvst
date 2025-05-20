@@ -12,7 +12,7 @@ namespace nx
     else
     {
       LOG_DEBUG( "Transform fragment shader loaded successfully" );
-      m_easing.setEasingType( E_TimeEasingType::E_Disabled );
+      m_easing.setEasingType( E_EasingType::E_Disabled );
     }
 
     EXPAND_SHADER_VST_BINDINGS(TRANSFORM_SHADER_PARAMS, m_ctx.vstContext.paramBindingManager)

@@ -48,16 +48,21 @@ X(morphToColor,  sf::Color, sf::Color::Black, 0, 255, "Target color for hue morp
 
     E_BehaviorType getType() const override { return E_BehaviorType::E_ColorMorphBehavior; }
 
-    void applyOnSpawn( TimedParticle_t * p, const Midi_t& midi ) override;
-    void applyOnUpdate( TimedParticle_t * p, const sf::Time& deltaTime ) override;
+    void applyOnSpawn( IParticle * p,
+                       const Midi_t& midiEvent,
+                       const ParticleData_t& particleData ) override;
+
+    void applyOnUpdate( IParticle * p,
+                        const sf::Time& deltaTime,
+                        const ParticleData_t& particleData ) override;
 
     void drawMenu() override;
 
   private:
 
-    void applyBicolorMorphing( TimedParticle_t * p, const sf::Time& deltaTime ) const;
-    void applyBicolorMorphingReverse( TimedParticle_t * p, const sf::Time& deltaTime ) const;
-    void applySkittlesMorphing( TimedParticle_t * p, const sf::Time& deltaTime ) const;
+    void applyBicolorMorphing( IParticle * p, const sf::Time& deltaTime ) const;
+    void applyBicolorMorphingReverse( IParticle * p, const sf::Time& deltaTime ) const;
+    void applySkittlesMorphing( IParticle * p, const sf::Time& deltaTime ) const;
 
     static sf::Color hsvToRgb(float h, float s, float v, uint8_t alpha = 255);
 

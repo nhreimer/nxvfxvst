@@ -1,4 +1,4 @@
-#include "models/particle/LissajousCurveLayout.hpp"
+#include "models/particle/layout/LissajousCurveLayout.hpp"
 
 namespace nx
 {
@@ -6,20 +6,24 @@ namespace nx
   [[nodiscard]]
   nlohmann::json LissajousCurveLayout::serialize() const
   {
-    auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+    nlohmann::json j =
+    {
+      { "type", SerialHelper::serializeEnum( getType() ) }
+    };
 
     j[ "phaseAStep" ] = m_data.phaseAStep;
     j[ "phaseBStep" ] = m_data.phaseBStep;
     j[ "phaseDelta" ] = m_data.phaseDelta;
     j[ "phaseSpread" ] = m_data.phaseSpread;
 
+    j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
+    j[ "easings" ] = m_fadeEasing.serialize();
     return j;
   }
 
   void LissajousCurveLayout::deserialize(const nlohmann::json &j)
   {
-    ParticleHelper::deserialize( m_data, j );
-
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
       m_data.phaseAStep = j.value( "phaseAStep", 2.0f );
@@ -32,15 +36,23 @@ namespace nx
       LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
     }
 
-    if (j.contains("behaviors"))
-      m_behaviorPipeline.loadPipeline(j.at("behaviors"));
+    if ( j.contains( "particleGenerator" ) )
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
+
+    if ( j.contains( "behaviors" ) )
+      m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
+
+    if ( j.contains( "easings" ) )
+      m_fadeEasing.deserialize( j.at( "easings" ) );
   }
 
   void LissajousCurveLayout::drawMenu()
   {
     if ( ImGui::TreeNode( "Lissajous Curve Layout" ) )
     {
-      ParticleHelper::drawMenu( m_data );
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       //ImGui::SliderFloat("Phase", &m_data.phase, 0.f, 1.0f);
       ImGui::SliderFloat("a Phase Step", &m_data.phaseAStep, 0.f, 5.0f);
@@ -66,9 +78,12 @@ namespace nx
     const float x = ( static_cast< float >( m_ctx.globalInfo.windowSize.x ) * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
     const float y = ( static_cast< float >( m_ctx.globalInfo.windowSize.y ) * m_data.phaseSpread ) * sin(b * localT);
 
-    auto * p = m_particles.emplace_back( new TimedParticle_t() );
-    p->shape.setPosition( { x, y } );
-    ParticleLayoutBase::initializeParticle( p, midiEvent );
+    auto * p = m_particles.emplace_back(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
+        midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
+
+    p->setPosition( { x, y } );
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
   }
 
   // sf::Vector2f LissajousCurveLayout::getNextPosition( const Midi_t & midiEvent ) const

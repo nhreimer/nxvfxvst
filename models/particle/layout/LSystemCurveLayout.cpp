@@ -1,18 +1,16 @@
-#include "models/particle/LSystemCurveLayout.hpp"
+#include "models/particle/layout/LSystemCurveLayout.hpp"
 
 namespace nx
 {
 
-  LSystemCurveLayout::~LSystemCurveLayout()
-  {
-    for ( const auto * particle : m_particles )
-      delete particle;
-  }
-
   [[nodiscard]]
   nlohmann::json LSystemCurveLayout::serialize() const
   {
-    auto j = ParticleHelper::serialize( m_data, SerialHelper::serializeEnum( getType() ) );
+    nlohmann::json j =
+    {
+      { "type", SerialHelper::serializeEnum( getType() ) }
+    };
+
     j[ "depth" ] = m_data.depth;
     j[ "turnAngle" ] = m_data.turnAngle;
     j[ "segmentLength" ] = m_data.segmentLength;
@@ -21,12 +19,13 @@ namespace nx
     j[ "depthFactor" ] = m_data.depthFactor;
     j[ "stepsPerNote" ] = m_data.stepsPerNote;
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+    j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
+    j[ "easings" ] = m_fadeEasing.serialize();
     return j;
   }
 
   void LSystemCurveLayout::deserialize(const nlohmann::json &j)
   {
-    ParticleHelper::deserialize( m_data, SerialHelper::serializeEnum( getType() ) );
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
       m_data.depth = j["depth"];
@@ -44,6 +43,10 @@ namespace nx
 
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j["behaviors"] );
+    if ( j.contains( "particleGenerator" ) )
+      m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
+    if ( j.contains( "easings" ) )
+      m_fadeEasing.deserialize( j.at( "easings" ) );
   }
 
   void LSystemCurveLayout::drawMenu()
@@ -52,7 +55,9 @@ namespace nx
     ImGui::Separator();
     if (ImGui::TreeNode("L-System Particle Layout"))
     {
-      ParticleHelper::drawMenu(m_data );
+      m_particleGeneratorManager.drawMenu();
+      ImGui::Separator();
+      m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       ImGui::Separator();
       ImGui::SliderInt("Depth", &m_data.depth, 1, 12);
@@ -64,20 +69,20 @@ namespace nx
       ImGui::SliderInt( "Steps per Note", &m_data.stepsPerNote, 1, 5 );
 
       ImGui::SeparatorText( "Branch Mode" );
-      if ( ImGui::RadioButton( "Both", m_data.m_branchMode == E_BranchMode::E_Both ) )
-        m_data.m_branchMode = E_BranchMode::E_Both;
+      if ( ImGui::RadioButton( "Both", m_data.m_branchMode == E_LSystemBranchMode::E_Both ) )
+        m_data.m_branchMode = E_LSystemBranchMode::E_Both;
 
       ImGui::SameLine();
-      if ( ImGui::RadioButton( "Left", m_data.m_branchMode == E_BranchMode::E_LeftOnly ) )
-        m_data.m_branchMode = E_BranchMode::E_LeftOnly;
+      if ( ImGui::RadioButton( "Left", m_data.m_branchMode == E_LSystemBranchMode::E_LeftOnly ) )
+        m_data.m_branchMode = E_LSystemBranchMode::E_LeftOnly;
 
       ImGui::SameLine();
-      if ( ImGui::RadioButton( "Right", m_data.m_branchMode == E_BranchMode::E_RightOnly ) )
-        m_data.m_branchMode = E_BranchMode::E_RightOnly;
+      if ( ImGui::RadioButton( "Right", m_data.m_branchMode == E_LSystemBranchMode::E_RightOnly ) )
+        m_data.m_branchMode = E_LSystemBranchMode::E_RightOnly;
 
       ImGui::SameLine();
-      if ( ImGui::RadioButton( "Midi Pitch", m_data.m_branchMode == E_BranchMode::E_MidiPitch ) )
-        m_data.m_branchMode = E_BranchMode::E_MidiPitch;
+      if ( ImGui::RadioButton( "Midi Pitch", m_data.m_branchMode == E_LSystemBranchMode::E_MidiPitch ) )
+        m_data.m_branchMode = E_LSystemBranchMode::E_MidiPitch;
 
       ImGui::Separator();
       m_behaviorPipeline.drawMenu();
@@ -115,56 +120,22 @@ namespace nx
       auto state = m_lsystemStack.back();
       m_lsystemStack.pop_back();
 
-      expandLSystemStep(state);
+      expandLSystemStep( midiEvent, state);
     }
   }
 
-  void LSystemCurveLayout::update( const sf::Time &deltaTime )
+  void LSystemCurveLayout::expandLSystemStep(const Midi_t &midiEvent,
+                                             const LSystemState_t& state )
   {
-    for ( auto i = 0; i < m_particles.size(); ++i )
-    {
-      const auto& timeParticle = m_particles[ i ];
-      timeParticle->timeLeft += deltaTime.asMilliseconds();
-      const auto percentage = static_cast< float >( timeParticle->timeLeft ) /
-                         static_cast< float >( m_data.timeoutInMS );
-
-      if ( percentage < 1.f )
-      {
-        const auto nextColor =
-          ColorHelper::getNextColor(
-            timeParticle->initialColor,
-            m_data.endColor,
-            percentage );
-
-        timeParticle->shape.setFillColor( nextColor );
-        m_behaviorPipeline.applyOnUpdate( timeParticle, deltaTime );
-      }
-      else
-      {
-        delete m_particles[ i ];
-        m_particles.erase( m_particles.begin() + i );
-      }
-    }
-  }
-
-  void LSystemCurveLayout::expandLSystemStep(const LSystemState_t& state)
-  {
-    if (state.depth <= 0)
+    if ( state.depth <= 0 )
     {
       // Final particle placement
-      auto* p = m_particles.emplace_back(new TimedParticle_t());
-      p->shape.setRadius(m_data.radius);
+      auto * p = m_particles.emplace_back(
+      m_particleGeneratorManager.getParticleGenerator()->createParticle(
+        midiEvent,
+        m_ctx.globalInfo.elapsedTimeSeconds ) );
 
-      if (p->shape.getPointCount() != m_data.shapeSides)
-        p->shape.setPointCount(m_data.shapeSides);
-
-      p->shape.setOutlineThickness(m_data.outlineThickness);
-      p->shape.setOutlineColor(m_data.outlineColor);
-      p->shape.setOrigin(p->shape.getGlobalBounds().size / 2.f);
-      p->shape.setPosition(state.position);
-      p->spawnTime = m_ctx.globalInfo.elapsedTimeSeconds;
-      p->initialColor = m_data.startColor;
-      m_behaviorPipeline.applyOnSpawn(p, state.midiNote);
+      notifyBehaviorOnSpawn( p, midiEvent );
       return;
     }
 
@@ -176,20 +147,20 @@ namespace nx
 
     switch (m_data.m_branchMode)
     {
-      case E_BranchMode::E_Both:
+      case E_LSystemBranchMode::E_Both:
         m_lsystemStack.push_back({ newPos, state.angleDeg + m_data.turnAngle, state.depth - 1, state.midiNote });
         m_lsystemStack.push_back({ newPos, state.angleDeg - m_data.turnAngle, state.depth - 1, state.midiNote });
         break;
 
-      case E_BranchMode::E_LeftOnly:
+      case E_LSystemBranchMode::E_LeftOnly:
         m_lsystemStack.push_back({ newPos, state.angleDeg + m_data.turnAngle, state.depth - 1, state.midiNote });
         break;
 
-      case E_BranchMode::E_RightOnly:
+      case E_LSystemBranchMode::E_RightOnly:
         m_lsystemStack.push_back({ newPos, state.angleDeg - m_data.turnAngle, state.depth - 1, state.midiNote });
         break;
 
-      case E_BranchMode::E_MidiPitch:
+      case E_LSystemBranchMode::E_MidiPitch:
         switch (state.midiNote.pitch % 3)
         {
           case 0:

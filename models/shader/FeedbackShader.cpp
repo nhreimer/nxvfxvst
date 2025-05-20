@@ -2,8 +2,6 @@
 
 #include "helpers/CommonHeaders.hpp"
 
-#include "helpers/ColorHelper.hpp"
-
 namespace nx
 {
 
@@ -41,7 +39,7 @@ namespace nx
     else
     {
       LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
-      m_easing.setEasingType( E_TimeEasingType::E_Disabled );
+      m_easing.setEasingType( E_EasingType::E_Disabled );
     }
   }
 
