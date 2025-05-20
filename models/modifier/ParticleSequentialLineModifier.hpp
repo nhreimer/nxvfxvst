@@ -8,14 +8,15 @@ namespace nx
 
   class ParticleSequentialLineModifier final : public IParticleModifier
   {
-#define PARTICLE_LINE_MODIFIER_PARAMS(X)                                                                     \
-X(lineThickness,     float,     2.0f,   0.1f,   100.0f,   "Thickness of the curved line",          true)    \
+#define PARTICLE_LINE_MODIFIER_PARAMS(X)                                                                   \
+X(lineThickness,     float,     2.0f,   0.1f,   100.0f,  "Thickness of the curved line",          true)    \
 X(swellFactor,       float,     1.5f,   0.0f,   10.0f,   "Swelling multiplier at midpoint",       true)    \
 X(easeDownInSeconds, float,     1.0f,   0.01f,  10.0f,   "Ease-out fade duration (seconds)",      true)    \
-X(useParticleColors, bool,      true,   0,      1,       "Use original particle colors",          true)   \
-X(lineColor,         sf::Color, sf::Color(255,255,255,255), 0, 255, "Primary fallback line color", false) \
-X(otherLineColor,    sf::Color, sf::Color(255,255,255,255), 0, 255, "Alternate/fading line color", false) \
-X(curvature,         float,     0.25f,  -NX_PI,  NX_PI,    "Amount of curvature (arc)",             true)    \
+X(useParticleColors, bool,      true,   0,      1,       "Use original particle colors",          true)    \
+X(lineColor,         sf::Color, sf::Color(255,255,255,255), 0, 255, "Primary fallback line color", false)  \
+X(otherLineColor,    sf::Color, sf::Color(255,255,255,255), 0, 255, "Alternate/fading line color", false)  \
+X(invertColorTime,   bool,      false,  0,      1,       "Colors fade in over time rather than out", true) \
+X(curvature,         float,     0.25f,  -NX_PI,  NX_PI,  "Amount of curvature (arc)",             true)    \
 X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in the curve",       true)
 
     struct SeqLineData_t
@@ -60,12 +61,6 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
        const ParticleLayoutData_t& particleLayoutData,
        std::deque< IParticle* >& particles,
        std::deque< sf::Drawable* >& outArtifacts ) override;
-
-  private:
-
-    void setLineColors( CurvedLine * line,
-                        const IParticle * pointA,
-                        const IParticle * pointB ) const;
 
   private:
 

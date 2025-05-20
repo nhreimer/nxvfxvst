@@ -62,38 +62,26 @@ namespace nx
 
         line->setWidth( m_data.lineThickness.first );
 
-        if ( particles[ y ]->getExpirationTimeInSeconds() > particles[ i ]->getExpirationTimeInSeconds() )
+        if ( m_data.useParticleColors.first )
         {
-          setLineColors( line, particles[ y ], particles[ i ] );
+          LineHelper::updateLineColors( line,
+            particles[ i ],
+            particles[ y ],
+            m_data.invertColorTime.first );
         }
         else
         {
-          setLineColors( line, particles[ i ], particles[ y ] );
+          LineHelper::updateCustomLineColors(
+            line,
+            particles[ i ],
+            particles[ y ],
+            m_data.lineColor.first,
+            m_data.otherLineColor.first,
+            m_data.invertColorTime.first );
         }
 
         outArtifacts.push_back( line );
       }
     }
   }
-
-  /////////////////////////////////////////////////////////
-  /// PRIVATE
-  /////////////////////////////////////////////////////////
-
-  void ParticleFullMeshLineModifier::setLineColors( CurvedLine * line,
-                      const IParticle * pointA,
-                      const IParticle * pointB ) const
-  {
-    if ( m_data.useParticleColors.first )
-    {
-      const auto colorsA = pointA->getColors();
-      const auto colorsB = pointB->getColors();
-      line->setGradient( colorsA.first, colorsB.first );
-    }
-    else
-    {
-      line->setGradient( m_data.lineColor.first, m_data.otherLineColor.first );
-    }
-  }
-
 }

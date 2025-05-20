@@ -15,16 +15,12 @@ X(easeDownInSeconds, float,     1.0f,   0.01f,  10.0f,   "Ease-out fade duration
 X(useParticleColors, bool,      true,   0,      1,       "Use original particle colors",          true)     \
 X(lineColor,         sf::Color, sf::Color(255,255,255,255), 0, 255, "Primary fallback line color", false)   \
 X(otherLineColor,    sf::Color, sf::Color(255,255,255,255), 0, 255, "Alternate/fading line color", false)   \
+X(invertColorTime,   bool,      false,  0,      1,       "Colors fade in over time rather than out", true) \
 X(curvature,         float,     0.25f,  -NX_PI,  NX_PI,    "Amount of curvature (arc)",             true)   \
 X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in the curve",       true)     \
 X(ringSpacing,   float,   100.0f,   1.0f,   1000.0f,  "Distance between rings",               true)         \
 X(drawRings,     bool,    true,     0,      1,        "Toggle drawing of ring meshes",        false)        \
-X(drawSpokes,    bool,    true,     0,      1,        "Toggle drawing of radial spokes",      false)        \
-X(pulseSpeed,    float,   1.0f,     0.01f,  10.0f,    "Pulsing animation speed (Hz)",          true)        \
-X(minAlpha,      float,   32.0f,    0.0f,   255.0f,   "Minimum pulse alpha",                   true)        \
-X(maxAlpha,      float,   200.0f,   0.0f,   255.0f,   "Maximum pulse alpha",                   true)        \
-X(enablePulse,   bool,    true,     0,      1,        "Enable pulse alpha animation",          true)
-
+X(drawSpokes,    bool,    true,     0,      1,        "Toggle drawing of radial spokes",      false)
     struct RingZoneMeshData_t
     {
       bool isActive = true;
@@ -74,8 +70,7 @@ X(enablePulse,   bool,    true,     0,      1,        "Enable pulse alpha animat
 
     void setLineColors( CurvedLine * line,
                         const IParticle * pointA,
-                        const IParticle * pointB,
-                        const sf::Color pulsedColor = sf::Color::Transparent ) const;
+                        const IParticle * pointB ) const;
 
   private:
     PipelineContext& m_ctx;

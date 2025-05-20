@@ -46,24 +46,6 @@ namespace nx
                                     std::deque< IParticle * > &particles,
                                     std::deque< sf::Drawable * > &outArtifacts)
   {
-    float alpha = m_data.lineColor.first.a; // default static alpha
-
-    if (m_data.enablePulse.first)
-    {
-      const float time = m_ctx.globalInfo.elapsedTimeSeconds;
-      const float t = std::sin(time * m_data.pulseSpeed.first * NX_TAU); // [-1, 1]
-      const float normalized = 0.5f * (t + 1.f); // [0, 1]
-      alpha = m_data.minAlpha.first + (m_data.maxAlpha.first - m_data.minAlpha.first) * normalized;
-    }
-
-    auto pulsedColor = m_data.lineColor.first;
-    pulsedColor.a = static_cast< uint8_t >(alpha);
-
-    auto otherPulsedColor = m_data.otherLineColor.first;
-    otherPulsedColor.a = static_cast< uint8_t >( alpha );
-
-    //auto *lines = new sf::VertexArray(sf::PrimitiveType::Lines);
-    //auto * lines = static_cast< GradientLine * >(outArtifacts.emplace_back(new GradientLine()));
     const sf::Vector2f &center = m_ctx.globalInfo.windowHalfSize;
 
     // Step 1: Group particles into rings
@@ -76,8 +58,6 @@ namespace nx
     }
 
     // Step 2: Draw rings and spokes
-    // TimedParticle_t *prevInRing = nullptr;
-
     for (auto &[ ringIdx, ringParticles ]: rings)
     {
       if (ringParticles.size() < 2)
@@ -105,9 +85,9 @@ namespace nx
           line->setWidth( m_data.lineThickness.first );
 
           if ( p1->getExpirationTimeInSeconds() > p2->getExpirationTimeInSeconds() )
-            setLineColors( line, p1, p2, pulsedColor );
+            setLineColors( line, p1, p2 );
           else
-            setLineColors( line, p2, p1, otherPulsedColor );
+            setLineColors( line, p2, p1 );
 
           outArtifacts.push_back( line );
         }
@@ -129,9 +109,9 @@ namespace nx
           line->setWidth( m_data.lineThickness.first );
 
           if ( ringParticles[ i ]->getExpirationTimeInSeconds() > prevRing[ i ]->getExpirationTimeInSeconds() )
-            setLineColors( line, ringParticles[ i ], prevRing[ i ], pulsedColor );
+            setLineColors( line, ringParticles[ i ], prevRing[ i ] );
           else
-            setLineColors( line, prevRing[ i ], ringParticles[ i ], otherPulsedColor );
+            setLineColors( line, prevRing[ i ], ringParticles[ i ] );
 
           outArtifacts.push_back( line );
         }
@@ -145,23 +125,25 @@ namespace nx
   /////////////////////////////////////////////////////////
   void RingZoneMeshModifier::setLineColors( CurvedLine * line,
                       const IParticle * pointA,
-                      const IParticle * pointB,
-                      const sf::Color pulsedColor ) const
+                      const IParticle * pointB ) const
   {
 
     if ( m_data.useParticleColors.first )
     {
-      const auto colorsA = pointA->getColors();
-      const auto colorsB = pointB->getColors();
-      line->setGradient( colorsA.first, colorsB.first );
-    }
-    else if ( m_data.enablePulse.first )
-    {
-      line->setGradient( m_data.lineColor.first, pulsedColor );
+      LineHelper::updateLineColors( line,
+        pointA,
+        pointB,
+        m_data.invertColorTime.first );
     }
     else
     {
-      line->setGradient( m_data.lineColor.first, m_data.otherLineColor.first );
+      LineHelper::updateCustomLineColors(
+        line,
+        pointA,
+        pointB,
+        m_data.lineColor.first,
+        m_data.otherLineColor.first,
+        m_data.invertColorTime.first );
     }
   }
 } // namespace nx

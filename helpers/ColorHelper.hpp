@@ -100,13 +100,13 @@ namespace nx
       return static_cast< uint8_t >(static_cast< double >(toColorBand - fromColorBand) * percentage) + fromColorBand;
     }
 
-    static sf::Color getColorPercentage( const sf::Color & maxColor, const float percentage )
+    static sf::Color getColorPercentage( const sf::Color & maxColor, const float percentage, const bool includeAlphaFade = true )
     {
       return sf::Color(
       ( int8_t )( ( float )maxColor.r * percentage ),
       ( int8_t )( ( float )maxColor.g * percentage ),
       ( int8_t )( ( float )maxColor.b * percentage ),
-      ( int8_t )( ( float )maxColor.a * percentage )
+      ( int8_t )( ( float )maxColor.a * ( includeAlphaFade ? percentage : 1.f ) )
       );
     }
 
