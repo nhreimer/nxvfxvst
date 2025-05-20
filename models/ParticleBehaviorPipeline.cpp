@@ -131,7 +131,6 @@ namespace nx
   {
     if ( ImGui::TreeNode( "Behaviors Available" ) )
     {
-      ImGui::SameLine();
       if ( ImGui::Button( "Free Fall##1" ) )
         createBehavior< FreeFallBehavior >();
 
@@ -139,10 +138,10 @@ namespace nx
       if ( ImGui::Button( "Jitter##1" ) )
         createBehavior< JitterBehavior >();
 
-      ImGui::SameLine();
       if ( ImGui::Button( "Color Morph##1" ) )
         createBehavior< ColorMorphBehavior >();
 
+      ImGui::SameLine();
       if ( ImGui::Button( "Magnetic##1" ) )
         createBehavior< MagneticAttractorBehavior >();
 

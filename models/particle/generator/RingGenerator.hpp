@@ -25,6 +25,7 @@ namespace nx
     {
       auto * particle = new RingParticle( getData(), timeStampInSeconds );
       initialize( particle, midiEvent, timeStampInSeconds );
+      particle->setOrigin( { 0.f, 0.f } );
       return particle;
     }
 
@@ -35,6 +36,8 @@ namespace nx
     {
       auto * particle = new RingParticle( getData(), timeStampInSeconds, radius );
       initialize( particle, midiEvent, timeStampInSeconds );
+      // reset to 0
+      particle->setOrigin( { 0.f, 0.f } );
       return particle;
     }
   };

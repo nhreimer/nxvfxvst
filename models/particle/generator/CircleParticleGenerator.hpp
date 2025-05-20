@@ -24,6 +24,7 @@ namespace nx
     {
       auto * particle = new CircleParticle( getData(), timeStampInSeconds );
       initialize( particle, midiEvent, timeStampInSeconds );
+      particle->setOrigin( particle->getGlobalBounds().size / 2.f );
       return particle;
     }
 
@@ -34,6 +35,7 @@ namespace nx
     {
       auto * particle = new CircleParticle( getData(), timeStampInSeconds, radius );
       initialize( particle, midiEvent, timeStampInSeconds );
+      particle->setOrigin( particle->getGlobalBounds().size / 2.f );
       return particle;
     }
   };

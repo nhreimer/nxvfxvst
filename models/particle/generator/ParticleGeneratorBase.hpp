@@ -97,7 +97,6 @@ namespace nx
 
       particle->setOutlineColorPattern( initialOutlineStartColor, initialOutlineEndColor );
 
-      particle->setOrigin( particle->getGlobalBounds().size / 2.f );
       particle->setColorPattern( m_data.fillStartColor, m_data.fillEndColor );
 
       particle->setExpirationTimeInSeconds( m_data.timeoutInSeconds + particle->getSpawnTimeInSeconds() );
