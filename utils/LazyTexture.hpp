@@ -22,7 +22,7 @@ namespace nx
     LazyTexture() = default;
 
     // this must be called from the thread that created it
-    void destroy( const bool isFromDestructor = false );
+    void destroy( bool isFromDestructor = false );
 
     void ensureSize(const sf::Vector2u &size);
 
@@ -36,16 +36,19 @@ namespace nx
     [[nodiscard]]
     sf::Vector2u getSize() const { return m_textures[ 0 ]->getSize(); }
 
+    [[nodiscard]]
     sf::RenderTexture * get() { return getFront(); }
 
     [[nodiscard]]
     const sf::RenderTexture * get() const { return getFront(); }
 
+    [[nodiscard]]
     const sf::Texture& getTexture()
     {
       return getFront()->getTexture();
     }
 
+    [[nodiscard]]
     bool isInitialized() const
     {
       return m_textures[ 0 ] != nullptr;
@@ -62,11 +65,14 @@ namespace nx
       }
     }
 
-    sf::RenderTexture *getFront() { return m_textures[ m_frontIndex ].get(); }
-    sf::RenderTexture *getBack() { return m_textures[ m_backIndex ].get(); }
+    [[nodiscard]]
+    sf::RenderTexture * getFront() { return m_textures[ m_frontIndex ].get(); }
 
     [[nodiscard]]
-    const sf::RenderTexture *getFront() const { return m_textures[ m_frontIndex ].get(); }
+    sf::RenderTexture * getBack() const { return m_textures[ m_backIndex ].get(); }
+
+    [[nodiscard]]
+    const sf::RenderTexture * getFront() const { return m_textures[ m_frontIndex ].get(); }
 
     std::unique_ptr< sf::RenderTexture > m_textures[ 2 ];
     int m_frontIndex{ 0 };

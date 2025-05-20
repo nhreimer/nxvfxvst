@@ -89,7 +89,6 @@ namespace nx
       updateVertexColors( m_outlineVertices, startColor, endColor, false );
     }
 
-  protected:
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override
     {
       states.transform *= getTransform();
@@ -106,6 +105,8 @@ namespace nx
       }
     }
 
+  private:
+
     sf::Vector2f getPointPosition(const uint8_t index) const
     {
       const auto angle =
@@ -115,7 +116,6 @@ namespace nx
              sf::Vector2f(m_radiusOverride, angle);
     }
 
-  private:
     void update()
     {
       const auto count = getPointCount();

@@ -1,18 +1,14 @@
 #pragma once
 
-#include "models/particle/generator/ParticleGeneratorBase.hpp"
-
-#include "models/particle/particles/StarburstParticle.hpp"
+#include "models/particle/particles/RingParticle.hpp"
 
 namespace nx
 {
-  class StarburstParticleGenerator final
-    : public ParticleGeneratorBase< StarburstParticleData_t >
+  class RingParticleGenerator final : public ParticleGeneratorBase< RingParticleData_t >
   {
   public:
-
     [[nodiscard]]
-    E_ParticleType getType() const override { return E_ParticleType::E_StarburstParticle; }
+    E_ParticleType getType() const override { return E_ParticleType::E_RingParticle; }
 
     void drawMenu() override
     {
@@ -20,16 +16,14 @@ namespace nx
 
       auto &data = getData();
 
-      ImGui::SeparatorText("Starburst Options");
-      ImGui::SliderInt( "Spikes##1", &data.spikes, 3, 30 );
-      ImGui::SliderFloat( "Inner Radius Multiplier", &data.innerRadiusMultiplier, 0.f, 1.f );
+      ImGui::SliderFloat( "Ring Width", &data.width, 0.f, data.radius );
     }
 
     [[nodiscard]]
     IParticle * createParticle( const Midi_t& midiEvent,
                                 const float timeStampInSeconds ) override
     {
-      auto * particle = new StarburstParticle( getData(), timeStampInSeconds );
+      auto * particle = new RingParticle( getData(), timeStampInSeconds );
       initialize( particle, midiEvent, timeStampInSeconds );
       return particle;
     }
@@ -39,7 +33,7 @@ namespace nx
                                 const float timeStampInSeconds,
                                 const float radius ) override
     {
-      auto * particle = new StarburstParticle( getData(), timeStampInSeconds, radius );
+      auto * particle = new RingParticle( getData(), timeStampInSeconds, radius );
       initialize( particle, midiEvent, timeStampInSeconds );
       return particle;
     }

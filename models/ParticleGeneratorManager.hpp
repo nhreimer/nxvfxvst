@@ -1,8 +1,7 @@
 #pragma once
 
 #include "models/particle/generator/CircleParticleGenerator.hpp"
-#include "models/particle/generator/StarburstParticleGenerator.hpp"
-#include "models/particle/generator/BurstRingGenerator.hpp"
+#include "models/particle/generator/RingGenerator.hpp"
 
 namespace nx
 {
@@ -22,16 +21,15 @@ namespace nx
       {
         if ( ImGui::RadioButton( "Circles##1", E_ParticleType::E_CircleParticle == m_particleGenerator->getType() ) )
           m_particleGenerator.reset( new CircleParticleGenerator() );
-        if ( ImGui::RadioButton( "Stars##1", E_ParticleType::E_StarburstParticle == m_particleGenerator->getType() ) )
-          m_particleGenerator.reset( new StarburstParticleGenerator() );
-        if ( ImGui::RadioButton( "Burst Ring##1", E_ParticleType::E_BurstRingParticle == m_particleGenerator->getType() ) )
-          m_particleGenerator.reset( new BurstRingGenerator() );
+        if ( ImGui::RadioButton( "Rings##1", E_ParticleType::E_RingParticle == m_particleGenerator->getType() ) )
+          m_particleGenerator.reset( new RingParticleGenerator() );
 
         ImGui::TreePop();
         ImGui::Spacing();
       }
     }
 
+    [[nodiscard]]
     IParticleGenerator * getParticleGenerator() const { return m_particleGenerator.get(); }
 
   private:
