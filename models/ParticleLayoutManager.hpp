@@ -16,6 +16,7 @@ namespace nx
         m_particleLayout( std::make_unique< SpiralParticleLayout >( context ) )
     {}
 
+    [[nodiscard]]
     nlohmann::json serialize() const;
     void deserialize( const nlohmann::json& j ) const;
     void update( const sf::Time& deltaTime ) const;

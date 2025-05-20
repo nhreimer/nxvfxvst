@@ -13,7 +13,7 @@ namespace nx
 
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
-
+    j[ "easings" ] = m_fadeEasing.serialize();
     return j;
   }
 
@@ -24,6 +24,9 @@ namespace nx
 
     if ( j.contains( "behaviors" ) )
       m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
+
+    if ( j.contains( "easings" ) )
+      m_fadeEasing.deserialize( j.at( "easings" ) );
   }
 
   void RandomParticleLayout::drawMenu()

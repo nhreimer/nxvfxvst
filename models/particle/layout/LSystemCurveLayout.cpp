@@ -20,6 +20,7 @@ namespace nx
     j[ "stepsPerNote" ] = m_data.stepsPerNote;
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
+    j[ "easings" ] = m_fadeEasing.serialize();
     return j;
   }
 
@@ -44,6 +45,8 @@ namespace nx
       m_behaviorPipeline.loadPipeline( j["behaviors"] );
     if ( j.contains( "particleGenerator" ) )
       m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
+    if ( j.contains( "easings" ) )
+      m_fadeEasing.deserialize( j.at( "easings" ) );
   }
 
   void LSystemCurveLayout::drawMenu()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../easings/TimeEasing.hpp"
+#include "models/easings/TimeEasing.hpp"
 
 namespace nx
 {
