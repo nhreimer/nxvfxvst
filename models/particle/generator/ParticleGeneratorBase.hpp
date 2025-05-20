@@ -113,9 +113,6 @@ namespace nx
         ColorHelper::drawImGuiColorEdit4( "Particle Color A##1", m_data.fillStartColor );
         ColorHelper::drawImGuiColorEdit4( "Particle Color B##2", m_data.fillEndColor );
 
-        ImGui::SliderInt( "Color Start Offset", &m_data.colorVertexStartOffset, 0, m_data.pointCount );
-        ImGui::SliderInt( "Color Interval", &m_data.colorVertexInterval, 1, m_data.pointCount );
-
         ImGui::Separator();
 
         ImGui::SliderFloat( "Thickness##2", &m_data.outlineThickness, 0.f, 25.f );

@@ -69,7 +69,7 @@ namespace nx
 
     void setColorPattern(  const sf::Color & startColor, const sf::Color & endColor ) override
     {
-      updateVertexColors( m_vertices, startColor, endColor, true );
+      updateVertexColors( m_vertices, startColor, endColor );
     }
 
     [[nodiscard]]
@@ -86,7 +86,7 @@ namespace nx
 
     void setOutlineColorPattern( const sf::Color & startColor, const sf::Color & endColor ) override
     {
-      updateVertexColors( m_outlineVertices, startColor, endColor, false );
+      updateVertexColors( m_outlineVertices, startColor, endColor );
     }
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override
@@ -196,35 +196,26 @@ namespace nx
       m_bounds = m_outlineVertices.getBounds();
     }
 
-    void updateVertexColors(sf::VertexArray & vertexArray,
-                            const sf::Color & startColor,
-                            const sf::Color & endColor,
-                            const bool isFillVertex ) const
+    static void updateVertexColors( sf::VertexArray & vertexArray,
+                                    const sf::Color & startColor,
+                                    const sf::Color & endColor )
     {
-      if ( !isFillVertex && m_data.outlineThickness == 0.f ) return;
 
-      const auto vertexCount = vertexArray.getVertexCount();
-
-      if ( isFillVertex )
+      const auto n = static_cast< int32_t >( vertexArray.getVertexCount() );
+      const auto nf = static_cast< float >( vertexArray.getVertexCount() );
+      for ( int32_t i = 0, y = n - 1; i < n / 2; ++i, --y )
       {
-        // for ( auto i = 0; i < vertexCount; ++i )
-        //   vertexArray[ i ].color = startColor;
-        // Fill: TriangleFan has a center vertex at index 0
-        for (auto i = m_data.colorVertexStartOffset; i < vertexCount; i += m_data.colorVertexInterval)
-        {
-           const float t = static_cast< float >(i - 1) / static_cast< float >(vertexCount - 2);
-           const auto interpolated = ColorHelper::lerpColor(startColor, endColor, t);
-           vertexArray[ i ].color = interpolated;
-        }
+        const float percentage = static_cast< float >( i + 1 ) / nf;
+        const auto currentColor = ColorHelper::lerpColor( startColor, endColor, percentage );
+        vertexArray[ i ].color = currentColor;
+        vertexArray[ y ].color = currentColor;
       }
-      else
+
+      if ( n % 2 == 1 )
       {
-        // Outline: TriangleStrip, just interpolate from 0 to n
-        for ( auto i = 0; i < vertexCount; ++i )
-        {
-          const float t = static_cast< float >( i ) / static_cast< float >(vertexCount - 1);
-          vertexArray[ i ].color = ColorHelper::lerpColor(startColor, endColor, t);
-        }
+        const int32_t mid = ( n / 2 - 1 );
+        const float percentage  = static_cast< float >( mid ) / nf;
+        vertexArray[ mid ].color = ColorHelper::lerpColor( startColor, endColor, percentage );
       }
     }
 

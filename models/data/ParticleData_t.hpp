@@ -20,9 +20,6 @@ namespace nx
 
     float timeoutInSeconds { 0.75f };
 
-    int32_t colorVertexStartOffset { 1 };
-    int32_t colorVertexInterval { 1 };
-
     sf::Color fillStartColor { sf::Color::White };
     sf::Color fillEndColor { sf::Color::White };
 

@@ -338,8 +338,7 @@ Generates particles
 | Particle Type | Description |
 |---------------|-------------|
 | Circles       |             |
-| Star burst    |             |
-| Ring burst    |             |
+| Rings         |             |
 
 ### Particle Behavior Pipeline
 
