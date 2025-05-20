@@ -76,6 +76,4 @@ namespace nx
              m_ctx.globalInfo.windowHalfSize.y + position.y };
   }
 
-;
-
 }
