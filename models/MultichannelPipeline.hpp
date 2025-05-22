@@ -18,6 +18,8 @@
 
 namespace nx
 {
+  class FFTBuffer;
+
   class MultichannelPipeline final
   {
 
@@ -49,6 +51,7 @@ namespace nx
     void restoreState( const nlohmann::json &j ) const;
 
     void processMidiEvent( const Midi_t &midi ) const;
+    void processAudioData( FFTBuffer& buffer );
 
     void draw(sf::RenderWindow &window);
     void drawMenu();
@@ -89,6 +92,8 @@ namespace nx
     float m_mainWindowOpacity { 0.5f };
     float m_metricsWindowOpacity { 0.3f };
 
+    RingBufferAverager m_audioDataAverage { RENDER_SAMPLES_COUNT };
+    bool m_isAudioDataStale { true };
   };
 
 } // namespace nx

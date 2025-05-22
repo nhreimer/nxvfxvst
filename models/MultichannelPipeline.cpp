@@ -6,6 +6,8 @@
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
 
+#include "vst/analysis/FFTBuffer.hpp"
+
 namespace nx
 {
   MultichannelPipeline::MultichannelPipeline( PipelineContext& context )
@@ -50,6 +52,12 @@ namespace nx
       m_channels.at( midi.channel )->processMidiEvent( midi );
 
     if ( m_encoder ) m_encoder->addMidiEvent( midi );
+  }
+
+  void MultichannelPipeline::processAudioData( FFTBuffer& buffer )
+  {
+    m_audioDataAverage.addSample( static_cast< double >( buffer.age().count() ) );
+    m_isAudioDataStale = buffer.isStale( std::chrono::milliseconds( 16 ) );
   }
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
@@ -269,6 +277,14 @@ namespace nx
       ImGui::Text( "Total Time: %0.2f ms", m_totalRenderAverage.getAverage() );
       ImGui::Text( "Cycle Time: %0.2f ms", m_totalRenderAverage.getCycleTimeInMs() );
       ImGui::Text( "Cycle Size: %d samples", RENDER_SAMPLES_COUNT );
+
+      ImGui::SeparatorText( "Audio Buffer (Avg)" );
+
+      ImGui::Text( "Buffer age: %0.2f ms", m_audioDataAverage.getAverage() );
+      if ( m_isAudioDataStale )
+        ImGui::Text( "Is Buffer Stale: true" );
+      else
+        ImGui::Text( "Is Buffer Stale: false" );
 
       m_frameDiagnostics.drawMenu();
     }

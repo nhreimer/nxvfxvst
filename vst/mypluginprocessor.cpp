@@ -8,6 +8,8 @@
 #include "pluginterfaces/vst/ivstevents.h"
 #include "base/source/fstreamer.h"
 
+#include "vst/analysis/FFTBuffer.hpp"
+
 using namespace Steinberg;
 
 namespace nx {
@@ -66,6 +68,16 @@ tresult PLUGIN_API nxvfxvstProcessor::setActive (TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
 {
+  processMidiData( data );
+  processAudioData( data );
+
+  return kResultOk;
+}
+
+//------------------------------------------------------------------------
+
+void PLUGIN_API nxvfxvstProcessor::processMidiData( Vst::ProcessData& data )
+{
   if ( data.processContext != nullptr )
   {
     if ( m_clock.getElapsedTime().asSeconds() > m_messageThrottleInMS )
@@ -81,7 +93,6 @@ tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
         m_clock.restart();
       }
     }
-
 
     m_lastBPM = data.processContext->tempo;
     sendBPMMessage();
@@ -99,8 +110,30 @@ tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
       }
     }
   }
+}
 
-  return kResultOk;
+//------------------------------------------------------------------------
+
+void PLUGIN_API nxvfxvstProcessor::processAudioData( Vst::ProcessData& data )
+{
+  // ensure we have audio first
+  if ( data.numInputs == 0 || data.inputs[ 0 ].numChannels == 1 )
+    return;
+
+  const auto& input = data.inputs[0];
+
+  // convert stereo to mono and push into analyzer
+  const float * left = input.channelBuffers32[ 0 ];
+  const float * right = ( input.numChannels > 1 ) ? input.channelBuffers32[ 1 ] : nullptr;
+
+  for ( int32 i = 0; i < data.numSamples; ++i )
+  {
+    const float mono = right ? 0.5f * ( left[ i ] + right[ i ] ) : left[ i ];
+    m_audioAnalyzer.pushSample( mono );
+  }
+
+  // doesn't send unless the buffer is ready
+  sendAudioMessage();
 }
 
 //------------------------------------------------------------------------
@@ -194,6 +227,30 @@ void nxvfxvstProcessor::sendPlayheadMessage() const
   ptrMsg->release();
 }
 
+//------------------------------------------------------------------------
+
+void nxvfxvstProcessor::sendAudioMessage()
+{
+  // ensure FFT is ready
+  if ( !m_audioAnalyzer.isFFTReady() ) return;
+
+  // compute the values
+  m_audioAnalyzer.computeFFT( m_bins );
+
+  auto * ptrMsg = allocateMessage();
+  if ( ptrMsg == nullptr ) return;
+
+  ptrMsg->setMessageID( "FFTData" );
+  if ( ptrMsg->getAttributes()->setBinary(
+    "FFTData",
+    m_bins.data(),
+    ( Steinberg::uint32 )( m_bins.size() * sizeof( float ) ) ) == kResultOk )
+  {
+    this->sendMessage( ptrMsg );
+  }
+
+  ptrMsg->release();
+}
 
 //------------------------------------------------------------------------
 } // namespace nx

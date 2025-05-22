@@ -93,6 +93,7 @@ if ( BUILD_PLUGIN )
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
   find_package(unofficial-concurrentqueue CONFIG REQUIRED)
+  find_package(kissfft CONFIG REQUIRED COMPONENTS float)
 
   option(SMTG_ENABLE_VST3_PLUGIN_EXAMPLES "Enable VST 3 Plug-in Examples" OFF)
   option(SMTG_ENABLE_VST3_HOSTING_EXAMPLES "Enable VST 3 Hosting Examples" OFF)
@@ -143,6 +144,7 @@ if ( BUILD_PLUGIN )
       nlohmann_json::nlohmann_json
 
       unofficial::concurrentqueue::concurrentqueue
+      kissfft::kissfft
     )
 
   else()
@@ -160,6 +162,7 @@ if ( BUILD_PLUGIN )
       ImGui-SFML::ImGui-SFML
 
       unofficial::concurrentqueue::concurrentqueue
+      kissfft::kissfft
     )
 
   endif()
@@ -201,6 +204,7 @@ else()
   find_package(ImGui-SFML REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
   find_package(unofficial-concurrentqueue CONFIG REQUIRED)
+  find_package(kissfft CONFIG REQUIRED COMPONENTS float)
 
   add_executable(${PROJECT_NAME}
     main.cpp
@@ -226,6 +230,7 @@ else()
     ImGui-SFML::ImGui-SFML
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
+    kissfft::kissfft
   )
 
 endif()

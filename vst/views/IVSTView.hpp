@@ -9,6 +9,7 @@ namespace nx
   struct IVSTView : public Steinberg::IPlugView
   {
     virtual ~IVSTView() = default;
+    virtual void notify( Steinberg::Vst::IMessage * rawMsg ) = 0;
     virtual void notify( Steinberg::Vst::Event& event ) = 0;
     virtual void notifyBPMChange( double bpm ) = 0;
     virtual void notifyPlayheadUpdate( double playhead ) = 0;

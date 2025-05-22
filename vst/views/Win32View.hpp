@@ -6,6 +6,7 @@
 #include <base/source/fobject.h>
 #include <pluginterfaces/gui/iplugview.h>
 #include <pluginterfaces/base/funknown.h>
+#include <pluginterfaces/vst/ivstmessage.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/ContextSettings.hpp>
@@ -190,6 +191,13 @@ namespace priv
       else
         LOG_WARN( "child window has already been shut down" );
     }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  void notify( Steinberg::Vst::IMessage * rawMsg ) override
+  {
+    // NOTE: don't do anything CPU intensive here!!!
+    m_eventFacade.processVstEvent( rawMsg );
+  }
 
   ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override

@@ -86,6 +86,13 @@ namespace nx
     }
 
   ////////////////////////////////////////////////////////////////////////////////
+  void notify( Steinberg::Vst::IMessage * rawMessage ) override
+  {
+    // NOTE: don't do anything CPU intensive here
+    m_eventFacade.processVstEvent( rawMessage );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override
   {
     // NOTE: don't do anything CPU intensive here
