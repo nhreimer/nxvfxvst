@@ -1,24 +1,16 @@
-#include "models/ChannelPipeline.hpp"
+#include "models/channel/MidiChannelPipeline.hpp"
 
 namespace nx
 {
 
-  ChannelPipeline::ChannelPipeline( PipelineContext& context, const int32_t channelId )
-    : m_ctx( context ),
-      m_drawPriority( channelId ),    // the ID is the initial priority. it serves no other purpose.
+  MidiChannelPipeline::MidiChannelPipeline( PipelineContext& context, const int32_t channelId )
+    : ChannelPipeline( context, channelId ),
       m_particleLayout( context ),
       m_modifierPipeline( context ),
       m_shaderPipeline( context, *this )
-  {
-    // check the 0th value to see whether the static values haven't been written yet
-    if ( m_drawPriorityNames[ 0 ].empty() )
-    {
-      for ( int32_t i = 0; i < MAX_CHANNELS; ++i )
-        m_drawPriorityNames[ i ] = std::to_string( i + 1 );
-    }
-  }
+  {}
 
-  nlohmann::json ChannelPipeline::saveChannelPipeline() const
+  nlohmann::json MidiChannelPipeline::saveChannelPipeline() const
   {
     nlohmann::json j = {};
     j[ "channel" ][ "particles" ] = m_particleLayout.serialize();
@@ -27,7 +19,7 @@ namespace nx
     return j;
   }
 
-  void ChannelPipeline::loadChannelPipeline( const nlohmann::json& j )
+  void MidiChannelPipeline::loadChannelPipeline( const nlohmann::json& j )
   {
     if ( j.contains( "channel" ) )
     {
@@ -62,7 +54,7 @@ namespace nx
     }
   }
 
-  void ChannelPipeline::processMidiEvent( const Midi_t& midiEvent ) const
+  void MidiChannelPipeline::processMidiEvent( const Midi_t& midiEvent ) const
   {
     m_particleLayout.processMidiEvent( midiEvent );
 
@@ -73,14 +65,14 @@ namespace nx
     m_shaderPipeline.processMidiEvent( midiEvent );
   }
 
-  void ChannelPipeline::update( const sf::Time& deltaTime ) const
+  void MidiChannelPipeline::update( const sf::Time& deltaTime ) const
   {
     m_particleLayout.update( deltaTime );
     m_modifierPipeline.update( deltaTime );
     m_shaderPipeline.update( deltaTime );
   }
 
-  void ChannelPipeline::drawMenu()
+  void MidiChannelPipeline::drawMenu()
   {
     m_particleLayout.drawMenu();
 
@@ -95,7 +87,7 @@ namespace nx
     ImGui::Separator();
   }
 
-  void ChannelPipeline::drawChannelPipelineMenu()
+  void MidiChannelPipeline::drawChannelPipelineMenu()
   {
     if ( ImGui::TreeNode( "Channel Options" ) )
     {
@@ -104,20 +96,7 @@ namespace nx
       ImGui::SeparatorText( "Channel Blend" );
       MenuHelper::drawBlendOptions( m_blendMode );
 
-      if ( ImGui::BeginCombo( "Draw Priority",
-                              m_drawPriorityNames[ m_drawPriority ].c_str() ) )
-      {
-        for ( int32_t i = 0; i < MAX_CHANNELS; ++i )
-        {
-          if ( ImGui::Selectable( m_drawPriorityNames[ i ].c_str(),
-                                  i == m_drawPriority ) )
-          {
-            m_drawPriority = i;
-            ImGui::SetItemDefaultFocus();
-          }
-        }
-        ImGui::EndCombo();
-      }
+      drawChannelPipelineMenu();
 
       ImGui::TreePop();
       ImGui::Spacing();

@@ -1,7 +1,7 @@
 #include "models/MultichannelPipeline.hpp"
 
+#include "channel/MidiChannelPipeline.hpp"
 #include "data/PipelineContext.hpp"
-#include "models/ChannelPipeline.hpp"
 #include "models/EventRecorder.hpp"
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
@@ -13,9 +13,18 @@ namespace nx
   MultichannelPipeline::MultichannelPipeline( PipelineContext& context )
     : m_ctx( context )
   {
-    for ( int32_t i = 0; i < m_channels.size(); ++i )
+    // set up the audio data channel pipeline, which is the first one
+    m_channels[ AUDIO_CHANNEL_INDEX ] = std::make_unique< AudioChannelPipeline >( context, 0 );
+    m_channelWorkers[ AUDIO_CHANNEL_INDEX ] = std::make_unique< ChannelWorker >(
+      [ this ]
+      {
+        m_channels[ AUDIO_CHANNEL_INDEX ]->runTasks();
+      } );
+
+    // set up the midi channel pipelines
+    for ( int32_t i = MIDI_CHANNEL_INDEX; i < m_channels.size(); ++i )
     {
-      m_channels[ i ] = std::make_unique< ChannelPipeline >( context, i );
+      m_channels[ i ] = std::make_unique< MidiChannelPipeline >( context, i );
       m_channelWorkers[ i ] = std::make_unique< ChannelWorker >(
        [ this, i ]
        {
@@ -48,16 +57,20 @@ namespace nx
 
   void MultichannelPipeline::processMidiEvent( const Midi_t &midi ) const
   {
-    if ( midi.channel < m_channels.size() )
-      m_channels.at( midi.channel )->processMidiEvent( midi );
+    const auto midiChannel = midi.channel + MIDI_CHANNEL_INDEX;
+
+    if ( midiChannel < m_channels.size() )
+    {
+      static_cast< MidiChannelPipeline * >( m_channels.at( midiChannel ).get() )->processMidiEvent( midi );
+    }
 
     if ( m_encoder ) m_encoder->addMidiEvent( midi );
   }
 
   void MultichannelPipeline::processAudioData( FFTBuffer& buffer )
   {
+    static_cast< AudioChannelPipeline * >( m_channels.at( AUDIO_CHANNEL_INDEX ).get() )->processAudioBuffer( buffer );
     m_audioDataAverage.addSample( static_cast< double >( buffer.age().count() ) );
-    m_isAudioDataStale = buffer.isStale( std::chrono::milliseconds( 16 ) );
   }
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
@@ -81,7 +94,7 @@ namespace nx
       } );
     }
 
-    // // wait for the pipelines to finish and draw each item in order
+    // wait for the pipelines to finish and draw each item in order
     while ( !m_drawingPrioritizer.empty() )
     {
       const auto& top = m_drawingPrioritizer.top();
@@ -91,12 +104,14 @@ namespace nx
       {
         window.draw( sf::Sprite( texture->getTexture() ),
                      top.channel->getChannelBlendMode() );
-        m_drawingPrioritizer.pop();
       }
-      else
-      {
-        LOG_ERROR( "render thread draw failed" );
-      }
+      // else
+      // {
+      //   LOG_ERROR( "render thread draw failed" );
+      // }
+
+      // must pop no matter what or an infinite loop will occur
+      m_drawingPrioritizer.pop();
     }
 
     // now that we have a final image, send it to the video encoder
@@ -271,7 +286,10 @@ namespace nx
       for ( int32_t i = 0; i < m_channelWorkers.size(); ++i )
       {
         const auto metrics = m_channelWorkers[ i ]->getMetrics();
-        ImGui::Text( "Channel %d: %0.2f ms", i + 1, metrics );
+        if ( i == AUDIO_CHANNEL_INDEX )
+          ImGui::Text( "(Audio) Channel %d: %0.2f ms", i, metrics );
+        else
+          ImGui::Text( "(Midi) Channel %d: %0.2f ms", i, metrics );
       }
 
       ImGui::Text( "Total Time: %0.2f ms", m_totalRenderAverage.getAverage() );
@@ -281,10 +299,6 @@ namespace nx
       ImGui::SeparatorText( "Audio Buffer (Avg)" );
 
       ImGui::Text( "Buffer age: %0.2f ms", m_audioDataAverage.getAverage() );
-      if ( m_isAudioDataStale )
-        ImGui::Text( "Is Buffer Stale: true" );
-      else
-        ImGui::Text( "Is Buffer Stale: false" );
 
       m_frameDiagnostics.drawMenu();
     }

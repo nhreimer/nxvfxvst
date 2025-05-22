@@ -4,7 +4,13 @@ namespace nx
 {
   // the number of channel pipelines to set up
   // the large the number, the more resources utilized
-  constexpr int32_t MAX_CHANNELS = 4;
+  constexpr int32_t MAX_MIDI_CHANNELS = 4;
+
+  // the number of audio channels, usually one because stereo gets combined
+  // but there might be additional virtual audio channels in the future
+  constexpr int32_t MAX_AUDIO_CHANNELS = 1;
+
+  constexpr int32_t MAX_CHANNELS = MAX_MIDI_CHANNELS + MAX_AUDIO_CHANNELS;
 
   // the refresh rate for getting the playhead
   constexpr float PLAYHEAD_INTERVAL_IN_SECS = 0.25f; // 0.25f = 250ms

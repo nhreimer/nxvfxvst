@@ -8,9 +8,9 @@
 #include "pluginterfaces/base/keycodes.h"
 #include "pluginterfaces/vst/ivstmessage.h"
 
-#include "models/data/GlobalInfo_t.hpp"
-#include "models/ChannelPipeline.hpp"
+#include "../models/channel/MidiChannelPipeline.hpp"
 #include "models/MultichannelPipeline.hpp"
+#include "models/data/GlobalInfo_t.hpp"
 #include "models/data/PipelineContext.hpp"
 
 #include "vst/VSTStateContext.hpp"

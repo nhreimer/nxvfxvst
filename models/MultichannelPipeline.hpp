@@ -2,13 +2,14 @@
 
 #include <queue>
 
+#include "models/channel/AudioChannelPipeline.hpp"
+#include "models/channel/MidiChannelPipeline.hpp"
 #include "data/PipelineContext.hpp"
 #include "helpers/Definitions.hpp"
-#include "models/ChannelPipeline.hpp"
 #include "models/encoder/EncoderFactory.hpp"
 #include "shapes/TimedMessage.hpp"
-#include "utils/ImGuiFrameDiagnostics.hpp"
 #include "utils/ChannelWorker.hpp"
+#include "utils/ImGuiFrameDiagnostics.hpp"
 
 #ifdef BUILD_PLUGIN
 #include "vst/version.h"
@@ -93,7 +94,9 @@ namespace nx
     float m_metricsWindowOpacity { 0.3f };
 
     RingBufferAverager m_audioDataAverage { RENDER_SAMPLES_COUNT };
-    bool m_isAudioDataStale { true };
+
+    static constexpr int32_t AUDIO_CHANNEL_INDEX = 0;
+    static constexpr int32_t MIDI_CHANNEL_INDEX = 1;
   };
 
 } // namespace nx

@@ -52,7 +52,7 @@ set( NX_CPP_FILES
   models/particle/layout/RandomParticleLayout.cpp
   models/particle/layout/SpiralParticleLayout.cpp
 
-  models/ChannelPipeline.cpp
+  models/channel/MidiChannelPipeline.cpp
   models/ModifierPipeline.cpp
   models/MultichannelPipeline.cpp
   models/ParticleBehaviorPipeline.cpp
