@@ -41,5 +41,8 @@ namespace nx
 
     // total frames processed
     std::uint64_t frameCount { 0 };
+
+    // this defaults to 48kHz, but it comes from the processor on plugin startup
+    float sampleRate { 48000.f };
   };
 }

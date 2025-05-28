@@ -123,6 +123,7 @@ private:
 
   double m_lastBPM { 0.f };
   double m_lastPlayhead { 0.f };
+  double m_sampleRate { 0.f };
 
   // used between closing and opening the window
   nlohmann::json m_state;

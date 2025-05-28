@@ -44,6 +44,8 @@ namespace nx
 
     void processPlayheadUpdate( const double playhead );
 
+    void processSampleRateUpdate( const double sampleRate );
+
     void initialize( sf::RenderWindow & window );
 
     void shutdown( sf::RenderWindow & window );

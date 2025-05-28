@@ -7,6 +7,11 @@
 #include "models/ShaderPipeline.hpp"
 #include "vst/analysis/FFTBuffer.hpp"
 
+#include "models/IAudioVisualizer.hpp"
+#include "models/audio/FFTScaler.hpp"
+#include "models/audio/BarSpectrumVisualizer.hpp"
+#include "models/audio/PlotLinesVisualizer.hpp"
+
 namespace nx
 {
 
@@ -16,7 +21,9 @@ namespace nx
     AudioChannelPipeline( PipelineContext& ctx, const int32_t channelId )
       : ChannelPipeline( ctx, channelId ),
         m_shaderPipeline( ctx, *this )
-    {}
+    {
+      m_audioVisualizer = std::make_unique< PlotLinesVisualizer >( ctx );
+    }
 
     ~AudioChannelPipeline() override = default;
 
@@ -26,11 +33,8 @@ namespace nx
       // but we need to move it to the render thread
       request( [ this ]
       {
-        // const auto * modifierTexture = m_modifierPipeline.applyModifiers(
-        //   m_particleLayout.getParticleOptions(),
-        //   m_particleLayout.getParticles() );
-        //
-        // m_outputTexture = m_shaderPipeline.draw( modifierTexture );
+        m_outputTexture = m_audioVisualizer->draw( nullptr );
+        m_outputTexture = m_shaderPipeline.draw( m_outputTexture );
       } );
     }
 
@@ -39,7 +43,7 @@ namespace nx
       request( [ this ]
       {
         // this asks all other pipelines to shut down
-        //m_modifierPipeline.destroyTextures();
+        m_audioVisualizer->destroyTextures();
         m_shaderPipeline.destroyTextures();
       } );
     }
@@ -50,17 +54,19 @@ namespace nx
     }
 
     void loadChannelPipeline( const nlohmann::json& j ) override
+    {}
+
+    void processAudioBuffer( FFTBuffer& buffer ) const
     {
-
-    }
-
-    void processAudioBuffer( const FFTBuffer& buffer ) const
-    {
-
+      auto& audioBuffer = buffer.getBuffer();
+      // scale the FFT buffer to user-customizable values
+      m_scaler.scale( audioBuffer );
+      m_audioVisualizer->receiveUpdatedAudioBuffer( audioBuffer );
     }
 
     void update( const sf::Time& deltaTime ) const override
     {
+      m_audioVisualizer->update( deltaTime );
       m_shaderPipeline.update( deltaTime );
     }
 
@@ -68,7 +74,8 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Audio Data" ) )
       {
-        ImGui::Text( "getting audio, man!" );
+        m_scaler.drawMenu();
+        m_audioVisualizer->drawMenu();
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -77,8 +84,12 @@ namespace nx
 
   private:
 
+    sf::RenderTexture * m_outputTexture { nullptr };
+
+    std::unique_ptr< IAudioVisualizer > m_audioVisualizer;
     ShaderPipeline m_shaderPipeline;
 
+    FFTScaler m_scaler;
   };
 
 }

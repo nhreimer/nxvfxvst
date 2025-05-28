@@ -305,4 +305,5 @@ namespace nx
 
     ImGui::End();
   }
+
 } // namespace nx

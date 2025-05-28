@@ -21,7 +21,7 @@ namespace nx
     using TimePoint = Clock::time_point;
 
     [[nodiscard]]
-    const AudioDataBuffer& read()
+    AudioDataBuffer& getBuffer()
     {
       if ( m_hasNewData.exchange( false, std::memory_order_acq_rel ) )
         std::swap(m_frontBuffer, m_backBuffer);

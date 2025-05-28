@@ -65,6 +65,17 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
       LOG_ERROR( "Playhead notification failed" );
     }
   }
+  else if ( Steinberg::FIDStringsEqual( message->getMessageID(), "sampleRate" ) )
+  {
+    if ( message->getAttributes()->getFloat( "sampleRate", m_sampleRate ) == kResultOk )
+    {
+      m_ptrView->notifySampleRate( m_sampleRate );
+    }
+    else
+    {
+      LOG_ERROR( "Playhead notification failed" );
+    }
+  }
   else
   {
     // allow the view to have raw message passthroughs, e.g., for Audio Data.

@@ -26,7 +26,7 @@ public:
     // Create function
 	static Steinberg::FUnknown* createInstance (void* /*context*/) 
 	{ 
-		return (Steinberg::Vst::IAudioProcessor*)new nxvfxvstProcessor; 
+		return static_cast< Steinberg::Vst::IAudioProcessor * >( new nxvfxvstProcessor );
 	}
 
 	//--- ---------------------------------------------------------------------
@@ -61,11 +61,11 @@ private:
 
   void processMidiData( Steinberg::Vst::ProcessData& data );
   void processAudioData( Steinberg::Vst::ProcessData& data );
+  void passThroughAudio( Steinberg::Vst::ProcessData& data );
 
   void sendMidiNoteEventMessage( const Steinberg::Vst::Event& event ) const;
-  void sendBPMMessage() const;
-  void sendPlayheadMessage() const;
   void sendAudioMessage();
+  void sendFloatMessage( const std::string& messageId, const double value ) const;
 
 private:
 

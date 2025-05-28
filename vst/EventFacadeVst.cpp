@@ -128,6 +128,13 @@ namespace nx
     m_globalInfo.playhead = playhead;
   }
 
+  void EventFacadeVst::processSampleRateUpdate( const double sampleRate )
+  {
+    // WARNING:
+    // comes in on the processor thread and not on the controller thread!
+    m_globalInfo.sampleRate = sampleRate;
+  }
+
   void EventFacadeVst::initialize( sf::RenderWindow & window )
   {
     LOG_INFO( "initializing event receiver" );

@@ -113,6 +113,12 @@ namespace nx
   }
 
   ////////////////////////////////////////////////////////////////////////////////
+  void notifySampleRate( const double sampleRate ) override
+  {
+    m_eventFacade.processSampleRateUpdate( sampleRate );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   Steinberg::tresult isPlatformTypeSupported( Steinberg::FIDString type ) override
   {
     // Windows platform

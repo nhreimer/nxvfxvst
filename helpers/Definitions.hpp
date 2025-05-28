@@ -25,7 +25,7 @@ namespace nx
   constexpr int32_t RENDER_SAMPLES_COUNT = 64;
 
   // audio window sizes
-  constexpr size_t FFT_SIZE = 1024;
+  constexpr size_t FFT_SIZE = 128;
   constexpr size_t FFT_BINS = FFT_SIZE / 2;
 
   // using AudioProcessorBuffer = std::array< float, FFT_SIZE >;
