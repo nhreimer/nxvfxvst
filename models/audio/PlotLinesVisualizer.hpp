@@ -6,6 +6,7 @@
 
 namespace nx
 {
+  /// this makes the plot appear in ImGui. it's used for debugging.
   class PlotLinesVisualizer final : public IAudioVisualizer
   {
 
@@ -31,28 +32,9 @@ namespace nx
       m_texture.destroy();
     }
 
-    void receiveUpdatedAudioBuffer(const AudioDataBuffer &fft) override
+    void receiveUpdatedAudioBuffer(const IFFTResult &fft) override
     {
-      m_fftBins = fft;
-
-      // Get time since last frame
-      const auto delta = ImGui::GetIO().DeltaTime;
-
-      for (size_t i = 0; i < FFT_BINS; ++i)
-      {
-        float target = m_fftBins[i];
-        float& current = m_smoothedBins[i];
-
-        if (target > current)
-        {
-          current = target; // rise instantly
-        }
-        else
-        {
-          const float decayAmount = m_decayRate * delta;
-          current = std::max(current - decayAmount, target);
-        }
-      }
+      m_fftBins = &fft;
     }
 
     sf::BlendMode & getBlendMode() override { return m_blend; }
@@ -69,6 +51,8 @@ namespace nx
 
     void drawMenu() override
     {
+      if ( m_fftBins == nullptr ) return;
+
       if ( ImGui::TreeNode("Visualizer: PlotLines") )
       {
         ImGui::SliderFloat("Max Y", &m_yScale, 0.01f, 2.0f, "%.2f");
@@ -79,13 +63,14 @@ namespace nx
 
         ImGui::SliderFloat( "x-Label Offset", &m_xLabelOffset, -8.0f, 8.0f, "%.2f" );
 
-        ImGui::SliderFloat( "Decay Rate##1", &m_decayRate, 0.01f, 10.0f, "%.2f" );
-
         ImGui::SeparatorText( "Test Output" );
+
+        const auto& smoothedBins = m_fftBins->getSmoothedBuffer();
+
         ImGui::PlotLines(
             "Bins",
-            m_smoothedBins.data(),
-            static_cast<int>(m_smoothedBins.size()),
+            smoothedBins.data(),
+            static_cast<int32_t>(smoothedBins.size()),
             0,
             nullptr,
             0.0f,
@@ -98,9 +83,9 @@ namespace nx
 
         const float labelY = plotPos.y + m_xLabelOffset; // A little below the plot
 
-        for ( int32_t i = 0; i < static_cast<int32_t>(m_fftBins.size()); i += m_binStep )
+        for ( int32_t i = 0; i < static_cast<int32_t>(smoothedBins.size()); i += m_binStep )
         {
-          const float x = plotPos.x + (i / static_cast< float >(m_fftBins.size())) * m_plotWidth;
+          const float x = plotPos.x + (i / static_cast< float >(smoothedBins.size())) * m_plotWidth;
           const float freq = i * m_ctx.globalInfo.sampleRate / static_cast< float >(FFT_SIZE);
 
           char buf[32];
@@ -124,8 +109,7 @@ namespace nx
     PipelineContext& m_ctx;
     LazyTexture m_texture;
     sf::BlendMode m_blend { sf::BlendAdd };
-    AudioDataBuffer m_fftBins {};
-    AudioDataBuffer m_smoothedBins {};   // Visual output buffer
+    const IFFTResult * m_fftBins { nullptr };
     float m_yScale { 1.05f };
     int32_t m_binStep { 32 };
 
@@ -133,6 +117,5 @@ namespace nx
     float m_plotHeight { 100.f };
 
     float m_xLabelOffset { -8.f };
-    float m_decayRate { 3.7f };
   };
 }

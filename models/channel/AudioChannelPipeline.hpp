@@ -8,9 +8,9 @@
 #include "vst/analysis/FFTBuffer.hpp"
 
 #include "models/IAudioVisualizer.hpp"
-#include "models/audio/FFTScaler.hpp"
 #include "models/audio/BarSpectrumVisualizer.hpp"
-#include "models/audio/PlotLinesVisualizer.hpp"
+#include "models/audio/FFTProcessor.hpp"
+// #include "models/audio/PlotLinesVisualizer.hpp"
 
 namespace nx
 {
@@ -22,7 +22,7 @@ namespace nx
       : ChannelPipeline( ctx, channelId ),
         m_shaderPipeline( ctx, *this )
     {
-      m_audioVisualizer = std::make_unique< PlotLinesVisualizer >( ctx );
+      m_audioVisualizer = std::make_unique< BarSpectrumVisualizer >( ctx );
     }
 
     ~AudioChannelPipeline() override = default;
@@ -34,7 +34,7 @@ namespace nx
       request( [ this ]
       {
         m_outputTexture = m_audioVisualizer->draw( nullptr );
-        m_outputTexture = m_shaderPipeline.draw( m_outputTexture );
+        // m_outputTexture = m_shaderPipeline.draw( m_outputTexture );
       } );
     }
 
@@ -56,12 +56,14 @@ namespace nx
     void loadChannelPipeline( const nlohmann::json& j ) override
     {}
 
-    void processAudioBuffer( FFTBuffer& buffer ) const
+    void processAudioBuffer( FFTBuffer& buffer )
     {
-      auto& audioBuffer = buffer.getBuffer();
+      // receive the unscaled audio buffer
+      const auto& audioBuffer = buffer.getBuffer();
+
       // scale the FFT buffer to user-customizable values
-      m_scaler.scale( audioBuffer );
-      m_audioVisualizer->receiveUpdatedAudioBuffer( audioBuffer );
+      m_scaler.apply( audioBuffer );
+      m_audioVisualizer->receiveUpdatedAudioBuffer( m_scaler );
     }
 
     void update( const sf::Time& deltaTime ) const override
@@ -84,12 +86,10 @@ namespace nx
 
   private:
 
-    sf::RenderTexture * m_outputTexture { nullptr };
-
     std::unique_ptr< IAudioVisualizer > m_audioVisualizer;
     ShaderPipeline m_shaderPipeline;
 
-    FFTScaler m_scaler;
+    FFTProcessor m_scaler;
   };
 
 }

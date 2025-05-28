@@ -2,6 +2,7 @@
 
 #include "models/IAudioVisualizer.hpp"
 #include "models/data/PipelineContext.hpp"
+#include "models/audio/IFFTResult.hpp"
 // #include "models/shader/BlenderShader.hpp"
 #include "utils/LazyTexture.hpp"
 
@@ -44,8 +45,16 @@ namespace nx
 
     sf::RenderTexture * draw( sf::RenderTexture * inTexture ) override
     {
+      m_texture.ensureSize( m_context.globalInfo.windowSize );
       m_texture.clear( sf::Color::Transparent );
 
+      // draw the previous content, if there is any available
+      if ( inTexture )
+      {
+        m_texture.draw( sf::Sprite( inTexture->getTexture() ), m_blendMode );
+      }
+
+      // draw our content
       for ( size_t i = 0; i < m_data.barCount; ++i )
         m_texture.draw( *m_bars[ i ], m_blendMode );
 
@@ -65,7 +74,7 @@ namespace nx
         ImGui::Text("Vertical Bars");
         ImGui::SliderInt("Bar Count", &m_data.barCount, 8, 256);
         ImGui::SliderFloat("Spacing", &m_data.barSpacing, 0.f, 10.f);
-        ImGui::SliderFloat("Gain", &m_data.gain, 0.1f, 10.f);
+        ImGui::SliderFloat("Gain", &m_data.gain, 0.1f, 20.f);
         ImGui::SliderFloat("Falloff Speed", &m_data.falloffSpeed, 0.8f, 0.9999f);
         ColorHelper::drawImGuiColorEdit4("Bar Color", m_data.barColor);
         MenuHelper::drawBlendOptions( m_blendMode );
@@ -75,45 +84,70 @@ namespace nx
       }
     }
 
-    void receiveUpdatedAudioBuffer( const AudioDataBuffer& fft ) override
+    void receiveUpdatedAudioBuffer(const IFFTResult& fftResult) override
     {
-      const auto size = m_context.globalInfo.windowSize;
+      const auto& size = m_context.globalInfo.windowSize;
 
       const float barWidth = (size.x - (m_data.barCount - 1) * m_data.barSpacing) / m_data.barCount;
+      const auto& fft = fftResult.getSmoothedBuffer();
 
-      for ( size_t i = 0; i < m_data.barCount; ++i )
+      const size_t usableBars = std::min(m_data.barCount, ( int32_t )FFT_BINS);
+
+      for (size_t i = 0; i < usableBars; ++i)
       {
-        auto& bar = m_bars[ i ];
+        auto& bar = m_bars[i];
 
-        const auto binStart = i * (FFT_BINS / m_data.barCount);
-        const auto binEnd = (i + 1) * (FFT_BINS / m_data.barCount);
+        const size_t binStart = i * (FFT_BINS / usableBars);
+        const size_t binEnd   = (i + 1) * (FFT_BINS / usableBars);
+
+        if (binEnd <= binStart)
+          continue;
+
         float energy = 0.f;
+        for (size_t b = binStart; b < binEnd; ++b)
+          energy += fft[b];
 
-        for ( size_t b = binStart; b < binEnd; ++b )
-          energy += fft[ b ];
+        energy /= static_cast<float>(binEnd - binStart);
 
-        energy /= ( binEnd - binStart );
+        // Optional debug clamp to help with noise floors or excessive gain
+        energy = std::clamp(energy, 0.f, 1.f);
 
-        float barHeight = energy * m_data.gain * size.y;
-        m_barHeights[ i ] = std::max(m_barHeights[i], barHeight);
+        // Compute new height with gain multiplier
+        const float barHeight = energy * m_data.gain * size.y;
 
-        //sf::RectangleShape bar;
-        bar->setSize({barWidth, -m_barHeights[ i ]});
-        bar->setPosition({ i * (barWidth + m_data.barSpacing),
-                              static_cast< float >(size.y) });
+        // You can choose to decay or snap (this version snaps directly)
+        m_barHeights[i] = barHeight;
 
-        if ( m_data.barColor != bar->getFillColor() )
-          bar->setFillColor( m_data.barColor );
+        // Update bar geometry
+        bar->setSize({ barWidth, -m_barHeights[i] }); // assumes bottom origin
+
+        bar->setPosition({
+            i * (barWidth + m_data.barSpacing),
+            static_cast<float>(size.y)
+        });
+
+        if (m_data.barColor != bar->getFillColor())
+          bar->setFillColor(m_data.barColor);
+
+        // Optional: debug log
+        // LOG_INFO("Bar[{}] bins[{}..{}] energy {:.3f} height {:.2f}", i, binStart, binEnd, energy, m_barHeights[i]);
+      }
+
+      // Optional: zero out unused bars if barCount > FFT_BINS
+      for (size_t i = usableBars; i < m_data.barCount; ++i)
+      {
+        m_barHeights[i] = 0.f;
+        m_bars[i]->setSize({ barWidth, 0.f });
       }
     }
 
     void update( const sf::Time &deltaTime ) override
     {
-      // m_data.decayFactor = std::pow(m_data.falloffSpeed, deltaTime.asSeconds());
-      // for ( size_t i = 0; i < m_data.barCount; ++i )
-      // {
-      //   m_barHeights[ i ] *= m_data.decayFactor;
-      // }
+      m_data.decayFactor = std::pow( m_data.falloffSpeed, deltaTime.asSeconds() );
+      for ( size_t i = 0; i < m_data.barCount; ++i )
+      {
+        m_barHeights[ i ] *= m_data.decayFactor;
+      }
     }
 
     sf::BlendMode &getBlendMode() override { return m_blendMode; }
@@ -122,6 +156,7 @@ namespace nx
     void setEnabled( const bool isEnabled ) override { m_data.isEnabled = isEnabled; }
 
   private:
+
     PipelineContext& m_context;
     BarSpectrumData_t m_data;
 

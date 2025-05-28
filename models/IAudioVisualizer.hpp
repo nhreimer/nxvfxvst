@@ -4,6 +4,9 @@
 
 namespace nx
 {
+
+  struct IFFTResult;
+
   struct IAudioVisualizer : public ISerializable< E_AudioVisualizerType >
   {
     // render thread only!
@@ -15,7 +18,7 @@ namespace nx
     // draw ImGui menu
     virtual void drawMenu() = 0;
 
-    virtual void receiveUpdatedAudioBuffer( const AudioDataBuffer& fft ) = 0;
+    virtual void receiveUpdatedAudioBuffer( const IFFTResult& fft ) = 0;
     virtual void update( const sf::Time& deltaTime ) = 0;
     virtual sf::BlendMode& getBlendMode() = 0;
 
