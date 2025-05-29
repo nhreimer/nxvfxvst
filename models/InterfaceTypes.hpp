@@ -5,7 +5,8 @@ namespace nx
   enum class E_AudioVisualizerType : int8_t
   {
     E_PlotLineVisualizer, // used only for debugging
-    E_BarSpectrumVisualizer
+    E_BarSpectrumVisualizer,
+    E_RingBarVisualizer
   };
 
   enum class E_ShaderType : int8_t

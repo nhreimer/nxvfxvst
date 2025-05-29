@@ -10,6 +10,7 @@
 #include "models/IAudioVisualizer.hpp"
 #include "models/audio/BarSpectrumVisualizer.hpp"
 #include "models/audio/FFTProcessor.hpp"
+#include "models/audio/RingBarVisualization.hpp"
 // #include "models/audio/PlotLinesVisualizer.hpp"
 
 namespace nx
@@ -22,7 +23,7 @@ namespace nx
       : ChannelPipeline( ctx, channelId ),
         m_shaderPipeline( ctx, *this )
     {
-      m_audioVisualizer = std::make_unique< BarSpectrumVisualizer >( ctx );
+      m_audioVisualizer = std::make_unique< RingBarVisualization >( ctx );
     }
 
     ~AudioChannelPipeline() override = default;
@@ -34,7 +35,7 @@ namespace nx
       request( [ this ]
       {
         m_outputTexture = m_audioVisualizer->draw( nullptr );
-        // m_outputTexture = m_shaderPipeline.draw( m_outputTexture );
+        m_outputTexture = m_shaderPipeline.draw( m_outputTexture );
       } );
     }
 
@@ -82,6 +83,8 @@ namespace nx
         ImGui::TreePop();
         ImGui::Spacing();
       }
+
+      m_shaderPipeline.drawMenu();
     }
 
   private:
