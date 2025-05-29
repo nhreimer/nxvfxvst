@@ -1,5 +1,8 @@
 #pragma once
 
+#include <imgui.h>
+#include <nlohmann/json.hpp>
+
 #include "utils/TaskQueue.hpp"
 #include "models/channel/ChannelPipeline.hpp"
 
@@ -23,7 +26,7 @@ namespace nx
       : ChannelPipeline( ctx, channelId ),
         m_shaderPipeline( ctx, *this )
     {
-      m_audioVisualizer = std::make_unique< RingBarVisualization >( ctx );
+      m_audioVisualizer = std::make_unique< BarSpectrumVisualizer >( ctx );
     }
 
     ~AudioChannelPipeline() override = default;

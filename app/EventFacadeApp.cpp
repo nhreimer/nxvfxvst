@@ -29,6 +29,11 @@ namespace nx
     } );
   }
 
+  void EventFacadeApp::processAudioData(AudioDataBuffer & buffer)
+  {
+    m_fftBuffer.write( buffer );
+  }
+
   void EventFacadeApp::initialize( sf::RenderWindow & window )
   {
     LOG_INFO( "initializing event receiver" );
@@ -90,6 +95,7 @@ namespace nx
       ++m_globalInfo.frameCount;
       ImGui::SFML::Update( window, delta );
       consumeMidiEvents();
+      m_pipelines.processAudioData( m_fftBuffer );
       m_pipelines.update( delta );
     }
 
@@ -104,7 +110,7 @@ namespace nx
       {
         drawMenu();
         drawDebugOverlay( window );
-        m_serialGenerator.drawMenu();
+        // m_serialGenerator.drawMenu();
       }
 
       ImGui::SFML::Render( window );
@@ -128,6 +134,12 @@ namespace nx
   }
 
   void EventFacadeApp::drawMenu()
+  {
+    drawGenerators();
+    m_pipelines.drawMenu();
+  }
+
+  void EventFacadeApp::drawGenerators()
   {
     // draw ImGui last so it sits on top of the screen
     ImGui::Begin( "nxvfx", nullptr, ImGuiWindowFlags_AlwaysAutoResize );
@@ -156,9 +168,25 @@ namespace nx
     for ( auto& midiGen : m_midiGen )
       midiGen.drawMenu();
 
-    ImGui::End();
+    if ( m_audioGenIsRunning )
+    {
+      if ( ImGui::Button( "Stop Audio" ) )
+      {
+        m_audioGenerator.stop();
+        m_audioGenIsRunning = false;
+      }
+    }
+    else
+    {
+      if ( ImGui::Button( "Start Audio" ) )
+      {
+        m_audioGenIsRunning = true;
+        m_audioGenerator.reset();
+        m_audioGenerator.run();
+      }
+    }
 
-    m_pipelines.drawMenu();
+    ImGui::End();
   }
 
   void EventFacadeApp::consumeMidiEvents()

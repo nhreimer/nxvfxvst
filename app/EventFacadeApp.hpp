@@ -12,6 +12,7 @@
 #include "models/data/PipelineContext.hpp"
 #include "app/MidiGenerator.hpp"
 #include "app/SerialGenerator.hpp" // used for serial/deserial testing
+#include "app/SineWaveGenerator.hpp"
 
 namespace nx
 {
@@ -24,6 +25,8 @@ namespace nx
     EventFacadeApp();
 
     void processVstEvent( const Steinberg::Vst::Event & event );
+
+    void processAudioData( AudioDataBuffer& buffer );
 
     void initialize( sf::RenderWindow & window );
 
@@ -38,6 +41,8 @@ namespace nx
 
     void drawMenu();
 
+    void drawGenerators();
+
     void consumeMidiEvents();
 
     // ONLY exists in the standalone for debugging purposes
@@ -45,13 +50,22 @@ namespace nx
 
   private:
 
-    bool m_midiGenIsRunning { false };
+    bool m_midiGenIsRunning  { false };
+    bool m_audioGenIsRunning { false };
 
     const std::function< void( const Steinberg::Vst::Event& ) > m_onEvent
     {
       [ & ]( const Steinberg::Vst::Event & event )
       {
         processVstEvent( event );
+      }
+    };
+
+    const std::function< void( AudioDataBuffer& ) > m_onAudioEvent
+    {
+      [ & ]( AudioDataBuffer & buffer )
+      {
+        processAudioData( buffer );
       }
     };
 
@@ -90,7 +104,12 @@ namespace nx
     // and processes them on the controller thread
     moodycamel::ConcurrentQueue< Midi_t > m_queue;
 
-    SerialGenerator m_serialGenerator;
+    // buffer with audio data for audio graphics
+    FFTBuffer m_fftBuffer;
+
+    test::SineSweepGenerator m_audioGenerator { m_onAudioEvent };
+
+    // SerialGenerator m_serialGenerator;
 
   };
 

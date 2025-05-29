@@ -29,6 +29,8 @@ namespace nx
       return m_frontBuffer;
     }
 
+    /// Unpacks the VST message and writes to the internal buffer
+    /// @param message
     void write( Steinberg::Vst::IMessage * message )
     {
       if ( !message || !message->getAttributes() ) return;
@@ -50,6 +52,15 @@ namespace nx
       }
 
       std::memcpy( m_backBuffer.data(), rawPtr, rawSize );
+      m_lastWrite = Clock::now();
+      m_hasNewData.store(true, std::memory_order_release);
+    }
+
+    /// copies the Audio data from the processor over
+    /// @param buffer the audio buffer directly from the AudioAnalyzer
+    void write( const AudioDataBuffer & buffer )
+    {
+      std::memcpy( m_backBuffer.data(), buffer.data(), buffer.size() * sizeof( float ) );
       m_lastWrite = Clock::now();
       m_hasNewData.store(true, std::memory_order_release);
     }

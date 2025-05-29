@@ -7,11 +7,11 @@ See [LICENSE](./LICENSE) for full terms and third-party dependency notices.
 
 ## Description
 
-A real-time, modular, multithreaded rendering VST3 Video Effects Engine Plugin for midi events. 
+A real-time, modular, multithreaded rendering VST3 Video Effects Engine Plugin for audio and midi events. 
 
 ## Goal
 
-Synchronize midi events to highly customizable visuals.
+Synchronize midi events and audio data to highly customizable visuals.
 
 ## Features
 
@@ -29,7 +29,7 @@ Synchronize midi events to highly customizable visuals.
 * DAW Automation controls for effects
   * Dynamically names and resets names of parameters for DAW visibility
 * JSON serialization for importing/exporting (via clipboard at the moment)
-* Real-time VFX Engine that synchronizes to midi events
+* Real-time VFX Engine that synchronizes to audio data and midi events
   * Effects
   * Particle generator
   * Particle modifiers
@@ -53,6 +53,7 @@ Synchronize midi events to highly customizable visuals.
 * [nlohmann json](https://github.com/nlohmann/json)
 * [spdlog](https://github.com/gabime/spdlog)
 * [Moody Camel](https://github.com/cameron314/concurrentqueue)
+* [KissFFT](https://github.com/mborgerding/kissfft)
 
 # Getting Started
 
@@ -165,13 +166,13 @@ target_link_libraries( ${PROJECT_NAME}
           ▼
 +------------------------+
 |  MultichannelPipeline  |
-|         1              |  Manages multiple midi channels
+|         1              |  Manages 1 audio channel and n midi channels
 +------------------------+
           │
           ▼
 +---------------------+
 |  ChannelPipeline    |
-|        1..n         |  Each midi channel is independent
+|        1..n         |  Each channel is independent
 +---------------------+        +--------------------+
           │                    | Particle Layout    |
           │                    |         1          |
