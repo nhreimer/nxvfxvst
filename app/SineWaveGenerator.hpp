@@ -45,7 +45,7 @@ namespace nx::test
         ImGui::Separator();
         // ImGui::SliderFloat( "Freq Start##1", &m_startFreq, 0.f, m_endFreq );
         // ImGui::SliderFloat( "Freq End##1", &m_endFreq, m_startFreq, 20000.f );
-        ImGui::SliderFloat( "Frequency##1", &m_frequency, 0.f, 20000.f );
+        ImGui::SliderFloat( "Frequency##1", &m_frequency, 20.f, 20000.f, "%0.2f", ImGuiSliderFlags_Logarithmic );
 
         // ImGui::SliderFloat( "Duration (secs)##1", &m_duration, 0.f, 20.f );
         ImGui::SliderFloat( "Phase##1", &m_phase, 0.f, 5.f );

@@ -40,7 +40,9 @@ namespace nx
 
     void CurvedLine::setColor(const sf::Color color)
     {
-      m_color = color;
+      //m_color = color;
+      m_colorStart = color;
+      m_colorEnd = color;
       update();
     }
 

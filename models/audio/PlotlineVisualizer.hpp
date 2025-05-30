@@ -1,5 +1,7 @@
 #pragma once
 
+#include "resources/embedded_font.hpp"
+
 namespace nx
 {
   class PlotlineVisualizer final : public IAudioVisualizer
@@ -8,6 +10,7 @@ namespace nx
     struct PlotLineVisualizerData_t
     {
       bool enabled = true;
+      bool showGrid = true;
       sf::Color lineColor = sf::Color::Cyan;
       bool showSmoothed = true;
       float gain = 0.5f;
@@ -16,7 +19,16 @@ namespace nx
   public:
     explicit PlotlineVisualizer( const PipelineContext& ctx )
       : m_ctx( ctx )
-    {}
+    {
+      if ( m_debugFont.openFromMemory( Raleway_Regular_ttf, Raleway_Regular_ttf_len ) )
+      {
+        LOG_INFO( "successfully loaded font" );
+      }
+      else
+      {
+        LOG_ERROR( "failed to load font from file" );
+      }
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override
@@ -71,6 +83,7 @@ namespace nx
         lines[i].color = m_data.lineColor;
       }
 
+      drawBinGridOverlay();
       m_texture.draw(lines, m_blendMode);
       m_texture.display();
       return m_texture.get();
@@ -86,6 +99,7 @@ namespace nx
       if ( ImGui::TreeNode( "Plotline Options" ) )
       {
         ImGui::Checkbox("Enabled", &m_data.enabled);
+        ImGui::Checkbox("Show Grid", &m_data.showGrid);
         ImGui::Checkbox("Show Smoothed Buffer", &m_data.showSmoothed);
         ImGui::SliderFloat("Gain", &m_data.gain, 0.1f, 10.f);
         ColorHelper::drawImGuiColorEdit4( "Line Color", m_data.lineColor );
@@ -105,12 +119,49 @@ namespace nx
     sf::BlendMode& getBlendMode() override { return m_blendMode; }
 
   private:
+
+    void drawBinGridOverlay()
+    {
+      const float binWidthHz = m_ctx.globalInfo.sampleRate / static_cast<float>(FFT_SIZE);
+      const float maxFreq = m_ctx.globalInfo.sampleRate / 2.f;
+
+      const auto size = m_texture.getSize();
+
+      for (int32_t i = 0; i < FFT_BINS; ++i)
+      {
+        const float freq = i * binWidthHz;
+        float x = (freq / maxFreq) * size.x;
+
+
+        CurvedLine line( { x, 0.f}, { x, static_cast< float >(size.y) }, 0.f );
+        line.setGradient( sf::Color::Black, { 64, 64, 64 } );
+        line.setWidth( 1.f );
+
+        m_texture.draw( line, m_blendMode );
+
+        // Label (every N bins to reduce clutter)
+        if (i % 8 == 0)
+        {
+          std::ostringstream ss;
+          ss << i << "\n" << static_cast<int>(freq) << "Hz";
+
+          sf::Text label(m_debugFont, ss.str(), 16);
+          label.setPosition({x + 2.f, 2.f});
+          label.setFillColor(sf::Color::White);
+
+          m_texture.draw(label, m_blendMode);
+        }
+      }
+    }
+
+  private:
     const PipelineContext& m_ctx;
     PlotLineVisualizerData_t m_data;
     LazyTexture m_texture;
     sf::BlendMode m_blendMode = sf::BlendAdd;
 
     const IFFTResult * m_fftBuffer = nullptr;
+    sf::Font m_debugFont;
   };
 
 }
