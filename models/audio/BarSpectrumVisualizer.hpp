@@ -152,9 +152,6 @@ namespace nx
 
     sf::BlendMode &getBlendMode() override { return m_blendMode; }
 
-    bool isEnabled() const override { return m_data.isEnabled; }
-    void setEnabled( const bool isEnabled ) override { m_data.isEnabled = isEnabled; }
-
   private:
 
     PipelineContext& m_context;

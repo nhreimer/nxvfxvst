@@ -7,12 +7,12 @@
 namespace nx
 {
   /// this makes the plot appear in ImGui. it's used for debugging.
-  class PlotLinesVisualizer final : public IAudioVisualizer
+  class PlotLineImGuiVisualizer final : public IAudioVisualizer
   {
 
   public:
 
-    explicit PlotLinesVisualizer( PipelineContext& ctx )
+    explicit PlotLineImGuiVisualizer( PipelineContext& ctx )
       : m_ctx( ctx )
     {}
 
@@ -24,7 +24,7 @@ namespace nx
     [[nodiscard]]
     E_AudioVisualizerType getType() const override
     {
-      return E_AudioVisualizerType::E_PlotLineVisualizer;
+      return E_AudioVisualizerType::E_PlotLineImGuiVisualizer;
     }
 
     void destroyTextures() override
@@ -38,9 +38,6 @@ namespace nx
     }
 
     sf::BlendMode & getBlendMode() override { return m_blend; }
-
-    bool isEnabled() const override { return true; }
-    void setEnabled(bool value) override {}
 
     sf::RenderTexture * draw(sf::RenderTexture * inTexture) override
     {

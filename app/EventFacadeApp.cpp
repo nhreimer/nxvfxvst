@@ -40,9 +40,7 @@ namespace nx
     if ( !ImGui::SFML::Init( window ) )
       LOG_ERROR( "initializing imgui failed" );
 
-    m_globalInfo.windowSize = window.getSize();
-    m_globalInfo.windowView.setSize( { static_cast< float >(m_globalInfo.windowSize.x), static_cast< float >(m_globalInfo.windowSize.y) } );
-    m_globalInfo.windowHalfSize = m_globalInfo.windowView.getSize() / 2.f;
+    onResize( window, window.getSize().x, window.getSize().y );
   }
 
   void EventFacadeApp::shutdown( const sf::RenderWindow & window )
@@ -130,7 +128,11 @@ namespace nx
 
     m_globalInfo.windowView.setCenter( m_globalInfo.windowView.getSize() / 2.f );
 
-    m_globalInfo.windowHalfSize = { static_cast< float >(width) / 2, static_cast< float >(height) / 2 };
+    m_globalInfo.windowHalfSize =
+    {
+      static_cast< float >( width )  / 2,
+      static_cast< float >( height ) / 2
+    };
   }
 
   void EventFacadeApp::drawMenu()
@@ -168,6 +170,8 @@ namespace nx
     for ( auto& midiGen : m_midiGen )
       midiGen.drawMenu();
 
+    ImGui::SeparatorText( "Audio Generator" );
+
     if ( m_audioGenIsRunning )
     {
       if ( ImGui::Button( "Stop Audio" ) )
@@ -185,6 +189,8 @@ namespace nx
         m_audioGenerator.run();
       }
     }
+
+    m_audioGenerator.drawMenu();
 
     ImGui::End();
   }

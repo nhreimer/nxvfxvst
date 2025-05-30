@@ -21,8 +21,5 @@ namespace nx
     virtual void receiveUpdatedAudioBuffer( const IFFTResult& fft ) = 0;
     virtual void update( const sf::Time& deltaTime ) = 0;
     virtual sf::BlendMode& getBlendMode() = 0;
-
-    virtual bool isEnabled() const = 0;
-    virtual void setEnabled( bool value ) = 0;
   };
 }
