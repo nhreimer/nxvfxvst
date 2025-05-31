@@ -7,6 +7,7 @@
 #include <imgui.h>
 
 #include "models/IAudioVisualizer.hpp"
+#include "models/shader/ShockBloomShader.hpp"
 
 namespace nx
 {
@@ -21,7 +22,9 @@ namespace nx
       float ringSpacing = 40.f;
       float baseRadius = 20.f;
       float gain = 1.f;
-      float radiusMod = 200.f;
+      float radiusMod = 100.f;
+      float colorGain = 1.f;
+      bool useColorGain = false;
       sf::Color colorStart = sf::Color::Cyan;
       sf::Color colorEnd = sf::Color::Red;
     };
@@ -69,6 +72,8 @@ namespace nx
         ImGui::SliderFloat("Ring Spacing", &m_data.ringSpacing, 5.f, 100.f);
         ImGui::SliderFloat("Gain", &m_data.gain, 0.01f, 10.f);
         ImGui::SliderFloat("Radius Mod", &m_data.radiusMod, 0.f, 300.f);
+        ImGui::Checkbox( "Use Color Gain", &m_data.useColorGain );
+        ImGui::SliderFloat( "Color Gain", &m_data.colorGain, 0.f, 10.f );
         ColorHelper::drawImGuiColorEdit4( "Color Start", m_data.colorStart );
         ColorHelper::drawImGuiColorEdit4( "Color End", m_data.colorEnd );
 
@@ -84,58 +89,65 @@ namespace nx
       const sf::Vector2f center = { size.x / 2.f, size.y / 2.f };
 
       m_drawables.clear();
-
       const size_t binsPerRing = FFT_BINS / m_data.ringCount;
 
       for (size_t ringIndex = 0; ringIndex < m_data.ringCount; ++ringIndex)
       {
-        sf::Vector2f firstPoint = { 0.f, 0.f };
-        sf::Vector2f lastPoint = { 0.f, 0.f };
-
         sf::VertexArray ring(sf::PrimitiveType::LineStrip);
         const float baseRadius = m_data.baseRadius + ringIndex * m_data.ringSpacing;
 
         const size_t start = ringIndex * binsPerRing;
         const size_t end = std::min(start + binsPerRing, FFT_BINS);
-
         const size_t subdivisions = m_data.pointSmoothness;
-        //const float angleStep = NX_TAU / static_cast<float>(subdivisions);
+
+        float firstMag = 0.f;
 
         for (size_t i = 0; i <= subdivisions; ++i)
         {
           const float t = static_cast<float>(i) / static_cast<float>(subdivisions);
           const float angle = t * NX_TAU;
 
-          const float binT = t * static_cast<float>(end - start);
-          const int32_t binIndex = start + static_cast<int32_t>(binT);
-          const int32_t clampedIndex =
-            std::clamp(binIndex, 0, static_cast< int32_t >(FFT_BINS) - 1);
-          const float mag = fft[clampedIndex] * m_data.gain;
+          float binT = t * static_cast<float>(end - start);
+          int32_t binIndex = (i == subdivisions) ? start : start + static_cast<int32_t>(binT);
+          binIndex = std::clamp(binIndex, 0, static_cast<int32_t>(FFT_BINS) - 1);
 
-          const float radius = baseRadius + mag * m_data.radiusMod;
-          const sf::Vector2f point =
+          float mag = fft[binIndex] * m_data.gain;
+          if (!std::isfinite(mag) || mag > 1000.f)
+            mag = 0.f;
+
+          if (i == 0) firstMag = mag;
+          if (i == subdivisions) mag = firstMag;
+
+          float radius = baseRadius + mag * m_data.radiusMod;
+          if (!std::isfinite(radius) || radius > 10000.f)
+            radius = baseRadius;
+
+          sf::Vector2f point =
           {
             center.x + std::cos(angle) * radius,
             center.y + std::sin(angle) * radius
           };
 
-          const auto color = ColorHelper::lerpColor( m_data.colorStart, m_data.colorEnd, ( float )ringIndex / m_data.ringCount );
-          ring.append( sf::Vertex(point, color) );
-
-          if ( i == 0 )
+          sf::Color color;
+          if ( m_data.useColorGain )
           {
-            firstPoint = point;
+            float normalizedMag = std::clamp(mag / m_data.colorGain, 0.f, 1.f);
+            color = ColorHelper::lerpColor(m_data.colorStart, m_data.colorEnd, normalizedMag);
           }
-          else if ( i == subdivisions )
+          else
           {
-            lastPoint = point;
+            color = ColorHelper::lerpColor(
+              m_data.colorStart, m_data.colorEnd,
+              static_cast<float>(ringIndex) / static_cast<float>(m_data.ringCount)
+            );
           }
+          ring.append(sf::Vertex(point, color));
         }
-
 
         m_drawables.push_back(ring);
       }
     }
+
 
     sf::BlendMode& getBlendMode() override { return m_blendMode; }
 
