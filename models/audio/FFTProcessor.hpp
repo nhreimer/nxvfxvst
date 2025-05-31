@@ -30,8 +30,13 @@ namespace nx
     const AudioDataBuffer& getSmoothedBuffer() const override { return m_smoothedBins; }
     const AudioDataBuffer& getRealTimeBuffer() const override { return m_realTimeBins; }
 
-    void apply( const AudioDataBuffer& bins )
+    const AudioDataBuffer& getLogSmoothedBuffer() const override { return m_logSmoothedBins; }
+    const AudioDataBuffer& getLogRealTimeBuffer() const override { return m_logRealTimeBins; }
+
+    void apply( const float sampleRate, const AudioDataBuffer& bins )
     {
+      LOG_INFO( bins.size() );
+
       for (size_t i = 0; i < bins.size(); ++i)
       {
         const float scaled = scale(bins[i]);
@@ -49,6 +54,8 @@ namespace nx
 
         m_realTimeBins[i] = scaled;
       }
+
+      mapToLogScale( sampleRate );
     }
 
     void drawMenu()
@@ -90,10 +97,48 @@ namespace nx
       return val;
     }
 
+
+    void mapToLogScale( const float sampleRate )
+    {
+      const float nyquist = sampleRate / 2.f;
+      constexpr float minFreq = 20.f;
+      const float logMin = std::log10(minFreq);
+      const float logMax = std::log10(nyquist);
+      const float logRange = logMax - logMin;
+
+      for (size_t i = 0; i < FFT_BINS; ++i)
+      {
+        const float freq = (i / static_cast<float>(FFT_BINS)) * nyquist;
+        if (freq < minFreq)
+        {
+          m_logRealTimeBins[i] = 0.f;
+          m_logSmoothedBins[i] = 0.f;
+          continue;
+        }
+
+        // Find the original bin index from log freq
+        const float logFreq = std::log10(freq);
+        const float binFloat = (logFreq - logMin) / logRange * FFT_BINS;
+        const int32_t srcIndex = std::clamp(
+          static_cast<int32_t>(binFloat),
+          0,
+          static_cast< int32_t >(FFT_BINS) - 1);
+
+        m_logRealTimeBins[i] = m_realTimeBins[srcIndex];
+        m_logSmoothedBins[i] = m_smoothedBins[srcIndex];
+      }
+    }
+
   private:
     FFTScalerData_t m_data;
+
+    // these are linear bins
     AudioDataBuffer m_realTimeBins {}; // semi-real-time buffer
     AudioDataBuffer m_smoothedBins {}; // historical data for smoothing
+
+    AudioDataBuffer m_logRealTimeBins {};
+    AudioDataBuffer m_logSmoothedBins {};
+
   };
 
 }

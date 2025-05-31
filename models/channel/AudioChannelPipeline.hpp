@@ -66,7 +66,7 @@ namespace nx
       const auto& audioBuffer = buffer.getBuffer();
 
       // scale the FFT buffer to user-customizable values
-      m_scaler.apply( audioBuffer );
+      m_scaler.apply( m_ctx.globalInfo.sampleRate, audioBuffer );
       m_audioVisualizer->receiveUpdatedAudioBuffer( m_scaler );
     }
 

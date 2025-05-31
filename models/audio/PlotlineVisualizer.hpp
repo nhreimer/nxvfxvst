@@ -14,6 +14,8 @@ namespace nx
       sf::Color lineColor = sf::Color::Cyan;
       bool showSmoothed = true;
       float gain = 0.5f;
+
+      bool useLogScale = true;
     };
 
   public:
@@ -83,7 +85,7 @@ namespace nx
         lines[i].color = m_data.lineColor;
       }
 
-      drawBinGridOverlay();
+      drawGrids();
       m_texture.draw(lines, m_blendMode);
       m_texture.display();
       return m_texture.get();
@@ -100,6 +102,7 @@ namespace nx
       {
         ImGui::Checkbox("Enabled", &m_data.enabled);
         ImGui::Checkbox("Show Grid", &m_data.showGrid);
+        ImGui::Checkbox("Use Log Scale", &m_data.useLogScale);
         ImGui::Checkbox("Show Smoothed Buffer", &m_data.showSmoothed);
         ImGui::SliderFloat("Gain", &m_data.gain, 0.1f, 10.f);
         ColorHelper::drawImGuiColorEdit4( "Line Color", m_data.lineColor );
@@ -120,7 +123,19 @@ namespace nx
 
   private:
 
-    void drawBinGridOverlay()
+    void drawGrids()
+    {
+      if ( !m_data.showGrid ) return;
+
+      if ( m_data.useLogScale )
+        drawLogarithmicBinGrid();
+      else
+        drawLinearBinGrid();
+
+      drawDbGrid();
+    }
+
+    void drawLinearBinGrid()
     {
       const float binWidthHz = m_ctx.globalInfo.sampleRate / static_cast<float>(FFT_SIZE);
       const float maxFreq = m_ctx.globalInfo.sampleRate / 2.f;
@@ -131,7 +146,6 @@ namespace nx
       {
         const float freq = i * binWidthHz;
         float x = (freq / maxFreq) * size.x;
-
 
         CurvedLine line( { x, 0.f}, { x, static_cast< float >(size.y) }, 0.f );
         line.setGradient( sf::Color::Black, { 64, 64, 64 } );
@@ -154,6 +168,73 @@ namespace nx
       }
     }
 
+    void drawLogarithmicBinGrid()
+    {
+      const float binWidthHz = m_ctx.globalInfo.sampleRate / static_cast<float>(FFT_SIZE);
+      const float nyquist = m_ctx.globalInfo.sampleRate / 2.f;
+
+      const float minFreq = 20.f;
+      const float maxFreq = nyquist;
+
+      const float logMin = std::log10(minFreq);
+      const float logMax = std::log10(maxFreq);
+      const float logRange = logMax - logMin;
+
+      const auto size = m_texture.getSize();
+
+      for (int32_t i = 0; i < FFT_BINS; ++i)
+      {
+        const float freq = i * binWidthHz;
+        if (freq < minFreq)
+          continue;
+
+        const float x = ((std::log10(freq) - logMin) / logRange) * size.x;
+
+        CurvedLine line({ x, 0.f }, { x, static_cast<float>(size.y) }, 0.f);
+        line.setGradient(sf::Color::Black, { 64, 64, 64 });
+        line.setWidth(1.f);
+        m_texture.draw(line, m_blendMode);
+
+        // Draw label every ~N bins, spaced logarithmically
+        if (i % 16 == 0)
+        {
+          std::ostringstream ss;
+          ss << i << "\n" << static_cast<int>(freq) << "Hz";
+
+          sf::Text label(m_debugFont, ss.str(), 16);
+          label.setPosition({ x + 2.f, 2.f });
+          label.setFillColor(sf::Color::White);
+
+          m_texture.draw(label, m_blendMode);
+        }
+      }
+    }
+
+    void drawDbGrid()
+    {
+      for (float db : m_dbLines)
+      {
+        float yNorm = std::clamp(1.f + (db / 120.f), 0.f, 1.f); // y=0 at top
+        float yPos = m_ctx.globalInfo.windowSize.y * yNorm;
+
+        CurvedLine line( { 0.f, yPos },
+                         { static_cast< float >(m_ctx.globalInfo.windowSize.x), yPos },
+                         0.f );
+
+        line.setGradient( { 64, 64, 64 }, sf::Color::Black );
+        line.setWidth( 1.f );
+
+        m_texture.draw( line, m_blendMode );
+
+        sf::Text text( m_debugFont );
+        text.setCharacterSize( 14.f );
+        // Optional: add dB label with your debug font
+        text.setString(std::to_string(static_cast< int32_t >(db)) + " dB");
+        text.setPosition({4.f, yPos - 10.f});
+        m_texture.draw(text, m_blendMode);
+      }
+    }
+
   private:
     const PipelineContext& m_ctx;
     PlotLineVisualizerData_t m_data;
@@ -162,6 +243,9 @@ namespace nx
 
     const IFFTResult * m_fftBuffer = nullptr;
     sf::Font m_debugFont;
+
+    inline static const std::vector< float > m_dbLines = { -60, -40, -20, -10, -6, -3, 0 };
+
   };
 
 }
