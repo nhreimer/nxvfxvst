@@ -7,7 +7,8 @@ namespace nx
     E_PlotLineImGuiVisualizer, // used for debugging via ImGui
     E_PlotLineVisualizer,      // used for debugging via SFML
     E_BarSpectrumVisualizer,
-    E_RingBarVisualizer
+    E_RingBarVisualizer,
+    E_RingPlotVisualizer
   };
 
   enum class E_ShaderType : int8_t

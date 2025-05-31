@@ -15,6 +15,7 @@
 #include "models/audio/FFTProcessor.hpp"
 #include "models/audio/RingBarVisualization.hpp"
 #include "models/audio/PlotlineVisualizer.hpp"
+#include "models/audio/RingPlotVisualizer.hpp"
 
 namespace nx
 {
@@ -26,7 +27,7 @@ namespace nx
       : ChannelPipeline( ctx, channelId ),
         m_shaderPipeline( ctx, *this )
     {
-      m_audioVisualizer = std::make_unique< PlotlineVisualizer >( ctx );
+      m_audioVisualizer = std::make_unique< RingPlotVisualizer >( ctx );
     }
 
     ~AudioChannelPipeline() override = default;

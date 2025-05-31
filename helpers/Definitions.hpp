@@ -24,6 +24,9 @@ namespace nx
   // the max samples allowed for an average
   constexpr int32_t RENDER_SAMPLES_COUNT = 64;
 
+  constexpr float MIN_FREQ = 20.f;
+  constexpr float MAX_FREQ = 20000.f;
+
   // audio window sizes
   constexpr size_t FFT_SIZE = 128;
   constexpr size_t FFT_BINS = FFT_SIZE / 2;

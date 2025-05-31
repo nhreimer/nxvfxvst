@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models/audio/IFFTResult.hpp"
+#include "helpers/Definitions.hpp"
 
 namespace nx
 {
@@ -27,17 +28,32 @@ namespace nx
 
   public:
 
+    // TODO: maybe move to AudioHelper to distinguish its role?
+    static float getLogFrequencyForBin( const size_t binIndex,
+                                        const float sampleRate,
+                                        const size_t totalBins )
+    {
+      const float maxFreq = sampleRate / 2.f;
+
+      const float t = static_cast< float >(binIndex) / static_cast<float>(totalBins - 1);
+      return MIN_FREQ * std::pow( maxFreq / MIN_FREQ, t );
+    }
+
     const AudioDataBuffer& getSmoothedBuffer() const override { return m_smoothedBins; }
     const AudioDataBuffer& getRealTimeBuffer() const override { return m_realTimeBins; }
 
-    const AudioDataBuffer& getLogSmoothedBuffer() const override { return m_logSmoothedBins; }
-    const AudioDataBuffer& getLogRealTimeBuffer() const override { return m_logRealTimeBins; }
+    // const AudioDataBuffer& getLogSmoothedBuffer() const override { return m_logSmoothedBins; }
+    // const AudioDataBuffer& getLogRealTimeBuffer() const override { return m_logRealTimeBins; }
 
     void apply( const float sampleRate, const AudioDataBuffer& bins )
     {
-      LOG_INFO( bins.size() );
+      if ( bins.size() != FFT_BINS )
+      {
+        LOG_ERROR( "FFT bin size mismatch. unable to process." );
+        return;
+      }
 
-      for (size_t i = 0; i < bins.size(); ++i)
+      for (size_t i = 0; i < FFT_BINS; ++i)
       {
         const float scaled = scale(bins[i]);
 
@@ -55,7 +71,7 @@ namespace nx
         m_realTimeBins[i] = scaled;
       }
 
-      mapToLogScale( sampleRate );
+      // mapToLogScale( sampleRate );
     }
 
     void drawMenu()
@@ -85,7 +101,7 @@ namespace nx
 
       if (m_data.mode == Mode::Decibel)
       {
-        const float db = 20.f * std::log10(val);
+        const float db = MIN_FREQ * std::log10(val);
         val = (db - m_data.dbFloor) / std::abs(m_data.dbFloor);
       }
 
@@ -97,37 +113,36 @@ namespace nx
       return val;
     }
 
-
-    void mapToLogScale( const float sampleRate )
-    {
-      const float nyquist = sampleRate / 2.f;
-      constexpr float minFreq = 20.f;
-      const float logMin = std::log10(minFreq);
-      const float logMax = std::log10(nyquist);
-      const float logRange = logMax - logMin;
-
-      for (size_t i = 0; i < FFT_BINS; ++i)
-      {
-        const float freq = (i / static_cast<float>(FFT_BINS)) * nyquist;
-        if (freq < minFreq)
-        {
-          m_logRealTimeBins[i] = 0.f;
-          m_logSmoothedBins[i] = 0.f;
-          continue;
-        }
-
-        // Find the original bin index from log freq
-        const float logFreq = std::log10(freq);
-        const float binFloat = (logFreq - logMin) / logRange * FFT_BINS;
-        const int32_t srcIndex = std::clamp(
-          static_cast<int32_t>(binFloat),
-          0,
-          static_cast< int32_t >(FFT_BINS) - 1);
-
-        m_logRealTimeBins[i] = m_realTimeBins[srcIndex];
-        m_logSmoothedBins[i] = m_smoothedBins[srcIndex];
-      }
-    }
+    // void mapToLogScale( const float sampleRate )
+    // {
+    //   const float nyquist = sampleRate / 2.f;
+    //   //constexpr float minFreq = 20.f;
+    //   const float logMin = std::log10(MIN_FREQ);
+    //   const float logMax = std::log10(nyquist);
+    //   const float logRange = logMax - logMin;
+    //
+    //   for (size_t i = 0; i < FFT_BINS; ++i)
+    //   {
+    //     const float freq = (i / static_cast<float>(FFT_BINS)) * nyquist;
+    //     if (freq < MIN_FREQ)
+    //     {
+    //       m_logRealTimeBins[i] = 0.f;
+    //       m_logSmoothedBins[i] = 0.f;
+    //       continue;
+    //     }
+    //
+    //     // Find the original bin index from log freq
+    //     const float logFreq = std::log10(freq);
+    //     const float binFloat = (logFreq - logMin) / logRange * FFT_BINS;
+    //     const int32_t srcIndex = std::clamp(
+    //       static_cast<int32_t>(binFloat),
+    //       0,
+    //       static_cast< int32_t >(FFT_BINS) - 1);
+    //
+    //     m_logRealTimeBins[i] = m_realTimeBins[srcIndex];
+    //     m_logSmoothedBins[i] = m_smoothedBins[srcIndex];
+    //   }
+    // }
 
   private:
     FFTScalerData_t m_data;

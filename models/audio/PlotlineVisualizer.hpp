@@ -1,6 +1,9 @@
 #pragma once
 
+#include "helpers/Definitions.hpp"
 #include "resources/embedded_font.hpp"
+
+#include "models/audio/IFFTResult.hpp"
 
 namespace nx
 {
@@ -15,7 +18,7 @@ namespace nx
       bool showSmoothed = true;
       float gain = 0.5f;
 
-      bool useLogScale = true;
+      bool useLogScale = false;
     };
 
   public:
@@ -173,10 +176,9 @@ namespace nx
       const float binWidthHz = m_ctx.globalInfo.sampleRate / static_cast<float>(FFT_SIZE);
       const float nyquist = m_ctx.globalInfo.sampleRate / 2.f;
 
-      const float minFreq = 20.f;
       const float maxFreq = nyquist;
 
-      const float logMin = std::log10(minFreq);
+      const float logMin = std::log10(MIN_FREQ);
       const float logMax = std::log10(maxFreq);
       const float logRange = logMax - logMin;
 
@@ -185,7 +187,7 @@ namespace nx
       for (int32_t i = 0; i < FFT_BINS; ++i)
       {
         const float freq = i * binWidthHz;
-        if (freq < minFreq)
+        if (freq < MIN_FREQ)
           continue;
 
         const float x = ((std::log10(freq) - logMin) / logRange) * size.x;
@@ -212,9 +214,9 @@ namespace nx
 
     void drawDbGrid()
     {
-      for (float db : m_dbLines)
+      for ( const float db : m_dbLines )
       {
-        float yNorm = std::clamp(1.f + (db / 120.f), 0.f, 1.f); // y=0 at top
+        const float yNorm = std::clamp(1.f + (db / 120.f), 0.f, 1.f); // y=0 at top
         float yPos = m_ctx.globalInfo.windowSize.y * yNorm;
 
         CurvedLine line( { 0.f, yPos },
