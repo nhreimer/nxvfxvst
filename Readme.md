@@ -19,12 +19,15 @@ Synchronize midi events and audio data to highly customizable visuals.
 
 * Ability to run in Standalone and VST3 Plugin
   * In Standalone (testing only, no audio)
-    * Midi Generator that pushes events on different threads to
+    * Midi Generators that push events on different threads to
       simulate DAW Processor threads and stress testing
-* Multichannel support
+    * Audio Generators (sine oscillators) that push audio processing on different threads to simulate DAW processor
+* Multichannel midi support
   * Route midi output to independent VFX chains
   * Infinite shader and modifier chaining per channel
   * Ability to prioritize rendering order for each channel
+* Audio data visualization support
+  * visualization layouts for real-time audio data
 * Each effect can be assigned user-specified midi notes for triggers
 * DAW Automation controls for effects
   * Dynamically names and resets names of parameters for DAW visibility
@@ -37,7 +40,7 @@ Synchronize midi events and audio data to highly customizable visuals.
   * Triggers at multiple stages of a pipeline (for time synchronization)
 * Real-time video encoder (Raw RGBA with Frame Rate Locking)
 * Multithreaded rendering
-  * Each channel renders on its own thread
+  * Each channel renders on its own thread (1 Audio + 4 Midi Channels)
 
 ---
 

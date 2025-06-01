@@ -1,7 +1,9 @@
 #pragma once
 
 #include <mutex>
+
 #include "data/PipelineContext.hpp"
+#include "utils/RingBufferAverager.hpp"
 
 namespace nx
 {
@@ -10,6 +12,9 @@ namespace nx
 
   class ShaderPipeline final
   {
+
+    using ShaderPair = std::pair< std::unique_ptr< IShader >, RingBufferAverager >;
+
   public:
     ///
     /// @param context
@@ -41,8 +46,8 @@ namespace nx
       // TODO: this might interfere with serialization
       for ( auto& shader : m_shaders )
       {
-        shader->destroyTextures();
-        shader.reset();
+        shader.first->destroyTextures();
+        shader.first.reset();
       }
 
       m_shaders.clear();
@@ -74,18 +79,27 @@ namespace nx
     template < typename T >
     IShader * createShader()
     {
-      auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
-        std::make_unique< T >( m_ctx ) );
-      return shader.get();
+      // auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
+      //   std::make_unique< T >( m_ctx ) );
+
+      auto& shader =
+        m_shaders.emplace_back( std::pair< std::unique_ptr< T >, RingBufferAverager >( { std::make_unique< T >( m_ctx ),
+                                  RingBufferAverager {} } ) );
+      return shader.first.get();
     }
 
     template < typename T >
     IShader * deserializeShader( const nlohmann::json& j )
     {
-      auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
-        std::make_unique< T >( m_ctx ) );
-      shader->deserialize( j );
-      return shader.get();
+      // auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
+      //   std::make_unique< T >( m_ctx ) );
+
+      auto& shader =
+        m_shaders.emplace_back( std::pair< std::unique_ptr< T >, RingBufferAverager >( { std::make_unique< T >( m_ctx ),
+                                  RingBufferAverager {} } ) );
+
+      shader.first->deserialize( j );
+      return shader.first.get();
     }
 
     void drawShadersAvailable();
@@ -94,7 +108,8 @@ namespace nx
   private:
     PipelineContext& m_ctx;
 
-    std::vector< std::unique_ptr< IShader > > m_shaders;
+    //std::vector< std::unique_ptr< IShader > > m_shaders;
+    std::vector< ShaderPair > m_shaders;
     LazyTexture m_outputTexture;
 
     RequestSink& m_requestSink;

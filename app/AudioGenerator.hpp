@@ -157,6 +157,7 @@ namespace nx::test
 
     std::array< AudioGenerator, 3 > m_oscillators
     {
+      // A Major
       AudioGenerator { 440.f },   // A4
       AudioGenerator { 554.37f }, // C#5
       AudioGenerator { 659.25f }  // E5

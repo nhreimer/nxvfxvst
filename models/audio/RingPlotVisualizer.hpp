@@ -9,6 +9,8 @@
 #include "models/IAudioVisualizer.hpp"
 #include "models/shader/ShockBloomShader.hpp"
 
+#include "utils/RingBufferAverager.hpp"
+
 namespace nx
 {
   class RingPlotVisualizer final : public IAudioVisualizer
@@ -77,6 +79,9 @@ namespace nx
         ColorHelper::drawImGuiColorEdit4( "Color Start", m_data.colorStart );
         ColorHelper::drawImGuiColorEdit4( "Color End", m_data.colorEnd );
 
+        ImGui::SeparatorText( "Audio Processing Time" );
+        ImGui::Text( "Time: %0.2f", m_timedBuffer.getAverage() );
+
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -84,6 +89,8 @@ namespace nx
 
     void receiveUpdatedAudioBuffer(const IFFTResult& fftResult) override
     {
+      m_timedBuffer.startTimer();
+
       const auto& fft = fftResult.getSmoothedBuffer();
       const auto size = m_ctx.globalInfo.windowSize;
       const sf::Vector2f center = { size.x / 2.f, size.y / 2.f };
@@ -122,7 +129,7 @@ namespace nx
           if (!std::isfinite(radius) || radius > 10000.f)
             radius = baseRadius;
 
-          sf::Vector2f point =
+          const sf::Vector2f point =
           {
             center.x + std::cos(angle) * radius,
             center.y + std::sin(angle) * radius
@@ -131,7 +138,7 @@ namespace nx
           sf::Color color;
           if ( m_data.useColorGain )
           {
-            float normalizedMag = std::clamp(mag / m_data.colorGain, 0.f, 1.f);
+            const float normalizedMag = std::clamp(mag / m_data.colorGain, 0.f, 1.f);
             color = ColorHelper::lerpColor(m_data.colorStart, m_data.colorEnd, normalizedMag);
           }
           else
@@ -146,6 +153,8 @@ namespace nx
 
         m_drawables.push_back(ring);
       }
+
+      m_timedBuffer.stopTimerAndAddSample();
     }
 
 
@@ -159,6 +168,9 @@ namespace nx
     std::vector<sf::VertexArray> m_drawables;
 
     sf::BlendMode m_blendMode = sf::BlendAdd;
+
+    RingBufferAverager m_timedBuffer;
+
   };
 
 }
