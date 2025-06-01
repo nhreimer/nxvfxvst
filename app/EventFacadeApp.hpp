@@ -9,10 +9,10 @@
 #include "models/data/GlobalInfo_t.hpp"
 #include "models/MultichannelPipeline.hpp"
 
-#include "models/data/PipelineContext.hpp"
+#include "app/AudioGenerator.hpp"
 #include "app/MidiGenerator.hpp"
 #include "app/SerialGenerator.hpp" // used for serial/deserial testing
-#include "app/SineWaveGenerator.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {
@@ -107,7 +107,8 @@ namespace nx
     // buffer with audio data for audio graphics
     FFTBuffer m_fftBuffer;
 
-    test::SineSweepGenerator m_audioGenerator { m_onAudioEvent };
+    //test::SineSweepGenerator m_audioGenerator { m_onAudioEvent };
+    test::AudioGeneratorMixer m_audioGeneratorMixer { m_onAudioEvent };
 
     // SerialGenerator m_serialGenerator;
 

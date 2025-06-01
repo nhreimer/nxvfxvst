@@ -176,7 +176,7 @@ namespace nx
     {
       if ( ImGui::Button( "Stop Audio" ) )
       {
-        m_audioGenerator.stop();
+        m_audioGeneratorMixer.stop();
         m_audioGenIsRunning = false;
       }
     }
@@ -185,12 +185,12 @@ namespace nx
       if ( ImGui::Button( "Start Audio" ) )
       {
         m_audioGenIsRunning = true;
-        m_audioGenerator.reset();
-        m_audioGenerator.run();
+        // m_audioGeneratorMixer.reset();
+        m_audioGeneratorMixer.run();
       }
     }
 
-    m_audioGenerator.drawMenu();
+    m_audioGeneratorMixer.drawMenu();
 
     ImGui::End();
   }

@@ -11,10 +11,8 @@
 #include "vst/analysis/FFTBuffer.hpp"
 
 #include "models/IAudioVisualizer.hpp"
-#include "models/audio/BarSpectrumVisualizer.hpp"
 #include "models/audio/FFTProcessor.hpp"
-#include "models/audio/RingBarVisualization.hpp"
-#include "models/audio/PlotlineVisualizer.hpp"
+//#include "models/audio/PlotlineVisualizer.hpp"
 #include "models/audio/RingPlotVisualizer.hpp"
 
 namespace nx
@@ -39,7 +37,9 @@ namespace nx
       request( [ this ]
       {
         m_outputTexture = m_audioVisualizer->draw( nullptr );
-        m_outputTexture = m_shaderPipeline.draw( m_outputTexture );
+
+        if ( m_outputTexture )
+          m_outputTexture = m_shaderPipeline.draw( m_outputTexture );
       } );
     }
 
