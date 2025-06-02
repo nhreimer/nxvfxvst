@@ -151,8 +151,8 @@ namespace nx
     AudioDataBuffer m_realTimeBins {}; // semi-real-time buffer
     AudioDataBuffer m_smoothedBins {}; // historical data for smoothing
 
-    AudioDataBuffer m_logRealTimeBins {};
-    AudioDataBuffer m_logSmoothedBins {};
+    // AudioDataBuffer m_logRealTimeBins {};
+    // AudioDataBuffer m_logSmoothedBins {};
 
   };
 

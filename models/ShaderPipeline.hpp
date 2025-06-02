@@ -79,9 +79,6 @@ namespace nx
     template < typename T >
     IShader * createShader()
     {
-      // auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
-      //   std::make_unique< T >( m_ctx ) );
-
       auto& shader =
         m_shaders.emplace_back( std::pair< std::unique_ptr< T >, RingBufferAverager >( { std::make_unique< T >( m_ctx ),
                                   RingBufferAverager {} } ) );
@@ -91,9 +88,6 @@ namespace nx
     template < typename T >
     IShader * deserializeShader( const nlohmann::json& j )
     {
-      // auto& shader = m_shaders.emplace_back< std::unique_ptr< T > >(
-      //   std::make_unique< T >( m_ctx ) );
-
       auto& shader =
         m_shaders.emplace_back( std::pair< std::unique_ptr< T >, RingBufferAverager >( { std::make_unique< T >( m_ctx ),
                                   RingBufferAverager {} } ) );

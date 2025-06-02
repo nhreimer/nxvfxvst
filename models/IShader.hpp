@@ -14,7 +14,11 @@ namespace nx
 
     virtual void update( const sf::Time& deltaTime ) = 0;
 
+    // trigger on midi event
     virtual void trigger( const Midi_t& midi ) = 0;
+
+    // trigger on audio buffer event (can specify certain frequencies or frequency ranges)
+    virtual void trigger( const AudioDataBuffer& buffer ) = 0;
 
     virtual void drawMenu() = 0;
 
