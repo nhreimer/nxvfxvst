@@ -36,6 +36,8 @@ namespace nx
 
     void processMidiEvent( const Midi_t& midiEvent ) const;
 
+    void processAudioBuffer( const AudioDataBuffer& buffer ) const;
+
     void drawMenu();
 
     void destroyTextures()

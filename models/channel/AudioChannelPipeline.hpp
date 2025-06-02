@@ -69,6 +69,7 @@ namespace nx
       // scale the FFT buffer to user-customizable values
       m_scaler.apply( m_ctx.globalInfo.sampleRate, audioBuffer );
       m_audioVisualizer->receiveUpdatedAudioBuffer( m_scaler );
+      m_shaderPipeline.processAudioBuffer( audioBuffer );
     }
 
     void update( const sf::Time& deltaTime ) const override

@@ -30,6 +30,12 @@ namespace nx
       shader.first->trigger( midiEvent );
   }
 
+  void ShaderPipeline::processAudioBuffer( const AudioDataBuffer& buffer ) const
+  {
+    for ( auto& shader : m_shaders )
+      shader.first->trigger( buffer );
+  }
+
   void ShaderPipeline::drawMenu()
   {
     drawShadersAvailable();
