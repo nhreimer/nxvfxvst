@@ -7,8 +7,6 @@
 #include <imgui.h>
 
 #include "models/IAudioVisualizer.hpp"
-#include "models/shader/ShockBloomShader.hpp"
-
 #include "utils/RingBufferAverager.hpp"
 
 namespace nx
@@ -92,20 +90,20 @@ namespace nx
       m_timedBuffer.startTimer();
 
       const auto& fft = fftResult.getSmoothedBuffer();
-      const auto size = m_ctx.globalInfo.windowSize;
-      const sf::Vector2f center = { size.x / 2.f, size.y / 2.f };
+      // const auto size = m_ctx.globalInfo.windowSize;
+      //const sf::Vector2f center = { ( float )size.x / 2.f, ( float )size.y / 2.f };
 
       m_drawables.clear();
-      const size_t binsPerRing = FFT_BINS / m_data.ringCount;
+      const int32_t binsPerRing = FFT_BINS / m_data.ringCount;
 
-      for (size_t ringIndex = 0; ringIndex < m_data.ringCount; ++ringIndex)
+      for (int32_t ringIndex = 0; ringIndex < m_data.ringCount; ++ringIndex)
       {
         sf::VertexArray ring(sf::PrimitiveType::LineStrip);
-        const float baseRadius = m_data.baseRadius + ringIndex * m_data.ringSpacing;
+        const float baseRadius = m_data.baseRadius + static_cast< float >(ringIndex) * m_data.ringSpacing;
 
-        const size_t start = ringIndex * binsPerRing;
-        const size_t end = std::min(start + binsPerRing, FFT_BINS);
-        const size_t subdivisions = m_data.pointSmoothness;
+        const auto start = ringIndex * binsPerRing;
+        const auto end = std::min(start + binsPerRing, FFT_BINS);
+        const auto subdivisions = m_data.pointSmoothness;
 
         float firstMag = 0.f;
 
@@ -114,7 +112,7 @@ namespace nx
           const float t = static_cast<float>(i) / static_cast<float>(subdivisions);
           const float angle = t * NX_TAU;
 
-          float binT = t * static_cast<float>(end - start);
+          const float binT = t * static_cast<float>(end - start);
           int32_t binIndex = (i == subdivisions) ? start : start + static_cast<int32_t>(binT);
           binIndex = std::clamp(binIndex, 0, static_cast<int32_t>(FFT_BINS) - 1);
 
@@ -131,8 +129,8 @@ namespace nx
 
           const sf::Vector2f point =
           {
-            center.x + std::cos(angle) * radius,
-            center.y + std::sin(angle) * radius
+            m_ctx.globalInfo.windowHalfSize.x + std::cos(angle) * radius,
+            m_ctx.globalInfo.windowHalfSize.y + std::sin(angle) * radius
           };
 
           sf::Color color;

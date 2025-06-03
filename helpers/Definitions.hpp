@@ -28,8 +28,8 @@ namespace nx
   constexpr float MAX_FREQ = 20000.f;
 
   // audio window sizes
-  constexpr size_t FFT_SIZE = 128;
-  constexpr size_t FFT_BINS = FFT_SIZE / 2;
+  constexpr int32_t FFT_SIZE = 128;
+  constexpr int32_t FFT_BINS = FFT_SIZE / 2;
 
   // using AudioProcessorBuffer = std::array< float, FFT_SIZE >;
   using AudioDataBuffer = std::array< float, FFT_BINS >;

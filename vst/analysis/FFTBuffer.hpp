@@ -66,15 +66,16 @@ namespace nx
     }
 
     [[nodiscard]]
-    std::chrono::milliseconds age() const
+    std::chrono::milliseconds getAge() const
     {
-      return std::chrono::duration_cast< std::chrono::milliseconds >( Clock::now() - m_lastWrite );
+      return std::chrono::duration_cast< std::chrono::milliseconds >( Clock::now()
+             - m_lastWrite );
     }
 
     [[nodiscard]]
     bool isStale( const std::chrono::milliseconds threshold ) const
     {
-      return age() > threshold;
+      return getAge() > threshold;
     }
 
   private:

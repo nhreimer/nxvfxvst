@@ -70,7 +70,7 @@ namespace nx
   void MultichannelPipeline::processAudioData( FFTBuffer& buffer )
   {
     static_cast< AudioChannelPipeline * >( m_channels.at( AUDIO_CHANNEL_INDEX ).get() )->processAudioBuffer( buffer );
-    m_audioDataAverage.addSample( static_cast< double >( buffer.age().count() ) );
+    m_audioDataAverage.addSample( static_cast< double >( buffer.getAge().count() ) );
   }
 
   void MultichannelPipeline::draw( sf::RenderWindow &window )
