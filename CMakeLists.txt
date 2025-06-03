@@ -39,7 +39,6 @@ set( NX_CPP_FILES
   models/modifier/PerlinDeformerModifier.cpp
   models/modifier/RingZoneMeshModifier.cpp
 
-  models/particle/behavior/ColorMorphBehavior.cpp
   models/particle/behavior/FreeFallBehavior.cpp
   models/particle/behavior/JitterBehavior.cpp
   models/particle/behavior/MagneticBehavior.cpp

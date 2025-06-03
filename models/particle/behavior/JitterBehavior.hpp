@@ -44,7 +44,6 @@ X(jitterMultiplier  , float, 0.5f, 0.f, 5.f, "Amount of jitter", true)
     E_BehaviorType getType() const override { return E_BehaviorType::E_JitterBehavior; }
 
     void applyOnSpawn( IParticle * p,
-                       const Midi_t& midi,
                        const ParticleData_t& particleData ) override;
 
     void applyOnUpdate( IParticle * p,

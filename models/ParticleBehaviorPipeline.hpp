@@ -16,7 +16,6 @@ namespace nx
     void loadPipeline( const nlohmann::json& j );
 
     void applyOnSpawn( IParticle * p,
-                       const Midi_t& midi,
                        const ParticleData_t& particleData ) const;
 
     void applyOnUpdate( IParticle * p,

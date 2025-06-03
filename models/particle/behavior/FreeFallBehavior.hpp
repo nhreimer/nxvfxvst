@@ -42,7 +42,6 @@ X(timeDivisor,  float,  2.5f,   0.f, 50.f, "Time in seconds of falling", true )
     E_BehaviorType getType() const override { return E_BehaviorType::E_FreeFallBehavior; }
 
     void applyOnSpawn( IParticle * p,
-                       const Midi_t& midi,
                        const ParticleData_t& particleData ) override {}
 
     void applyOnUpdate( IParticle * p,

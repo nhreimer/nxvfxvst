@@ -46,7 +46,6 @@ X(magnetLocation,   sf::Vector2f, sf::Vector2f({0.5f, 0.5f}), 0.f, 0.f, "Locatio
     E_BehaviorType getType() const override { return E_BehaviorType::E_MagneticBehavior; }
 
     void applyOnSpawn(IParticle *,
-                      const Midi_t&,
                       const ParticleData_t& particleData ) override
     {}
 

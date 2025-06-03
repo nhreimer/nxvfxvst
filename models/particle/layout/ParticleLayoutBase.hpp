@@ -84,12 +84,11 @@ namespace nx
     /// for calling this
     /// @param timeParticle
     /// @param midiEvent
-    virtual void notifyBehaviorOnSpawn( IParticle * timeParticle, const Midi_t& midiEvent )
+    virtual void notifyBehaviorOnSpawn( IParticle * timeParticle )
     {
 
       m_behaviorPipeline.applyOnSpawn(
         timeParticle,
-        midiEvent,
         m_particleGeneratorManager.getParticleGenerator()->getData() );
     }
 

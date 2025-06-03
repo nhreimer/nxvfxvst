@@ -62,7 +62,6 @@ namespace nx
     E_InvalidBehavior,
     E_FreeFallBehavior,
     E_JitterBehavior,
-    E_ColorMorphBehavior,
     E_MagneticBehavior
   };
 
