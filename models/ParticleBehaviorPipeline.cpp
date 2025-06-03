@@ -43,7 +43,7 @@ namespace nx
           break;
 
         case E_BehaviorType::E_MagneticBehavior:
-          deserializeBehavior< MagneticAttractorBehavior >( data );
+          deserializeBehavior< MagneticBehavior >( data );
           break;
 
         default:
@@ -143,7 +143,7 @@ namespace nx
 
       ImGui::SameLine();
       if ( ImGui::Button( "Magnetic##1" ) )
-        createBehavior< MagneticAttractorBehavior >();
+        createBehavior< MagneticBehavior >();
 
       ImGui::TreePop();
       ImGui::Spacing();

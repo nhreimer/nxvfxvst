@@ -27,6 +27,8 @@ namespace nx
       bool useColorGain = false;
       sf::Color colorStart = sf::Color::Cyan;
       sf::Color colorEnd = sf::Color::Red;
+
+      float threshold = 0.1f;
     };
 
   public:
@@ -66,7 +68,8 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Ring Plot Options" ) )
       {
-        ImGui::Checkbox("Enabled", &m_data.isActive);
+        ImGui::Checkbox("Active", &m_data.isActive);
+        ImGui::SliderFloat( "Threshold", &m_data.threshold, 0.f, 1.f );
         ImGui::SliderInt("Ring Count", &m_data.ringCount, 1, 16);
         ImGui::SliderInt("Points per Ring", &m_data.pointSmoothness, 16, 256);
         ImGui::SliderFloat("Ring Spacing", &m_data.ringSpacing, 5.f, 100.f);
@@ -115,6 +118,11 @@ namespace nx
           const float binT = t * static_cast<float>(end - start);
           int32_t binIndex = (i == subdivisions) ? start : start + static_cast<int32_t>(binT);
           binIndex = std::clamp(binIndex, 0, static_cast<int32_t>(FFT_BINS) - 1);
+
+          if ( fft[ binIndex ] < m_data.threshold )
+          {
+            continue;
+          }
 
           float mag = fft[binIndex] * m_data.gain;
           if (!std::isfinite(mag) || mag > 1000.f)

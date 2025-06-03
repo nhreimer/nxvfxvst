@@ -5,7 +5,7 @@
 namespace nx
 {
 
-  class MagneticAttractorBehavior final : public IParticleBehavior
+  class MagneticBehavior final : public IParticleBehavior
   {
 
 #define MAGNET_BEHAVIOR_PARAMS(X)                                                   \
@@ -32,7 +32,7 @@ X(magnetLocation,   sf::Vector2f, sf::Vector2f({0.5f, 0.5f}), 0.f, 0.f, "Locatio
     };
 
   public:
-    explicit MagneticAttractorBehavior(PipelineContext& context)
+    explicit MagneticBehavior(PipelineContext& context)
       : m_ctx( context )
     {
       EXPAND_SHADER_VST_BINDINGS(MAGNET_BEHAVIOR_PARAMS, m_ctx.vstContext.paramBindingManager)

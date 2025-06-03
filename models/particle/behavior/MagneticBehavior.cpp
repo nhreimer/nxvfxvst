@@ -3,7 +3,7 @@
 namespace nx
 {
 
-  void MagneticAttractorBehavior::applyOnUpdate(IParticle * p,
+  void MagneticBehavior::applyOnUpdate(IParticle * p,
                                                 const sf::Time& dt,
                                                 const ParticleData_t& particleData )
   {
@@ -30,7 +30,7 @@ namespace nx
     p->move( offset );
   }
 
-  void MagneticAttractorBehavior::drawMenu()
+  void MagneticBehavior::drawMenu()
   {
     if ( ImGui::TreeNode( "Magnetic Behavior" ) )
     {
@@ -53,7 +53,7 @@ namespace nx
       m_timedCursor.drawPosition();
   }
 
-  nlohmann::json MagneticAttractorBehavior::serialize() const
+  nlohmann::json MagneticBehavior::serialize() const
   {
     nlohmann::json j;
     j[ "type" ] = SerialHelper::serializeEnum( getType() );
@@ -61,7 +61,7 @@ namespace nx
     return j;
   }
 
-  void MagneticAttractorBehavior::deserialize(const nlohmann::json &j)
+  void MagneticBehavior::deserialize(const nlohmann::json &j)
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {

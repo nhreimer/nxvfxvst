@@ -49,7 +49,7 @@ namespace nx
       addBehavior<ColorMorphBehavior>();
       addBehavior<FreeFallBehavior>();
       addBehavior<JitterBehavior>();
-      addBehavior<MagneticAttractorBehavior>();
+      addBehavior<MagneticBehavior>();
     }
 
     template < typename T >
