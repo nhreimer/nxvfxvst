@@ -83,7 +83,6 @@ namespace nx
     /// and how many particles are created in a layout. each layout is responsible
     /// for calling this
     /// @param timeParticle
-    /// @param midiEvent
     virtual void notifyBehaviorOnSpawn( IParticle * timeParticle )
     {
 

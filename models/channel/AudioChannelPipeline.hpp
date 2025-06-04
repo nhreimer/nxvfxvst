@@ -4,21 +4,22 @@
 #include <nlohmann/json.hpp>
 
 #include "utils/TaskQueue.hpp"
+#include "vst/analysis/FFTBuffer.hpp"
+
 #include "models/channel/ChannelPipeline.hpp"
 
 #include "models/data/PipelineContext.hpp"
 #include "models/ShaderPipeline.hpp"
-#include "vst/analysis/FFTBuffer.hpp"
 
 #include "models/IAudioVisualizer.hpp"
+
 #include "models/audio/FFTProcessor.hpp"
-//#include "models/audio/PlotlineVisualizer.hpp"
+
 #include "models/audio/RingPlotVisualizer.hpp"
 #include "models/audio/RingParticleVisualizer.hpp"
 
 namespace nx
 {
-
   class AudioChannelPipeline final : public ChannelPipeline
   {
   public:
@@ -81,16 +82,39 @@ namespace nx
 
     void drawMenu() override
     {
-      if ( ImGui::TreeNode( "Audio Data" ) )
+      m_scaler.drawMenu();
+      drawVisualizerOptionsMenu();
+      m_audioVisualizer->drawMenu();
+      m_shaderPipeline.drawMenu();
+    }
+
+  private:
+
+    // because the IAudioVisualizer implementation contains textures, we
+    // have to make sure we destroy the texture on the render thread.
+    template < typename T >
+    void requestAndReplaceVisualizer()
+    {
+      request( [ this ]
       {
-        m_scaler.drawMenu();
-        m_audioVisualizer->drawMenu();
+        std::unique_lock lock( m_audioVisualizerMutex );
+        m_audioVisualizer->destroyTextures();
+        m_audioVisualizer.reset( new T( m_ctx ) );
+      } );
+    }
+
+    void drawVisualizerOptionsMenu()
+    {
+      if ( ImGui::TreeNode( "Audio Visualizers Available" ) )
+      {
+        if ( ImGui::RadioButton( "Ring Particles##1", E_AudioVisualizerType::E_RingParticleVisualizer == m_audioVisualizer->getType() ) )
+          requestAndReplaceVisualizer< RingParticleVisualizer >();
+        if ( ImGui::RadioButton( "Ring Plot##1", E_AudioVisualizerType::E_RingPlotVisualizer == m_audioVisualizer->getType() ) )
+          requestAndReplaceVisualizer< RingPlotVisualizer >();
 
         ImGui::TreePop();
         ImGui::Spacing();
       }
-
-      m_shaderPipeline.drawMenu();
     }
 
   private:
@@ -99,6 +123,8 @@ namespace nx
     ShaderPipeline m_shaderPipeline;
 
     FFTProcessor m_scaler;
+
+    std::mutex m_audioVisualizerMutex;
   };
 
 }
