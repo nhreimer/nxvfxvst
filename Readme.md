@@ -324,17 +324,18 @@ Manages the particle layout (initial placement & creation) and passes particles 
     Delegates visual transformation to modifiers
     Sends particle data to the modifier pipeline via std::deque<TimedParticle_t*>
 
-| Layout Type     | Description                                    |
-|-----------------|------------------------------------------------|
-| Empty           | no particles are drawn at all                  |
-| Random          | randomly generates positions                   |
-| Spiral          | spirals from the center out based on midi note |
-| Golden Spiral   | uses the golden ratio                          | 
-| Lissajous Curve |                                                |
-| L-System Curve  |                                                |
-| Fractal Ring    |                                                |
-| Elliptical      |                                                |
-| Ring Particle   | audio visualizer                               |
+| Layout Type     | Description    |
+|-----------------|----------------|
+| Empty           | audio and midi |
+| Random          | midi           |
+| Spiral          | midi           |
+| Golden Spiral   | midi           | 
+| Lissajous Curve | midi           |
+| L-System Curve  | midi           |
+| Fractal Ring    | midi           |
+| Elliptical      | midi           |
+| Ring Particle   | audio          |
+| Spiral Echo     | audio          |
 
 ### Particle Generator
 

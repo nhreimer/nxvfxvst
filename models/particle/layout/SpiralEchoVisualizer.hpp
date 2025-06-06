@@ -8,13 +8,19 @@ namespace nx
   struct SpiralLayoutData_t : ParticleLayoutData_t
   {
     bool isActive = true;
+    bool mirrorSpiral = false;
     float gain = 8.f;
-    float threshold = 0.01f;
+    float threshold = 0.1f;
     float startRadius = 100.f;
     float radiusMod = 200.f;
     float tightness = 0.2f;
-    float rotationRate = 0.05f;
+    float rotationRate = 0.005f;
     float rotationOffset = 0.f; // Updated every tick
+    float skewRotation = 0.f;
+
+    float mirrorGainFactor = 0.75f;   // Scales the mirror’s energy
+    float mirrorRadialOffset = 30.f;  // Push mirror slightly further or closer
+    float mirrorSkewRotation = 0.f;
   };
 
   class SpiralEchoVisualizer final : public ParticleLayoutBase< SpiralLayoutData_t >
@@ -57,20 +63,41 @@ namespace nx
         const float normMag = std::clamp(energy / (m_recentMax + 1e-5f), 0.f, 1.f);
         const float eased = squash(normMag);
 
-        const float angle = static_cast<float>(i) * baseAngleStep + m_data.rotationOffset;
+        const float angle = static_cast<float>(i) * ( baseAngleStep + m_data.skewRotation ) + m_data.rotationOffset;
         const float radius = spiralStartRadius + spiralTightness * i + eased * m_data.radiusMod;
 
-        const sf::Vector2f pos =
+        { // clockwise spiral
+          const sf::Vector2f pos =
+          {
+            center.x + std::cos(angle) * radius,
+            center.y + std::sin(angle) * radius
+          };
+
+          auto* particle = m_particles.emplace_back(
+            m_particleGeneratorManager.getParticleGenerator()->createParticle(energy, m_ctx.globalInfo.elapsedTimeSeconds));
+
+          particle->setPosition(pos);
+          ParticleLayoutBase::notifyBehaviorOnSpawn(particle);
+        }
+
+        // mirror counter-clockwise spiral
+        if ( m_data.mirrorSpiral )
         {
-          center.x + std::cos(angle) * radius,
-          center.y + std::sin(angle) * radius
-        };
+          const float mirrorEnergy = energy * m_data.mirrorGainFactor;
+          const float mirrorRadius = radius + m_data.mirrorRadialOffset;
+          const float mirroredAngle = -(static_cast<float>(i) * ( baseAngleStep + m_data.mirrorSkewRotation ) + angle);
 
-        auto* particle = m_particles.emplace_back(
-          m_particleGeneratorManager.getParticleGenerator()->createParticle(energy, m_ctx.globalInfo.elapsedTimeSeconds));
+          const sf::Vector2f mirrorPos =
+          {
+            center.x + std::cos(mirroredAngle) * mirrorRadius,
+            center.y + std::sin(mirroredAngle) * mirrorRadius
+          };
 
-        particle->setPosition(pos);
-        ParticleLayoutBase::notifyBehaviorOnSpawn(particle);
+          auto* mirror = m_particles.emplace_back(
+            m_particleGeneratorManager.getParticleGenerator()->createParticle(mirrorEnergy, m_ctx.globalInfo.elapsedTimeSeconds));
+          mirror->setPosition(mirrorPos);
+          ParticleLayoutBase::notifyBehaviorOnSpawn(mirror);
+        }
       }
 
       m_data.rotationOffset += m_data.rotationRate;
@@ -90,12 +117,20 @@ namespace nx
         m_particleGeneratorManager.getParticleGenerator()->drawMenu();
         ImGui::SeparatorText( "Spiral Echo Options" );
 
+        ImGui::Checkbox("Active", &m_data.isActive);
         ImGui::SliderFloat("Threshold", &m_data.threshold, 0.f, 0.5f);
         ImGui::SliderFloat("Gain", &m_data.gain, 0.1f, 20.f);
         ImGui::SliderFloat("Start Radius", &m_data.startRadius, 0.f, 400.f);
         ImGui::SliderFloat("Radius Mod", &m_data.radiusMod, 0.f, 1000.f);
         ImGui::SliderFloat("Spiral Tightness", &m_data.tightness, 0.01f, 10.f);
         ImGui::SliderFloat("Rotation Rate", &m_data.rotationRate, 0.f, 0.2f);
+        ImGui::SliderFloat( "Skew", &m_data.skewRotation, -NX_PI, NX_PI );
+
+        ImGui::Separator();
+        ImGui::Checkbox("Mirror", &m_data.mirrorSpiral);
+        ImGui::SliderFloat("Mirror Gain", &m_data.mirrorGainFactor, 0.f, 1.f);
+        ImGui::SliderFloat( "Radial Offset", &m_data.mirrorRadialOffset, 0.f, 150.f );
+        ImGui::SliderFloat( "Mirror Skew", &m_data.mirrorSkewRotation, -NX_PI, NX_PI );
 
         ImGui::Separator();
         m_behaviorPipeline.drawMenu();
