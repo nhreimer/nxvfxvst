@@ -24,6 +24,8 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
   // do not process message while UI is inactive
   if ( !m_isViewActive || !m_ptrView ) return Steinberg::kResultFalse;
 
+  if ( !message ) return Steinberg::kInvalidArgument;
+
   if ( Steinberg::FIDStringsEqual( message->getMessageID(), "midi" ) )
   {
     const void * ptrData = nullptr;
@@ -62,6 +64,24 @@ tresult PLUGIN_API nxvfxvstController::notify( Steinberg::Vst::IMessage * messag
     {
       LOG_ERROR( "Playhead notification failed" );
     }
+  }
+  else if ( Steinberg::FIDStringsEqual( message->getMessageID(), "sampleRate" ) )
+  {
+    if ( message->getAttributes()->getFloat( "sampleRate", m_sampleRate ) == kResultOk )
+    {
+      m_ptrView->notifySampleRate( m_sampleRate );
+    }
+    else
+    {
+      LOG_ERROR( "Playhead notification failed" );
+    }
+  }
+  else
+  {
+    // allow the view to have raw message passthroughs, e.g., for Audio Data.
+    // this is because there might be buffers of data that the controller class really
+    // shouldn't be responsible for
+    m_ptrView->notify( message );
   }
 
   return result;
@@ -103,7 +123,7 @@ tresult PLUGIN_API nxvfxvstController::initialize (FUnknown* context)
   // Steinberg VST3 SDK Documentation: “All parameters must be created in initialize()
   // to ensure proper parameter registration and automation handling by the host.”
   // on the plus side, we can change the name of the parameter
-  for (int32_t i = 0; i < PARAMETERS_ENABLED; ++i)
+  for ( int32_t i = 0; i < PARAMETERS_ENABLED; ++i )
   {
     std::string paramName( "Param_" + std::to_string(i) );
 

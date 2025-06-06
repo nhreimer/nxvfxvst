@@ -56,6 +56,11 @@ X(mixFactor,  float,        1.0f,   0.f,  1.f,    "Mix between original and effe
 
     void trigger(const Midi_t &midi) override;
 
+    void trigger( const AudioDataBuffer& buffer ) override
+    {
+      m_easing.trigger();
+    }
+
     void drawMenu() override;
 
     [[nodiscard]]

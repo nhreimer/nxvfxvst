@@ -102,7 +102,7 @@ namespace nx
 
       const auto pos = getSpiralPosition( i * pitchSlices, m_data.depth );
       p->setPosition( pos );
-      ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
+      ParticleLayoutBase::notifyBehaviorOnSpawn( p );
     }
   }
 

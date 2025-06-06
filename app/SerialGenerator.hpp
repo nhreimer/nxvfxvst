@@ -2,7 +2,6 @@
 
 #include "models/data/PipelineContext.hpp"
 
-#include "models/particle/behavior/ColorMorphBehavior.hpp"
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 #include "models/particle/behavior/JitterBehavior.hpp"
 #include "models/particle/behavior/MagneticBehavior.hpp"
@@ -46,10 +45,9 @@ namespace nx
 
     void initializeBehaviors()
     {
-      addBehavior<ColorMorphBehavior>();
       addBehavior<FreeFallBehavior>();
       addBehavior<JitterBehavior>();
-      addBehavior<MagneticAttractorBehavior>();
+      addBehavior<MagneticBehavior>();
     }
 
     template < typename T >

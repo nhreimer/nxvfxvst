@@ -140,7 +140,6 @@ namespace nx
         {
           case E_BehaviorType::E_JitterBehavior: return "JitterBehavior";
           case E_BehaviorType::E_FreeFallBehavior: return "FreeFallBehavior";
-          case E_BehaviorType::E_ColorMorphBehavior: return "ColorMorphBehavior";
           case E_BehaviorType::E_MagneticBehavior: return "MagneticBehavior";
           default: break;
         }
@@ -194,7 +193,6 @@ namespace nx
       {
         if ( typeName == "JitterBehavior" ) return E_BehaviorType::E_JitterBehavior;
         if ( typeName == "FreeFallBehavior" ) return E_BehaviorType::E_FreeFallBehavior;
-        if ( typeName == "ColorMorphBehavior" ) return E_BehaviorType::E_ColorMorphBehavior;
         if ( typeName == "MagneticBehavior" ) return E_BehaviorType::E_MagneticBehavior;
         return E_BehaviorType::E_InvalidBehavior;
       }

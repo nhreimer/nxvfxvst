@@ -135,7 +135,7 @@ namespace nx
         midiEvent,
         m_ctx.globalInfo.elapsedTimeSeconds ) );
 
-      notifyBehaviorOnSpawn( p, midiEvent );
+      notifyBehaviorOnSpawn( p );
       return;
     }
 

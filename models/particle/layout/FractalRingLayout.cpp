@@ -193,7 +193,7 @@ namespace nx
         m_ctx.globalInfo.elapsedTimeSeconds,
         adjustedRadius ) );
 
-    notifyBehaviorOnSpawn( p, midiEvent );
+    notifyBehaviorOnSpawn( p );
 
     return p;
   }

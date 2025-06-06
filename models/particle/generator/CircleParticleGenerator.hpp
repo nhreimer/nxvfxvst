@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models/InterfaceTypes.hpp"
+#include "models/audio/IFFTResult.hpp"
 
 #include "models/particle/generator/ParticleGeneratorBase.hpp"
 
@@ -35,6 +36,14 @@ namespace nx
     {
       auto * particle = new CircleParticle( getData(), timeStampInSeconds, radius );
       initialize( particle, midiEvent, timeStampInSeconds );
+      particle->setOrigin( particle->getGlobalBounds().size / 2.f );
+      return particle;
+    }
+
+    IParticle * createParticle( const float velocity, const float timeStampInSeconds ) override
+    {
+      auto * particle = new CircleParticle( getData(), timeStampInSeconds );
+      initialize( particle, velocity, timeStampInSeconds );
       particle->setOrigin( particle->getGlobalBounds().size / 2.f );
       return particle;
     }

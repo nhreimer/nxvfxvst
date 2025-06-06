@@ -17,7 +17,7 @@ namespace nx
     using Duration = std::chrono::duration<double>; // seconds
     using TimePoint = Clock::time_point;
 
-    explicit RingBufferAverager(const size_t capacity)
+    explicit RingBufferAverager(const size_t capacity = RENDER_SAMPLES_COUNT)
       : m_buffer(capacity, 0.0)
     {
       m_cycleTime = Clock::now();
@@ -73,6 +73,14 @@ namespace nx
       m_activeTime = EMPTY_TIME;
 
       addSample( durationInSeconds * 1000.f );
+    }
+
+    void reset()
+    {
+      m_buffer.clear();
+      m_isBufferFull = false;
+      m_position = 0;
+      m_sum = 0.f;
     }
 
     double getAverage() const

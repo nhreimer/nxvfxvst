@@ -63,6 +63,11 @@ X(mixFactor,   float, 1.0f,  0.0f, 1.f,   "Blend factor between base and blurred
 
     void trigger( const Midi_t& midi ) override;
 
+    void trigger( const AudioDataBuffer& buffer ) override
+    {
+      m_easing.trigger();
+    }
+
     [[nodiscard]]
     bool isShaderActive() const override;
 

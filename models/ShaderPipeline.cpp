@@ -20,12 +20,20 @@ namespace nx
 
   void ShaderPipeline::update( const sf::Time& deltaTime ) const
   {
-    for ( auto& shader : m_shaders ) shader->update( deltaTime );
+    for ( auto& shader : m_shaders )
+      shader.first->update( deltaTime );
   }
 
   void ShaderPipeline::processMidiEvent( const Midi_t& midiEvent ) const
   {
-    for ( auto& shader : m_shaders ) shader->trigger( midiEvent );
+    for ( auto& shader : m_shaders )
+      shader.first->trigger( midiEvent );
+  }
+
+  void ShaderPipeline::processAudioBuffer( const AudioDataBuffer& buffer ) const
+  {
+    for ( auto& shader : m_shaders )
+      shader.first->trigger( buffer );
   }
 
   void ShaderPipeline::drawMenu()
@@ -40,10 +48,14 @@ namespace nx
 
     const sf::RenderTexture * currentTexture = inTexture;
 
-    for ( const auto& shader : m_shaders )
+    for ( auto& shader : m_shaders )
     {
-      if ( shader->isShaderActive() )
-        currentTexture = shader->applyShader( currentTexture );
+      if ( shader.first->isShaderActive() )
+      {
+        shader.second.startTimer();
+        currentTexture = shader.first->applyShader( currentTexture );
+        shader.second.stopTimerAndAddSample();
+      }
     }
 
     m_outputTexture.clear( sf::Color::Transparent );
@@ -69,7 +81,7 @@ namespace nx
     // the real question might be "why use unique_ptr at all" in
     // this case. the reason is that it's a good debug warning
     // in our logger if unique_ptr handles the destruction.
-    auto * rawPtrShader = shader.release();
+    auto * rawPtrShader = shader.first.release();
 
     // create a request task for destroying the texture and then
     // the pointer
@@ -91,7 +103,7 @@ namespace nx
     nlohmann::json j = nlohmann::json::array();
 
     for ( const auto& shader : m_shaders )
-      j.push_back( shader->serialize() );
+      j.push_back( shader.first->serialize() );
 
     return j;
   }
@@ -115,7 +127,7 @@ namespace nx
   IShader * ShaderPipeline::getShader( const int position ) const
   {
     assert( position < m_shaders.size() );
-    return m_shaders[ position ].get();
+    return m_shaders[ position ].first.get();
   }
 
   IShader * ShaderPipeline::createShader( const E_ShaderType shaderType,
@@ -278,7 +290,9 @@ namespace nx
         else
         {
           ImGui::SameLine();
-          m_shaders[ i ]->drawMenu();
+          m_shaders[ i ].first->drawMenu();
+
+          ImGui::Text( "Render Time: %0.2f", m_shaders[ i ].second.getAverage() );
 
           if ( ImGui::Button( "u" ) )
           {

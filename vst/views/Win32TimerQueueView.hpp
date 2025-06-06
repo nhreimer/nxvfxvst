@@ -86,6 +86,13 @@ namespace nx
     }
 
   ////////////////////////////////////////////////////////////////////////////////
+  void notify( Steinberg::Vst::IMessage * rawMessage ) override
+  {
+    // NOTE: don't do anything CPU intensive here
+    m_eventFacade.processVstEvent( rawMessage );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override
   {
     // NOTE: don't do anything CPU intensive here
@@ -103,6 +110,12 @@ namespace nx
   void notifyPlayheadUpdate( const double playhead ) override
   {
     m_eventFacade.processPlayheadUpdate( playhead );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  void notifySampleRate( const double sampleRate ) override
+  {
+    m_eventFacade.processSampleRateUpdate( sampleRate );
   }
 
   ////////////////////////////////////////////////////////////////////////////////

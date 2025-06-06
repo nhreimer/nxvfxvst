@@ -39,7 +39,7 @@ namespace nx
         midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
     p->setPosition( getNextPosition( midiEvent ) );
-    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p );
   }
 
   void SpiralParticleLayout::drawMenu()

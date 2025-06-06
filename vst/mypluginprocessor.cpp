@@ -8,6 +8,8 @@
 #include "pluginterfaces/vst/ivstevents.h"
 #include "base/source/fstreamer.h"
 
+#include "vst/analysis/FFTBuffer.hpp"
+
 using namespace Steinberg;
 
 namespace nx {
@@ -42,7 +44,7 @@ tresult PLUGIN_API nxvfxvstProcessor::initialize (FUnknown* context)
 	addAudioOutput (STR16 ("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
 
 	/* If you don't need an event bus, you can remove the next line */
-	addEventInput (STR16 ("Event In"), 1);
+	addEventInput (STR16 ("Event In"), 16);
 
 	return kResultOk;
 }
@@ -66,6 +68,17 @@ tresult PLUGIN_API nxvfxvstProcessor::setActive (TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
 {
+  processMidiData( data );
+  processAudioData( data );
+  passThroughAudio( data );
+
+  return kResultOk;
+}
+
+//------------------------------------------------------------------------
+
+void PLUGIN_API nxvfxvstProcessor::processMidiData( Vst::ProcessData& data )
+{
   if ( data.processContext != nullptr )
   {
     if ( m_clock.getElapsedTime().asSeconds() > m_messageThrottleInMS )
@@ -77,14 +90,13 @@ tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
       if ( m_lastPlayhead != currentTimeInSeconds )
       {
         m_lastPlayhead = currentTimeInSeconds; // gets current time in seconds
-        sendPlayheadMessage();
+        sendFloatMessage( "playhead", m_lastPlayhead );
         m_clock.restart();
       }
     }
 
-
     m_lastBPM = data.processContext->tempo;
-    sendBPMMessage();
+    sendFloatMessage( "bpm", m_lastBPM );
   }
 
   if ( data.inputEvents != nullptr )
@@ -99,14 +111,115 @@ tresult PLUGIN_API nxvfxvstProcessor::process (Vst::ProcessData& data)
       }
     }
   }
-
-  return kResultOk;
 }
 
 //------------------------------------------------------------------------
+
+void PLUGIN_API nxvfxvstProcessor::processAudioData( Vst::ProcessData& data )
+{
+  // ensure we have audio first
+  if (data.numInputs > 0 && data.numOutputs > 0)
+  {
+    float sum = 0.f;
+
+    const auto& input = data.inputs[0];
+
+    // convert stereo to mono and push into analyzer
+    const float * left = input.channelBuffers32[ 0 ];
+    const float * right = ( input.numChannels > 1 ) ? input.channelBuffers32[ 1 ] : nullptr;
+
+    for ( int32 i = 0; i < data.numSamples; ++i )
+    {
+      const float mono = right ? 0.5f * ( left[ i ] + right[ i ] ) : left[ i ];
+      sum += std::abs( mono );
+      m_audioAnalyzer.pushSample( mono );
+    }
+
+    // doesn't send unless the buffer is ready
+    sendAudioMessage();
+  }
+}
+
+//------------------------------------------------------------------------
+
+void nxvfxvstProcessor::passThroughAudio(Steinberg::Vst::ProcessData &data)
+{
+
+  // pipe the input into the output so we get audio output
+  if (data.numInputs > 0 && data.numOutputs > 0)
+  {
+    const auto& input = data.inputs[0];
+    const auto& output = data.outputs[0];
+
+    float** inBufs  = input.channelBuffers32;
+    float** outBufs = output.channelBuffers32;
+
+    for (int32 channel = 0; channel < input.numChannels; ++channel)
+    {
+      if (inBufs[channel] && outBufs[channel])
+      {
+        std::memcpy(outBufs[channel], inBufs[channel], sizeof(float) * data.numSamples);
+      }
+    }
+  }
+
+  // if (data.numSamples > 0)
+  // {
+  //   //--- ------------------------------------------
+  //   // here as example a default implementation where we try to copy the inputs to the outputs:
+  //   // if less input than outputs then clear outputs
+  //   //--- ------------------------------------------
+  //
+  //   int32 minBus = std::min (data.numInputs, data.numOutputs);
+  //   for (int32 i = 0; i < minBus; i++)
+  //   {
+  //     int32 minChan = std::min (data.inputs[i].numChannels, data.outputs[i].numChannels);
+  //     for (int32 c = 0; c < minChan; c++)
+  //     {
+  //       // do not need to be copied if the buffers are the same
+  //       if (data.outputs[i].channelBuffers32[c] != data.inputs[i].channelBuffers32[c])
+  //       {
+  //         memcpy (data.outputs[i].channelBuffers32[c], data.inputs[i].channelBuffers32[c],
+  //             data.numSamples * sizeof (Vst::Sample32));
+  //       }
+  //     }
+  //     data.outputs[i].silenceFlags = data.inputs[i].silenceFlags;
+  //
+  //     // clear the remaining output buffers
+  //     for (int32 c = minChan; c < data.outputs[i].numChannels; c++)
+  //     {
+  //       // clear output buffers
+  //       memset (data.outputs[i].channelBuffers32[c], 0,
+  //           data.numSamples * sizeof (Vst::Sample32));
+  //
+  //       // inform the host that this channel is silent
+  //       data.outputs[i].silenceFlags |= ((uint64)1 << c);
+  //     }
+  //   }
+  //   // clear the remaining output buffers
+  //   for (int32 i = minBus; i < data.numOutputs; i++)
+  //   {
+  //     // clear output buffers
+  //     for (int32 c = 0; c < data.outputs[i].numChannels; c++)
+  //     {
+  //       memset (data.outputs[i].channelBuffers32[c], 0,
+  //           data.numSamples * sizeof (Vst::Sample32));
+  //     }
+  //     // inform the host that this bus is silent
+  //     data.outputs[i].silenceFlags = ((uint64)1 << data.outputs[i].numChannels) - 1;
+  //   }
+  // }
+}
+
+
+//------------------------------------------------------------------------
+// called before any processing
 tresult PLUGIN_API nxvfxvstProcessor::setupProcessing (Vst::ProcessSetup& newSetup)
 {
-	//--- called before any processing ----
+  // SampleRate under the hood is currently defined as a double, but there's
+  // no guarantee that won't change in the future.
+  sendFloatMessage( "sampleRate", newSetup.sampleRate );
+
 	return AudioEffect::setupProcessing (newSetup);
 }
 
@@ -167,33 +280,43 @@ void nxvfxvstProcessor::sendMidiNoteEventMessage( const Vst::Event &event ) cons
 }
 //------------------------------------------------------------------------
 
-void nxvfxvstProcessor::sendBPMMessage() const
+void nxvfxvstProcessor::sendAudioMessage()
 {
+  // ensure FFT is ready
+  if ( !m_audioAnalyzer.isFFTReady() ) return;
+
+  // compute the values
+  m_audioAnalyzer.computeFFT( m_bins );
+
   auto * ptrMsg = allocateMessage();
   if ( ptrMsg == nullptr ) return;
 
-  ptrMsg->setMessageID( "bpm" );
-
-  if ( ptrMsg->getAttributes()->setFloat( "bpm", m_lastBPM ) == kResultOk )
+  ptrMsg->setMessageID( "FFTData" );
+  if ( ptrMsg->getAttributes()->setBinary(
+    "FFTData",
+    m_bins.data(),
+    ( Steinberg::uint32 )( m_bins.size() * sizeof( float ) ) ) == kResultOk )
+  {
     this->sendMessage( ptrMsg );
+  }
 
   ptrMsg->release();
 }
 
-//------------------------------------------------------------------------
-
-void nxvfxvstProcessor::sendPlayheadMessage() const
+  //------------------------------------------------------------------------
+void nxvfxvstProcessor::sendFloatMessage(
+  const std::string& messageId,
+  const double value ) const
 {
   auto * ptrMsg = allocateMessage();
   if ( ptrMsg == nullptr ) return;
-  ptrMsg->setMessageID( "playhead" );
+  ptrMsg->setMessageID( messageId.c_str() );
 
-  if ( ptrMsg->getAttributes()->setFloat( "playhead", m_lastPlayhead ) == kResultOk )
+  if ( ptrMsg->getAttributes()->setFloat( messageId.c_str(), value ) == kResultOk )
     this->sendMessage( ptrMsg );
 
   ptrMsg->release();
 }
-
 
 //------------------------------------------------------------------------
 } // namespace nx

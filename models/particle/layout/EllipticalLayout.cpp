@@ -101,7 +101,7 @@ namespace nx
 
     p->setPosition( pos );
 
-    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p );
 
     // advance cursor
     m_angleCursor += 1.f / m_data.slices; // 12 evenly spaced notes per full ring
@@ -128,7 +128,7 @@ namespace nx
 
     p->setPosition( pos );
 
-    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p );
   }
 
 }

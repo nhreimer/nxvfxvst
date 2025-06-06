@@ -25,7 +25,6 @@ namespace nx
   }
 
   void JitterBehavior::applyOnSpawn( IParticle * p,
-                                     const Midi_t& midi,
                                      const ParticleData_t& particleData )
   {
     p->setPosition( getJitterPosition( p ) );

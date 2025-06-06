@@ -30,6 +30,11 @@ namespace nx
     E_LSystemCurveLayout,
     E_GoldenSpiralLayout,
     E_EllipticalLayout,
+
+    // the bottom two are the only "real" ones
+    E_RingPlotVisualizer,
+    E_RingParticleVisualizer,
+
     E_TestLayout
   };
 
@@ -41,7 +46,6 @@ namespace nx
     E_PerlinDeformerModifier,
     E_RingZoneMeshModifier,
     E_MirrorModifier,
-
     E_TestModifier
   };
 
@@ -50,7 +54,6 @@ namespace nx
     E_InvalidBehavior,
     E_FreeFallBehavior,
     E_JitterBehavior,
-    E_ColorMorphBehavior,
     E_MagneticBehavior
   };
 

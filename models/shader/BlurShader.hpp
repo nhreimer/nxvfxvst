@@ -1,8 +1,8 @@
 #pragma once
 
 #include "helpers/CommonHeaders.hpp"
-#include "vst/VSTStateContext.hpp"
 #include "models/shader/BlenderShader.hpp"
+#include "vst/VSTStateContext.hpp"
 
 namespace nx
 {
@@ -12,7 +12,7 @@ namespace nx
 
 #define BLUR_SHADER_PARAMS(X)                                                                     \
 X(sigma,             float, 7.f,     0.f,   50.f , "Amount of blurring", true)                    \
-X(brighten,          float, 1.f,     0.f,   5.f  , "Brightens the blurred areas", true)           \
+X(brighten,          float, 1.f,     1.f,   5.f  , "Brightens the blurred areas", true)           \
 X(blurHorizontal,    float, 1.0f,    0.f,   20.f , "Blurs in the horizontal direction", true)     \
 X(blurVertical,      float, 1.0f,    0.f,   20.f , "Blurs in the vertical direction", true)       \
 X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effects result", true) \
@@ -63,6 +63,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     void drawMenu() override;
 
     void trigger( const Midi_t& midi ) override;
+
+    void trigger( const AudioDataBuffer& buffer ) override
+    {
+      m_easing.trigger();
+    }
 
     [[nodiscard]]
     bool isShaderActive() const override;

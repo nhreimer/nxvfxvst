@@ -2,7 +2,6 @@
 
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 #include "models/particle/behavior/JitterBehavior.hpp"
-#include "models/particle/behavior/ColorMorphBehavior.hpp"
 #include "models/particle/behavior/MagneticBehavior.hpp"
 
 namespace nx
@@ -38,12 +37,8 @@ namespace nx
           deserializeBehavior< FreeFallBehavior >( data );
           break;
 
-        case E_BehaviorType::E_ColorMorphBehavior:
-          deserializeBehavior< ColorMorphBehavior >( data );
-          break;
-
         case E_BehaviorType::E_MagneticBehavior:
-          deserializeBehavior< MagneticAttractorBehavior >( data );
+          deserializeBehavior< MagneticBehavior >( data );
           break;
 
         default:
@@ -54,11 +49,10 @@ namespace nx
   }
 
   void ParticleBehaviorPipeline::applyOnSpawn( IParticle * p,
-                                               const Midi_t& midi,
                                                const ParticleData_t& particleData ) const
   {
     for ( const auto& behavior : m_particleBehaviors )
-      behavior->applyOnSpawn( p, midi, particleData );
+      behavior->applyOnSpawn( p, particleData );
   }
 
   void ParticleBehaviorPipeline::applyOnUpdate( IParticle * p,
@@ -138,12 +132,9 @@ namespace nx
       if ( ImGui::Button( "Jitter##1" ) )
         createBehavior< JitterBehavior >();
 
-      if ( ImGui::Button( "Color Morph##1" ) )
-        createBehavior< ColorMorphBehavior >();
-
       ImGui::SameLine();
       if ( ImGui::Button( "Magnetic##1" ) )
-        createBehavior< MagneticAttractorBehavior >();
+        createBehavior< MagneticBehavior >();
 
       ImGui::TreePop();
       ImGui::Spacing();

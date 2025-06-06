@@ -19,7 +19,7 @@
 #include "models/IParticleLayout.hpp"
 #include "models/IParticleModifier.hpp"
 
-#include "../models/easings/TimeEasing.hpp"
+#include "models/easings/TimeEasing.hpp"
 
 #include "shapes/MidiNoteControl.hpp"
 #include "shapes/TimedCursorPosition.hpp"

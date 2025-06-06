@@ -73,27 +73,31 @@ namespace nx
                      const Midi_t& midiEvent,
                      const float timeStampInSeconds )
     {
-      // particle->setRadius( m_data.radius +
-      //                      m_data.velocitySizeMultiplier * midiEvent.velocity );
+      initialize( particle, midiEvent.velocity, timeStampInSeconds );
+    }
 
+    void initialize( IParticle * particle,
+                     const float velocity,
+                     const float timeStampInSeconds )
+    {
       const auto initialStartColor = ColorHelper::getColorPercentage(
         m_data.fillStartColor,
-        std::min( midiEvent.velocity + m_data.boostVelocity, 1.f ) );
+        std::min( velocity + m_data.boostVelocity, 1.f ) );
 
       const auto initialEndColor = ColorHelper::getColorPercentage(
         m_data.fillEndColor,
-        std::min( midiEvent.velocity + m_data.boostVelocity, 1.f ) );
+        std::min( velocity + m_data.boostVelocity, 1.f ) );
 
       particle->setColorPattern( initialStartColor, initialEndColor );
       // particle->setOutlineThickness( m_data.outlineThickness );
 
       const auto initialOutlineStartColor = ColorHelper::getColorPercentage(
         m_data.outlineStartColor,
-        std::min( midiEvent.velocity + m_data.boostVelocity, 1.f ) );
+        std::min( velocity + m_data.boostVelocity, 1.f ) );
 
       const auto initialOutlineEndColor = ColorHelper::getColorPercentage(
         m_data.outlineEndColor,
-        std::min( midiEvent.velocity + m_data.boostVelocity, 1.f ) );
+        std::min( velocity + m_data.boostVelocity, 1.f ) );
 
       particle->setOutlineColorPattern( initialOutlineStartColor, initialOutlineEndColor );
 

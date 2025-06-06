@@ -63,6 +63,11 @@ X(BlendInput,        sf::BlendMode, sf::BlendAdd, 0.f, 0.f, nullptr, false )
 
     void trigger( const Midi_t& midi ) override;
 
+    void trigger( const AudioDataBuffer& buffer ) override
+    {
+      m_easing.trigger();
+    }
+
     void drawMenu() override;
 
     [[nodiscard]]

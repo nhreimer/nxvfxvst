@@ -20,6 +20,7 @@ constexpr float NX_D2R  = 0.017453293f;
 
   struct MathHelper
   {
+
     static sf::Vector2f polarToCartesian( const float angleDeg, const float len )
     {
       const float angleRad = angleDeg * NX_D2R;
@@ -95,48 +96,6 @@ constexpr float NX_D2R  = 0.017453293f;
                             std::sin( angle ) * static_cast< float >(octave) * octaveAmplifier };
     }
 
-    /***
-     * A vertical partitioner that is very similar to bjorklund:
-     * k = 5, n = 13 =>
-     *  1   1   1   1   1
-     *  0   0   0   0   0
-     *  0   0
-     *
-     * which turns into
-     *  1   1   1
-     *  0   0   0
-     *  0   0
-     *  1   1
-     *  0   0
-     *
-     *  It does this in O( k ) steps by pairing columns, e.g., 0 & k - 1, 0 & k - 2
-     * @param k number of slots to be active
-     * @param n number of slots total
-     * @param rotate number of positions to offset
-     * @return vector of bool values
-     */
-    static std::vector< bool > partition( const int k, const int n, const int rotate = 0 )
-    {
-      const int remainder = n % k;
-      const float gapRatio = static_cast< float >( n ) / static_cast< float >( k );
-
-      const int hardGapSize = static_cast< int >( gapRatio ) + 1;
-
-      std::vector< bool > result( n );
-      int y = 0;
-      for ( int i = 0; i < remainder; ++i, y += hardGapSize + ( hardGapSize - 1 ) )
-      {
-        result[ ( y + rotate ) % n ] = true;
-
-        if ( y + hardGapSize < n )
-          result[ ( y + hardGapSize + rotate ) % n ] = true;
-      }
-
-      for ( int i = remainder; i < k - remainder; ++i, y += ( hardGapSize - 1 ) )
-        result[ ( y + rotate ) % n ] = true;
-
-      return result;
-    }
   };
 
 }

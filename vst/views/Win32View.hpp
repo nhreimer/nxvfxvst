@@ -6,6 +6,7 @@
 #include <base/source/fobject.h>
 #include <pluginterfaces/gui/iplugview.h>
 #include <pluginterfaces/base/funknown.h>
+#include <pluginterfaces/vst/ivstmessage.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/ContextSettings.hpp>
@@ -192,6 +193,13 @@ namespace priv
     }
 
   ////////////////////////////////////////////////////////////////////////////////
+  void notify( Steinberg::Vst::IMessage * rawMsg ) override
+  {
+    // NOTE: don't do anything CPU intensive here!!!
+    m_eventFacade.processVstEvent( rawMsg );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   void notify( Steinberg::Vst::Event& event ) override
   {
     // NOTE: don't do anything CPU intensive here
@@ -209,6 +217,12 @@ namespace priv
   void notifyPlayheadUpdate( const double playhead ) override
   {
     m_eventFacade.processPlayheadUpdate( playhead );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  void notifySampleRate( const double sampleRate ) override
+  {
+    m_eventFacade.processSampleRateUpdate( sampleRate );
   }
 
   ////////////////////////////////////////////////////////////////////////////////

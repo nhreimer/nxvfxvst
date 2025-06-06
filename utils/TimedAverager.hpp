@@ -1,8 +1,11 @@
 #pragma once
 
+#include <deque>
+#include <chrono>
+
 namespace nx
 {
-  // this isn't very efficient because of std::deque but it's good
+  // this isn't very efficient because of std::deque, but it's good
   // for looking at averages within a rolling window
   // for performance metrics, see RingBufferAverage
   class TimedAverager

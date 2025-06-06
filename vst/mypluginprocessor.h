@@ -6,11 +6,13 @@
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include "helpers/Definitions.hpp"
+#include "vst/analysis/AudioAnalyzer.hpp"
 
 // forward decl
 namespace Steinberg::Vst { struct Event; }
 
-namespace nx {
+namespace nx
+{
 
 //------------------------------------------------------------------------
 //  nxvfxvstProcessor
@@ -24,7 +26,7 @@ public:
     // Create function
 	static Steinberg::FUnknown* createInstance (void* /*context*/) 
 	{ 
-		return (Steinberg::Vst::IAudioProcessor*)new nxvfxvstProcessor; 
+		return static_cast< Steinberg::Vst::IAudioProcessor * >( new nxvfxvstProcessor );
 	}
 
 	//--- ---------------------------------------------------------------------
@@ -57,16 +59,23 @@ protected:
 
 private:
 
+  void processMidiData( Steinberg::Vst::ProcessData& data );
+  void processAudioData( Steinberg::Vst::ProcessData& data );
+  void passThroughAudio( Steinberg::Vst::ProcessData& data );
+
   void sendMidiNoteEventMessage( const Steinberg::Vst::Event& event ) const;
-  void sendBPMMessage() const;
-  void sendPlayheadMessage() const;
+  void sendAudioMessage();
+  void sendFloatMessage( const std::string& messageId, const double value ) const;
 
 private:
 
   double m_lastPlayhead { 0.f };
   double m_lastBPM { 0.f };
-  static constexpr double m_messageThrottleInMS = PLAYHEAD_INTERVAL_IN_SECS;
   sf::Clock m_clock;
+  AudioAnalyzer m_audioAnalyzer;
+  AudioDataBuffer m_bins;
+
+  static constexpr double m_messageThrottleInMS = PLAYHEAD_INTERVAL_IN_SECS;
 };
 
 //------------------------------------------------------------------------

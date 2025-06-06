@@ -83,7 +83,7 @@ namespace nx
         midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
     p->setPosition( { x, y } );
-    ParticleLayoutBase::notifyBehaviorOnSpawn( p, midiEvent );
+    ParticleLayoutBase::notifyBehaviorOnSpawn( p );
   }
 
   // sf::Vector2f LissajousCurveLayout::getNextPosition( const Midi_t & midiEvent ) const

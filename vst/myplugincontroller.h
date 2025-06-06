@@ -7,11 +7,12 @@
 #include "pluginterfaces/base/ustring.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
 
+#include "vst/analysis/FFTBuffer.hpp"
+#include "vst/params/VSTParamBindingManager.hpp"
 #include "vst/views/ViewFactory.hpp"
 
-#include "vst/params/VSTParamBindingManager.hpp"
-
-namespace nx {
+namespace nx
+{
 
 //------------------------------------------------------------------------
 //  nxvfxvstController
@@ -25,7 +26,7 @@ public:
 	    // SET THE NAME AND INITIAL VALUE!
 	    [this]( const int32_t vstParamId, const float normalizedValue )
 	    {
-	      LOG_WARN( "{} => {}", vstParamId, normalizedValue );
+	      LOG_INFO( "{} => {}", vstParamId, normalizedValue );
 	      setParamNormalized(vstParamId, normalizedValue);
 	    },
 	    // RESET THE NAME!
@@ -122,6 +123,7 @@ private:
 
   double m_lastBPM { 0.f };
   double m_lastPlayhead { 0.f };
+  double m_sampleRate { 0.f };
 
   // used between closing and opening the window
   nlohmann::json m_state;

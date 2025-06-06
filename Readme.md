@@ -7,11 +7,11 @@ See [LICENSE](./LICENSE) for full terms and third-party dependency notices.
 
 ## Description
 
-A real-time, modular, multithreaded rendering VST3 Video Effects Engine Plugin for midi events. 
+A real-time, modular, multithreaded rendering VST3 Video Effects Engine Plugin for audio and midi events. 
 
 ## Goal
 
-Synchronize midi events to highly customizable visuals.
+Synchronize midi events and audio data to highly customizable visuals.
 
 ## Features
 
@@ -19,17 +19,20 @@ Synchronize midi events to highly customizable visuals.
 
 * Ability to run in Standalone and VST3 Plugin
   * In Standalone (testing only, no audio)
-    * Midi Generator that pushes events on different threads to
+    * Midi Generators that push events on different threads to
       simulate DAW Processor threads and stress testing
-* Multichannel support
+    * Audio Generators (sine oscillators) that push audio processing on different threads to simulate DAW processor
+* Multichannel midi support
   * Route midi output to independent VFX chains
   * Infinite shader and modifier chaining per channel
   * Ability to prioritize rendering order for each channel
+* Audio data visualization support
+  * visualization layouts for real-time audio data
 * Each effect can be assigned user-specified midi notes for triggers
 * DAW Automation controls for effects
   * Dynamically names and resets names of parameters for DAW visibility
 * JSON serialization for importing/exporting (via clipboard at the moment)
-* Real-time VFX Engine that synchronizes to midi events
+* Real-time VFX Engine that synchronizes to audio data and midi events
   * Effects
   * Particle generator
   * Particle modifiers
@@ -37,7 +40,7 @@ Synchronize midi events to highly customizable visuals.
   * Triggers at multiple stages of a pipeline (for time synchronization)
 * Real-time video encoder (Raw RGBA with Frame Rate Locking)
 * Multithreaded rendering
-  * Each channel renders on its own thread
+  * Each channel renders on its own thread (1 Audio + 4 Midi Channels)
 
 ---
 
@@ -53,11 +56,12 @@ Synchronize midi events to highly customizable visuals.
 * [nlohmann json](https://github.com/nlohmann/json)
 * [spdlog](https://github.com/gabime/spdlog)
 * [Moody Camel](https://github.com/cameron314/concurrentqueue)
+* [KissFFT](https://github.com/mborgerding/kissfft)
 
 # Getting Started
 
 Regardless of which version you build, you will need to specify where the
-VST3 SDK lives and where your dependency manager resides:
+VST3 SDK lives and where your dependency manager resides. The following setup uses vcpkg configuration.
 
 ```bash
 -Dvst3sdk_SOURCE_DIR=C:/path/to/vst3sdk
@@ -165,13 +169,13 @@ target_link_libraries( ${PROJECT_NAME}
           ▼
 +------------------------+
 |  MultichannelPipeline  |
-|         1              |  Manages multiple midi channels
+|         1              |  Manages 1 audio channel and n midi channels
 +------------------------+
           │
           ▼
 +---------------------+
 |  ChannelPipeline    |
-|        1..n         |  Each midi channel is independent
+|        1..n         |  Each channel is independent
 +---------------------+        +--------------------+
           │                    | Particle Layout    |
           │                    |         1          |
@@ -330,6 +334,7 @@ Manages the particle layout (initial placement & creation) and passes particles 
 | L-System Curve  |                                                |
 | Fractal Ring    |                                                |
 | Elliptical      |                                                |
+| Ring Particle   | audio visualizer                               |
 
 ### Particle Generator
 
@@ -350,7 +355,6 @@ e.g., Jitter, Gravity, Spread. Cannot be used for adding or removing particles.
 
 | Behavior Name | Description |
 |---------------|-------------|
-| Color Morph   |             |
 | Free Fall     |             |
 | Jitter        |             |
 | Magnetic      |             |

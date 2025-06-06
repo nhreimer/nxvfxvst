@@ -75,6 +75,11 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
 
     void trigger( const Midi_t& midi ) override;
 
+    void trigger( const AudioDataBuffer& buffer ) override
+    {
+      m_burstManager.trigger();
+    }
+
     [[nodiscard]]
     bool isShaderActive() const override;
 

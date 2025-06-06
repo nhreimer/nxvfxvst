@@ -7,7 +7,6 @@
 #include <SFML/Graphics/VertexArray.hpp>
 
 #include "helpers/ColorHelper.hpp"
-#include "log/Logger.hpp"
 
 #include "models/IParticle.hpp"
 #include "models/data/ParticleData_t.hpp"

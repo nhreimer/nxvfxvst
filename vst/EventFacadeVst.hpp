@@ -1,21 +1,21 @@
 #pragma once
 
-// #include <concurrent_queue.h>
-
 #include <concurrentqueue/concurrentqueue.h>
-#include <SFML/Graphics/RenderWindow.hpp>
 
 #include "imgui-SFML.h"
 
 #include "pluginterfaces/vst/ivstevents.h"
 #include "pluginterfaces/base/keycodes.h"
+#include "pluginterfaces/vst/ivstmessage.h"
 
-#include "models/data/GlobalInfo_t.hpp"
-#include "models/ChannelPipeline.hpp"
+#include "../models/channel/MidiChannelPipeline.hpp"
 #include "models/MultichannelPipeline.hpp"
+#include "models/data/GlobalInfo_t.hpp"
 #include "models/data/PipelineContext.hpp"
 
 #include "vst/VSTStateContext.hpp"
+
+#include "vst/analysis/FFTBuffer.hpp"
 
 namespace nx
 {
@@ -36,11 +36,15 @@ namespace nx
 
     void restoreState( nlohmann::json &j );
 
+    void processVstEvent( Steinberg::Vst::IMessage * rawMessage );
+
     void processVstEvent( const Steinberg::Vst::Event & event );
 
     void processBPMChange( const double bpm );
 
     void processPlayheadUpdate( const double playhead );
+
+    void processSampleRateUpdate( const double sampleRate );
 
     void initialize( sf::RenderWindow & window );
 
@@ -54,6 +58,7 @@ namespace nx
 
     void drawMenu();
     void consumeMidiEvents();
+    void consumeAudioData();
 
   private:
 
@@ -73,6 +78,9 @@ namespace nx
     // and processes them on the controller thread
     //Concurrency::concurrent_queue< Midi_t > m_queue;
     moodycamel::ConcurrentQueue< Midi_t > m_queue;
+
+    // buffer with audio data for audio graphics
+    FFTBuffer m_fftBuffer;
   };
 
 }
