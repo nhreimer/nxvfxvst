@@ -10,6 +10,8 @@
 #include "models/particle/layout/FractalRingLayout.hpp"
 #include "models/particle/layout/GoldenSpiralLayout.hpp"
 
+#include "models/particle/layout/RingParticleVisualizer.hpp"
+
 namespace nx
 {
 
@@ -28,9 +30,14 @@ namespace nx
     m_particleLayout->update( deltaTime );
   }
 
-  void ParticleLayoutManager::processMidiEvent( const Midi_t& midiEvent ) const
+  void ParticleLayoutManager::processMidiEvent(const Midi_t &midiEvent) const
   {
-    m_particleLayout->addMidiEvent( midiEvent );
+    m_particleLayout->addMidiEvent(midiEvent);
+  }
+
+  void ParticleLayoutManager::processAudioBuffer(const IFFTResult &fftResult) const
+  {
+    m_particleLayout->processAudioBuffer( fftResult );
   }
 
   const ParticleLayoutData_t& ParticleLayoutManager::getParticleOptions() const
@@ -43,45 +50,47 @@ namespace nx
     return m_particleLayout->getParticles();
   }
 
-  void ParticleLayoutManager::drawMenu()
+  void ParticleLayoutManager::drawAudioMenu()
   {
     if ( ImGui::TreeNode( "Layouts Available" ) )
     {
-      ImGui::Text( "Layouts" );
-      {
-        if ( ImGui::RadioButton( "Empty", m_particleLayout->getType() == E_LayoutType::E_EmptyLayout ) )
-          changeLayout< EmptyParticleLayout >();
+      selectParticleLayout< EmptyParticleLayout >( "Empty", E_LayoutType::E_EmptyLayout );
+      selectParticleLayout< RingParticleVisualizer >( "Ring Visualizer", E_LayoutType::E_RingParticleVisualizer );
 
-        ImGui::SameLine();
-        if ( ImGui::RadioButton( "Random", m_particleLayout->getType() == E_LayoutType::E_RandomLayout ) )
-          changeLayout< RandomParticleLayout >();
+      ImGui::TreePop();
+      ImGui::Spacing();
+    }
 
-        ImGui::SeparatorText( "Curved Layouts" );
+    m_particleLayout->drawMenu();
+  }
 
-        if ( ImGui::RadioButton( "Spiral", m_particleLayout->getType() == E_LayoutType::E_SpiralLayout ) )
-          changeLayout< SpiralParticleLayout >();
 
-        ImGui::SameLine();
-        if ( ImGui::RadioButton( "Lissajous Curve", m_particleLayout->getType() == E_LayoutType::E_LissajousCurveLayout ) )
-          changeLayout< LissajousCurveLayout >();
+  void ParticleLayoutManager::drawMidiMenu()
+  {
+    if ( ImGui::TreeNode( "Layouts Available" ) )
+    {
+      selectParticleLayout< EmptyParticleLayout >( "Empty", E_LayoutType::E_EmptyLayout );
 
-        ImGui::SameLine();
-        if ( ImGui::RadioButton( "Golden Spiral", m_particleLayout->getType() == E_LayoutType::E_GoldenSpiralLayout ) )
-          changeLayout< GoldenSpiralLayout >();
+      ImGui::SameLine();
+      selectParticleLayout< RandomParticleLayout >( "Random", E_LayoutType::E_RandomLayout );
 
-        ImGui::SameLine();
-        if ( ImGui::RadioButton( "Elliptical", m_particleLayout->getType() == E_LayoutType::E_EllipticalLayout ) )
-          changeLayout< EllipticalLayout >();
+      ImGui::SeparatorText( "Curved Layouts" );
+      selectParticleLayout< SpiralParticleLayout >( "Spiral", E_LayoutType::E_SpiralLayout );
 
-        ImGui::SeparatorText( "Fractal Layouts" );
+      ImGui::SameLine();
+      selectParticleLayout< LissajousCurveLayout >( "Lissajous Curve", E_LayoutType::E_LissajousCurveLayout );
 
-        if ( ImGui::RadioButton( "Fractal Ring", m_particleLayout->getType() == E_LayoutType::E_FractalRingLayout ) )
-          changeLayout< FractalRingLayout >();
+      ImGui::SameLine();
+      selectParticleLayout< GoldenSpiralLayout >( "Golden Spiral", E_LayoutType::E_GoldenSpiralLayout );
 
-        ImGui::SameLine();
-        if ( ImGui::RadioButton( "L-System Curve", m_particleLayout->getType() == E_LayoutType::E_LSystemCurveLayout ) )
-          changeLayout< LSystemCurveLayout >();
-      }
+      ImGui::SameLine();
+      selectParticleLayout< EllipticalLayout >( "Elliptical", E_LayoutType::E_EllipticalLayout );
+
+      ImGui::SeparatorText( "Fractal Layouts" );
+      selectParticleLayout< FractalRingLayout >( "Fractal Ring", E_LayoutType::E_FractalRingLayout );
+
+      ImGui::SameLine();
+      selectParticleLayout< LSystemCurveLayout >( "L-System Curve", E_LayoutType::E_LSystemCurveLayout );
 
       ImGui::TreePop();
       ImGui::Spacing();

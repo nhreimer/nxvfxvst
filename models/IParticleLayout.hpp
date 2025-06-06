@@ -18,7 +18,9 @@ namespace nx
   {
     ~IParticleLayout() override = default;
 
-    virtual void addMidiEvent( const Midi_t& midiEvent ) = 0;
+    virtual void addMidiEvent( const Midi_t& midiEvent ) {}
+    virtual void processAudioBuffer( const IFFTResult& result ) {}
+
     virtual void update( const sf::Time& deltaTime ) = 0;
 
     virtual void drawMenu() = 0;

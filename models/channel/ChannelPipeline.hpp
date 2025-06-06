@@ -2,13 +2,21 @@
 
 #include "utils/TaskQueue.hpp"
 
+#include "models/ParticleLayoutManager.hpp"
+#include "models/ModifierPipeline.hpp"
+#include "models/ShaderPipeline.hpp"
+
 namespace nx
 {
   class ChannelPipeline : public TaskQueueRequestSink
   {
   public:
     ChannelPipeline( PipelineContext& ctx, const int32_t channelId )
-      : m_ctx( ctx ), m_drawPriority( channelId )
+      : m_ctx( ctx ),
+        m_drawPriority( channelId ),
+        m_particleLayout( ctx ),
+        m_modifierPipeline( ctx ),
+        m_shaderPipeline( ctx, *this )
     {
       // check the 0th value to see whether the static values haven't been written yet
       if ( m_drawPriorityNames[ 0 ].empty() )
@@ -19,6 +27,30 @@ namespace nx
     }
 
     ~ChannelPipeline() override = default;
+
+    void requestRenderUpdate() override
+    {
+      // this comes in on the main thread,
+      // but we need to move it to the render thread
+      request( [ this ]
+      {
+        const auto * modifierTexture = m_modifierPipeline.applyModifiers(
+          m_particleLayout.getParticleOptions(),
+          m_particleLayout.getParticles() );
+
+        m_outputTexture = m_shaderPipeline.draw( modifierTexture );
+      } );
+    }
+
+    void requestShutdown() override
+    {
+      request( [ this ]
+      {
+        // this asks all other pipelines to shut down
+        m_modifierPipeline.destroyTextures();
+        m_shaderPipeline.destroyTextures();
+      } );
+    }
 
     void toggleBypass() { m_isBypassed = !m_isBypassed; }
     bool isBypassed() const { return m_isBypassed; }
@@ -37,7 +69,7 @@ namespace nx
 
   protected:
 
-    void drawChannelPriorityMenu()
+    virtual void drawChannelPriorityMenu()
     {
       if ( ImGui::BeginCombo( "Draw Priority",
                         m_drawPriorityNames[ m_drawPriority ].c_str() ) )
@@ -55,10 +87,28 @@ namespace nx
       }
     }
 
+    virtual void drawChannelPipelineMenu()
+    {
+      if ( ImGui::TreeNode( "Channel Options" ) )
+      {
+        ImGui::Checkbox( "Mute", &m_isBypassed );
+
+        ImGui::SeparatorText( "Channel Blend" );
+        MenuHelper::drawBlendOptions( m_blendMode );
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+    }
+
   protected:
 
     PipelineContext& m_ctx;
     int32_t m_drawPriority;
+
+    ParticleLayoutManager m_particleLayout;
+    ModifierPipeline m_modifierPipeline;
+    ShaderPipeline m_shaderPipeline;
 
     bool m_isBypassed { false };
 

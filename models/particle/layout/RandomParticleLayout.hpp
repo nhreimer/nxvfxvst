@@ -12,7 +12,7 @@ class RandomParticleLayout final : public ParticleLayoutBase< ParticleLayoutData
 public:
 
   explicit RandomParticleLayout( PipelineContext& context )
-: ParticleLayoutBase( context )
+    : ParticleLayoutBase( context )
   {}
 
   [[nodiscard]]

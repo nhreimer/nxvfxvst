@@ -2,18 +2,6 @@
 
 namespace nx
 {
-  enum class E_AudioVisualizerType : int8_t
-  {
-    E_PlotLineImGuiVisualizer, // used for debugging via ImGui
-    E_PlotLineVisualizer,      // used for debugging via SFML
-    E_BarSpectrumVisualizer,
-    E_RingBarVisualizer,
-
-    // the bottom two are the only "real" ones
-    E_RingPlotVisualizer,
-    E_RingParticleVisualizer
-  };
-
   enum class E_ShaderType : int8_t
   {
     E_InvalidShader,
@@ -42,6 +30,11 @@ namespace nx
     E_LSystemCurveLayout,
     E_GoldenSpiralLayout,
     E_EllipticalLayout,
+
+    // the bottom two are the only "real" ones
+    E_RingPlotVisualizer,
+    E_RingParticleVisualizer,
+
     E_TestLayout
   };
 
@@ -53,7 +46,6 @@ namespace nx
     E_PerlinDeformerModifier,
     E_RingZoneMeshModifier,
     E_MirrorModifier,
-
     E_TestModifier
   };
 

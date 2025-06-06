@@ -1,6 +1,6 @@
 #pragma once
 
-#include "particle/layout/SpiralParticleLayout.hpp"
+#include "particle/layout/EmptyParticleLayout.hpp"
 
 #include "data/PipelineContext.hpp"
 
@@ -13,7 +13,7 @@ namespace nx
 
     explicit ParticleLayoutManager( PipelineContext& context )
       : m_ctx( context ),
-        m_particleLayout( std::make_unique< SpiralParticleLayout >( context ) )
+        m_particleLayout( std::make_unique< EmptyParticleLayout >( context ) )
     {}
 
     [[nodiscard]]
@@ -23,10 +23,17 @@ namespace nx
 
     void processMidiEvent( const Midi_t& midiEvent ) const;
 
+    void processAudioBuffer( const IFFTResult& fftResult ) const;
+
+    [[nodiscard]]
     const ParticleLayoutData_t& getParticleOptions() const;
+
+    [[nodiscard]]
     std::deque< IParticle* >& getParticles() const;
 
-    void drawMenu();
+    void drawAudioMenu();
+
+    void drawMidiMenu();
 
   private:
 
@@ -42,11 +49,16 @@ namespace nx
         m_particleLayout->deserialize( m_tempSettings[ newLayoutName ] );
     }
 
+    template < typename T >
+    void selectParticleLayout( const std::string& name, const E_LayoutType layoutType )
+    {
+      if ( ImGui::RadioButton( name.c_str(), m_particleLayout->getType() == layoutType ) )
+        changeLayout< T >();
+    }
+
   private:
     PipelineContext& m_ctx;
-
     std::unique_ptr< IParticleLayout > m_particleLayout;
-
     nlohmann::json m_tempSettings;
   };
 

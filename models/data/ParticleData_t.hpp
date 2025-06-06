@@ -12,7 +12,7 @@ namespace nx
 
     float outlineThickness { 0.f };
 
-    float radius { 30.f };
+    float radius { 10.f };
     uint8_t pointCount { 30 };
 
     float velocitySizeMultiplier { 1.f };

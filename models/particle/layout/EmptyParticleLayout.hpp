@@ -24,7 +24,7 @@ namespace nx
     {}
 
     [[nodiscard]] E_LayoutType getType() const override { return E_LayoutType::E_EmptyLayout; }
-    void addMidiEvent(const Midi_t &midiEvent) override {}
+
     void update(const sf::Time &deltaTime) override {}
     void drawMenu() override
     {

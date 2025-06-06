@@ -4,10 +4,7 @@ namespace nx
 {
 
   MidiChannelPipeline::MidiChannelPipeline( PipelineContext& context, const int32_t channelId )
-    : ChannelPipeline( context, channelId ),
-      m_particleLayout( context ),
-      m_modifierPipeline( context ),
-      m_shaderPipeline( context, *this )
+    : ChannelPipeline( context, channelId )
   {}
 
   nlohmann::json MidiChannelPipeline::saveChannelPipeline() const
@@ -74,7 +71,7 @@ namespace nx
 
   void MidiChannelPipeline::drawMenu()
   {
-    m_particleLayout.drawMenu();
+    m_particleLayout.drawMidiMenu();
 
     ImGui::Separator();
     m_modifierPipeline.drawMenu();
@@ -86,21 +83,4 @@ namespace nx
     drawChannelPipelineMenu();
     ImGui::Separator();
   }
-
-  void MidiChannelPipeline::drawChannelPipelineMenu()
-  {
-    if ( ImGui::TreeNode( "Channel Options" ) )
-    {
-      ImGui::Checkbox( "Mute", &m_isBypassed );
-
-      ImGui::SeparatorText( "Channel Blend" );
-      MenuHelper::drawBlendOptions( m_blendMode );
-
-      drawChannelPipelineMenu();
-
-      ImGui::TreePop();
-      ImGui::Spacing();
-    }
-  }
-
 }
