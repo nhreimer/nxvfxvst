@@ -61,7 +61,7 @@ Synchronize midi events and audio data to highly customizable visuals.
 # Getting Started
 
 Regardless of which version you build, you will need to specify where the
-VST3 SDK lives and where your dependency manager resides:
+VST3 SDK lives and where your dependency manager resides. The following setup uses vcpkg configuration.
 
 ```bash
 -Dvst3sdk_SOURCE_DIR=C:/path/to/vst3sdk
@@ -334,6 +334,7 @@ Manages the particle layout (initial placement & creation) and passes particles 
 | L-System Curve  |                                                |
 | Fractal Ring    |                                                |
 | Elliptical      |                                                |
+| Ring Particle   | audio visualizer                               |
 
 ### Particle Generator
 
@@ -354,7 +355,6 @@ e.g., Jitter, Gravity, Spread. Cannot be used for adding or removing particles.
 
 | Behavior Name | Description |
 |---------------|-------------|
-| Color Morph   |             |
 | Free Fall     |             |
 | Jitter        |             |
 | Magnetic      |             |
