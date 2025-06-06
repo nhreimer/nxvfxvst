@@ -41,6 +41,10 @@ This project uses the following libraries:
   License: [MIT License](https://github.com/ocornut/imgui/blob/master/LICENSE.txt)
   Source: https://github.com/ocornut/imgui
 
+- **ImGui-SFML**
+  License: [MIT License](https://github.com/SFML/imgui-sfml?tab=MIT-1-ov-file)
+  Source: https://github.com/SFML/imgui-sfml
+
 - **nlohmann/json**
   License: [MIT License](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
   Source: https://github.com/nlohmann/json
@@ -52,6 +56,10 @@ This project uses the following libraries:
 - **moodycamel::ConcurrentQueue**
   License: [BSD 2-Clause License](https://github.com/cameron314/concurrentqueue/blob/master/LICENSE.md)
   Source: https://github.com/cameron314/concurrentqueue
+
+- **KissFFT**
+  License: [BSD 3-Clause License](https://github.com/mborgerding/kissfft?tab=License-1-ov-file)
+  Source: https://github.com/mborgerding/kissfft
 
 Each dependency is subject to its own license, and your use of this software constitutes agreement with those terms.
 

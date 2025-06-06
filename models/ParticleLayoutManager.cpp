@@ -11,6 +11,7 @@
 #include "models/particle/layout/GoldenSpiralLayout.hpp"
 
 #include "models/particle/layout/RingParticleVisualizer.hpp"
+#include "models/particle/layout/SpiralEchoVisualizer.hpp"
 
 namespace nx
 {
@@ -56,6 +57,7 @@ namespace nx
     {
       selectParticleLayout< EmptyParticleLayout >( "Empty", E_LayoutType::E_EmptyLayout );
       selectParticleLayout< RingParticleVisualizer >( "Ring Visualizer", E_LayoutType::E_RingParticleVisualizer );
+      selectParticleLayout< SpiralEchoVisualizer >( "Spiral Echo Visualizer", E_LayoutType::E_SpiralEchoVisualizer );
 
       ImGui::TreePop();
       ImGui::Spacing();

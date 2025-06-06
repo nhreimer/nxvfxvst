@@ -136,7 +136,7 @@ namespace nx
       {
         int32_t sides = m_data.pointCount;
         if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) m_data.pointCount = sides;
-        ImGui::SliderFloat( "Radius##1", &m_data.radius, 0.0f, 500.0f );
+        ImGui::SliderFloat( "Radius##1", &m_data.radius, 0.0f, 150.0f );
         ImGui::SliderFloat( "Timeout##1", &m_data.timeoutInSeconds, 0.015, 5.f );
         ImGui::SliderFloat( "Boost##1", &m_data.boostVelocity, 0.f, 1.f );
         ImGui::SliderFloat( "Velocity Size Mult##1", &m_data.velocitySizeMultiplier, 0.f, 50.f );

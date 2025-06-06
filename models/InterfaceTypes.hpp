@@ -32,7 +32,8 @@ namespace nx
     E_EllipticalLayout,
 
     // the bottom two are the only "real" ones
-    E_RingPlotVisualizer,
+    //E_RingPlotVisualizer,
+    E_SpiralEchoVisualizer,
     E_RingParticleVisualizer,
 
     E_TestLayout

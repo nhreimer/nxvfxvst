@@ -119,12 +119,15 @@ namespace nx
         ImGui::Separator();
 
         m_particleGeneratorManager.getParticleGenerator()->drawMenu();
-        ImGui::SeparatorText( "Ring Particle Layout Options" );
+        ImGui::SeparatorText( "Ring Particle Options" );
 
         ImGui::SliderFloat( "Threshold", &m_data.threshold, 0.f, 1.f );
         ImGui::SliderFloat( "Gain", &m_data.gain, 0.f, 20.f );
         ImGui::SliderFloat( "Base Ring Radius", &m_data.baseRingRadius, 0.f, static_cast< float >(m_ctx.globalInfo.windowSize.x) );
         ImGui::SliderFloat( "Radius Mod", &m_data.radiusMod, 0.f, 400.f );
+
+        ImGui::Separator();
+        m_behaviorPipeline.drawMenu();
 
         ImGui::Separator();
         ImGui::Text( "Processing time: %0.2f", m_timedBuffer.getAverage() );
