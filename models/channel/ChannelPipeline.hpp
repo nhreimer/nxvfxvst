@@ -28,6 +28,50 @@ namespace nx
 
     ~ChannelPipeline() override = default;
 
+    virtual nlohmann::json saveChannelPipeline() const
+    {
+      nlohmann::json j = {};
+      j[ "channel" ][ "particles" ] = m_particleLayout.serialize();
+      j[ "channel" ][ "modifiers" ] = m_modifierPipeline.saveModifierPipeline();
+      j[ "channel" ][ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
+      return j;
+    }
+
+    virtual void loadChannelPipeline( const nlohmann::json& j )
+    {
+      if ( j.contains( "channel" ) )
+      {
+        const auto& jchannel = j[ "channel" ];
+        if ( jchannel.contains( "particles" ) )
+          m_particleLayout.deserialize( jchannel.at( "particles" ) );
+        else
+        {
+          // a channel particle should always be available
+          LOG_WARN( "Deserializer: Channel particle layout not found" );
+        }
+
+        if ( jchannel.contains( "modifiers" ) )
+          m_modifierPipeline.loadModifierPipeline( jchannel.at( "modifiers" ) );
+        else
+        {
+          // optional whether any exist
+          LOG_DEBUG( "Deserializer: No channel modifiers found" );
+        }
+
+        if ( jchannel.contains( "shaders" ) )
+          m_shaderPipeline.loadShaderPipeline( jchannel.at( "shaders" ) );
+        else
+        {
+          // optional whether any exist
+          LOG_DEBUG( "Deserializer: No channel shaders found" );
+        }
+      }
+      else
+      {
+        LOG_WARN( "Deserializer: No channel data found" );
+      }
+    }
+
     void requestRenderUpdate() override
     {
       // this comes in on the main thread,
@@ -54,9 +98,6 @@ namespace nx
 
     void toggleBypass() { m_isBypassed = !m_isBypassed; }
     bool isBypassed() const { return m_isBypassed; }
-
-    virtual nlohmann::json saveChannelPipeline() const = 0;
-    virtual void loadChannelPipeline( const nlohmann::json& j ) = 0;
 
     // this is not hooked up to anything yet
     virtual void processEvent( const sf::Event &event ) const {}

@@ -7,50 +7,6 @@ namespace nx
     : ChannelPipeline( context, channelId )
   {}
 
-  nlohmann::json MidiChannelPipeline::saveChannelPipeline() const
-  {
-    nlohmann::json j = {};
-    j[ "channel" ][ "particles" ] = m_particleLayout.serialize();
-    j[ "channel" ][ "modifiers" ] = m_modifierPipeline.saveModifierPipeline();
-    j[ "channel" ][ "shaders" ] = m_shaderPipeline.saveShaderPipeline();
-    return j;
-  }
-
-  void MidiChannelPipeline::loadChannelPipeline( const nlohmann::json& j )
-  {
-    if ( j.contains( "channel" ) )
-    {
-      const auto& jchannel = j[ "channel" ];
-      if ( jchannel.contains( "particles" ) )
-        m_particleLayout.deserialize( jchannel.at( "particles" ) );
-      else
-      {
-        // a channel particle should always be available
-        LOG_WARN( "Deserializer: Channel particle layout not found" );
-      }
-
-      if ( jchannel.contains( "modifiers" ) )
-        m_modifierPipeline.loadModifierPipeline( jchannel.at( "modifiers" ) );
-      else
-      {
-        // optional whether any exist
-        LOG_DEBUG( "Deserializer: No channel modifiers found" );
-      }
-
-      if ( jchannel.contains( "shaders" ) )
-        m_shaderPipeline.loadShaderPipeline( jchannel.at( "shaders" ) );
-      else
-      {
-        // optional whether any exist
-        LOG_DEBUG( "Deserializer: No channel shaders found" );
-      }
-    }
-    else
-    {
-      LOG_WARN( "Deserializer: No channel data found" );
-    }
-  }
-
   void MidiChannelPipeline::processMidiEvent( const Midi_t& midiEvent ) const
   {
     m_particleLayout.processMidiEvent( midiEvent );
@@ -71,6 +27,8 @@ namespace nx
 
   void MidiChannelPipeline::drawMenu()
   {
+    ImGui::Text( "Particle count: %d", m_particleLayout.getParticles().size() );
+    ImGui::Separator();
     m_particleLayout.drawMidiMenu();
 
     ImGui::Separator();

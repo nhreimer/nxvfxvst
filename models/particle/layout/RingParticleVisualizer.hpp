@@ -27,9 +27,45 @@ namespace nx
     {}
 
     [[nodiscard]]
-    nlohmann::json serialize() const override { return {}; }
+    nlohmann::json serialize() const override
+    {
+      nlohmann::json j =
+      {
+        { "type", SerialHelper::serializeEnum( getType() ) }
+      };
 
-    void deserialize(const nlohmann::json &j) override {}
+      j[ "gain" ] = m_data.gain;
+      j[ "baseRingRadius" ] = m_data.baseRingRadius;
+      j[ "radiusMod" ] = m_data.radiusMod;
+      j[ "threshold" ] = m_data.threshold;
+
+      j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+      j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
+      j[ "easings" ] = m_fadeEasing.serialize();
+
+      return j;
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      if ( SerialHelper::isTypeGood( j, getType() ) )
+      {
+        m_data.gain = j.value( "gain", 10.f );
+        m_data.baseRingRadius = j.value( "baseRingRadius", 100.f );
+        m_data.radiusMod = j.value( "radiusMod", 100.f );
+        m_data.threshold = j.value( "threshold", 0.1f );
+      }
+
+      if ( j.contains( "particleGenerator" ) )
+        m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
+
+      if ( j.contains( "behaviors" ) )
+        m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
+
+      if ( j.contains( "easings" ) )
+        m_fadeEasing.deserialize( j.at( "easings" ) );
+    }
+
     [[nodiscard]] E_LayoutType getType() const override
     {
       return E_LayoutType::E_RingParticleVisualizer;
@@ -119,7 +155,6 @@ namespace nx
     RingParticleLayoutData_t m_data;
 
     float m_recentMax { 0.1f };
-
     RingBufferAverager m_timedBuffer;
   };
 

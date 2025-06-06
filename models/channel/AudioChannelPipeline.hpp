@@ -1,15 +1,11 @@
 #pragma once
 
 #include <imgui.h>
-#include <nlohmann/json.hpp>
 
-#include "utils/TaskQueue.hpp"
 #include "vst/analysis/FFTBuffer.hpp"
 
 #include "models/channel/ChannelPipeline.hpp"
-
 #include "models/data/PipelineContext.hpp"
-
 #include "models/audio/FFTProcessor.hpp"
 
 namespace nx
@@ -22,15 +18,6 @@ namespace nx
     {}
 
     ~AudioChannelPipeline() override = default;
-
-
-    nlohmann::json saveChannelPipeline() const override
-    {
-      return {};
-    }
-
-    void loadChannelPipeline( const nlohmann::json& j ) override
-    {}
 
     void processAudioBuffer( FFTBuffer& buffer )
     {
@@ -52,6 +39,8 @@ namespace nx
 
     void drawMenu() override
     {
+      ImGui::Text( "Particle count: %d", m_particleLayout.getParticles().size() );
+      ImGui::Separator();
       m_scaler.drawMenu();
       m_particleLayout.drawAudioMenu();
 
