@@ -336,6 +336,7 @@ Manages the particle layout (initial placement & creation) and passes particles 
 | Elliptical      | midi           |
 | Ring Particle   | audio          |
 | Spiral Echo     | audio          |
+| Plot Line       | audio          |
 
 ### Particle Generator
 
