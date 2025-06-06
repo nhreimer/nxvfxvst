@@ -18,7 +18,7 @@ Synchronize midi events and audio data to highly customizable visuals.
 ### Right-click to hide/show menus!
 
 * Ability to run in Standalone and VST3 Plugin
-  * In Standalone (testing only, no audio)
+  * In Standalone (testing only -- no audio output)
     * Midi Generators that push events on different threads to
       simulate DAW Processor threads and stress testing
     * Audio Generators (sine oscillators) that push audio processing on different threads to simulate DAW processor
