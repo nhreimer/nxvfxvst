@@ -63,7 +63,7 @@ namespace nx
 
         // Normalize, apply gain and easing
         const float norm = std::clamp(energy * m_data.gain / (m_recentMax + 1e-5f), 0.f, 1.f);
-        const float eased = applyEasing(norm, m_data.easingType);
+        const float eased = m_easing.getEasing(norm); //applyEasing(norm, m_data.easingType);
 
         float x = static_cast<float>(i) * binWidth;
         float y = size.y - (eased * m_data.heightMod);
@@ -106,8 +106,9 @@ namespace nx
           ImGui::SliderFloat("Harmonic Falloff", &m_data.harmonicFalloff, 0.f, 1.f);
         }
         ImGui::Checkbox("Vertical Mirroring", &m_data.enableMirroring);
-        ImGui::Combo("Easing", reinterpret_cast<int*>(&m_data.easingType),
-                     "Linear\0Sine\0Quadratic\0Cubic\0Expo\0");
+
+        ImGui::Separator();
+        m_easing.drawMenu();
 
         ImGui::Separator();
         m_behaviorPipeline.drawMenu();
@@ -136,23 +137,10 @@ namespace nx
         m_recentMax = mag;
     }
 
-    float applyEasing(float t, E_EasingType easing)
-    {
-      switch (easing)
-      {
-        case E_EasingType::E_Sine:      return std::sin(t * NX_PI / 2.f);
-        case E_EasingType::E_Quadratic: return t * t;
-        case E_EasingType::E_Cubic:     return t * t * t;
-        case E_EasingType::E_Expo:      return (std::pow(2.f, 10.f * (t - 1.f)) - 0.001f);
-        case E_EasingType::E_Linear:
-        default: return t;
-      }
-    }
-
-
   private:
     PlotLineVisualizerData_t m_data;
     RingBufferAverager m_timedBuffer;
+    PercentageEasing m_easing;
     float m_recentMax = 0.0f;
   };
 

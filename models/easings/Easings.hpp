@@ -72,7 +72,7 @@ namespace nx
     }
 
     // overshoots slightly before settling down
-    static float easeOutBack( float t )
+    static float easeOutBack( const float t )
     {
       constexpr float c1 = 1.70158f;
       constexpr float c3 = c1 + 1.0f;
