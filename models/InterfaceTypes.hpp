@@ -37,6 +37,7 @@ namespace nx
     E_RingParticleVisualizer,
     E_PlotLineVisualizer,
     E_TessellationVisualizer,
+    E_VortexSinkVisualizer,
 
     E_TestLayout
   };

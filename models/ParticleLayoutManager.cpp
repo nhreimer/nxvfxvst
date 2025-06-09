@@ -14,6 +14,7 @@
 #include "models/particle/layout/SpiralEchoVisualizer.hpp"
 #include "models/particle/layout/PlotLineVisualizer.hpp"
 #include "models/particle/layout/TessellatedGridVisualizer.hpp"
+#include "models/particle/layout/VortexSinkVisualizer.hpp"
 
 namespace nx
 {
@@ -62,6 +63,7 @@ namespace nx
       selectParticleLayout< SpiralEchoVisualizer >( "Spiral Echo Visualizer", E_LayoutType::E_SpiralEchoVisualizer );
       selectParticleLayout< PlotLineVisualizer >( "Plot Line Visualizer", E_LayoutType::E_PlotLineVisualizer );
       selectParticleLayout< TessellatedGridVisualizer >( "Tessellation Grid Visualizer", E_LayoutType::E_TessellationVisualizer );
+      selectParticleLayout< VortexSinkVisualizer >( "Vortex Sink", E_LayoutType::E_VortexSinkVisualizer );
 
       ImGui::TreePop();
       ImGui::Spacing();

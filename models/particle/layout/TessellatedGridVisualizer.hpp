@@ -40,8 +40,8 @@ namespace nx
       const auto& fft = fftResult.getSmoothedBuffer();
       const auto& size = m_ctx.globalInfo.windowSize;
 
-      const float cellW = size.x / static_cast<float>(m_data.cols);
-      const float cellH = size.y / static_cast<float>(m_data.rows);
+      const float cellW = static_cast< float >(size.x) / static_cast<float>(m_data.cols);
+      const float cellH = static_cast< float >(size.y) / static_cast<float>(m_data.rows);
       const int totalCells = m_data.rows * m_data.cols;
 
       for (int row = 0; row < m_data.rows; ++row)
@@ -66,8 +66,8 @@ namespace nx
 
           const sf::Vector2f pos =
           {
-            col * cellW + 0.5f * cellW,
-            row * cellH + 0.5f * cellH
+            static_cast< float >(col) * cellW + 0.5f * cellW,
+            static_cast< float >(row) * cellH + 0.5f * cellH
           };
 
           auto * p = m_particles.emplace_back(
