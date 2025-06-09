@@ -59,16 +59,17 @@ namespace nx
         if (energy < m_data.threshold)
           continue;
 
-        updateMaxEnergy(energy);
+        const float recentMax = m_recentMax.updateMaxEnergy( energy );
 
         // Normalize, apply gain and easing
-        const float norm = std::clamp(energy * m_data.gain / (m_recentMax + 1e-5f), 0.f, 1.f);
+        const float norm = std::clamp(energy * m_data.gain / (recentMax + 1e-5f), 0.f, 1.f);
         const float eased = m_easing.getEasing(norm); //applyEasing(norm, m_data.easingType);
 
         float x = static_cast<float>(i) * binWidth;
-        float y = size.y - (eased * m_data.heightMod);
+        const float y = size.y - (eased * m_data.heightMod);
 
-        auto spawnParticle = [&](float posY) {
+        auto spawnParticle = [&](float posY)
+        {
           auto* particle = m_particles.emplace_back(
             m_particleGeneratorManager.getParticleGenerator()->createParticle(energy, m_ctx.globalInfo.elapsedTimeSeconds)
           );
@@ -123,25 +124,11 @@ namespace nx
 
   private:
 
-    static float squash(const float x)
-    {
-      // Easing: easeOutExpo
-      return 1.0f - std::pow(2.0f, -10.0f * x);
-    }
-
-    void updateMaxEnergy(const float mag)
-    {
-      // Smooth decay and track new spikes
-      m_recentMax = std::lerp(m_recentMax, mag, 0.05f);
-      if (mag > m_recentMax)
-        m_recentMax = mag;
-    }
-
   private:
     PlotLineVisualizerData_t m_data;
     RingBufferAverager m_timedBuffer;
     PercentageEasing m_easing;
-    float m_recentMax = 0.0f;
+    MaxEnergyTracker m_recentMax;
   };
 
 }

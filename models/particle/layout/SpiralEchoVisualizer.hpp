@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models/InterfaceTypes.hpp"
+#include "models/audio/MaxEnergyTracker.hpp"
 
 namespace nx
 {
@@ -58,10 +59,10 @@ namespace nx
         if ( energy < m_data.threshold )
           continue;
 
-        updateMaxEnergy(energy);
+        const float recentMax = m_recentMax.updateMaxEnergy( energy );
 
-        const float normMag = std::clamp(energy / (m_recentMax + 1e-5f), 0.f, 1.f);
-        const float eased = squash(normMag);
+        const float normMag = std::clamp(energy / (recentMax + 1e-5f), 0.f, 1.f);
+        const float eased = Easings::easeOutExpo( normMag );
 
         const float angle = static_cast<float>(i) * ( baseAngleStep + m_data.skewRotation ) + m_data.rotationOffset;
         const float radius = spiralStartRadius + spiralTightness * i + eased * m_data.radiusMod;
@@ -144,27 +145,10 @@ namespace nx
     }
 
   private:
-    static float squash(const float x)
-    {
-      // Easing: easeOutExpo
-      return 1.0f - std::pow(2.0f, -10.0f * x);
-    }
-
-    void updateMaxEnergy(const float mag)
-    {
-      // Smooth decay and track new spikes
-      m_recentMax = std::lerp(m_recentMax, mag, 0.05f);
-      if (mag > m_recentMax)
-        m_recentMax = mag;
-    }
-
-  private:
 
     SpiralLayoutData_t m_data;
     RingBufferAverager m_timedBuffer;
-
-    float m_recentMax { 0.1f };
-
+    MaxEnergyTracker m_recentMax;
   };
 
 }

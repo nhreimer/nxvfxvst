@@ -1,9 +1,10 @@
 #pragma once
 
-#include "utils/RingBufferAverager.hpp"
-#include "models/particle/layout/ParticleLayoutBase.hpp"
-#include "models/data/ParticleData_t.hpp"
 #include "models/InterfaceTypes.hpp"
+#include "models/audio/MaxEnergyTracker.hpp"
+#include "models/data/ParticleData_t.hpp"
+#include "models/particle/layout/ParticleLayoutBase.hpp"
+#include "utils/RingBufferAverager.hpp"
 
 namespace nx
 {
@@ -85,10 +86,10 @@ namespace nx
           continue;
 
         const float mag = fft[i] * m_data.gain;
-        updateMaxEnergy(mag);
+        const float recentMax = m_recentMax.updateMaxEnergy(mag);
 
-        const auto normMag = std::clamp(mag / (m_recentMax + 1e-5f), 0.f, 1.f);
-        const auto eased = squash(normMag);
+        const auto normMag = std::clamp(mag / (recentMax + 1e-5f), 0.f, 1.f);
+        const auto eased = Easings::easeOutExpo(normMag);
 
         const float angle = static_cast< float >(i) * angleStep;
         const float radius = m_data.baseRingRadius + eased * m_data.radiusMod;
@@ -139,26 +140,9 @@ namespace nx
 
   private:
 
-    static float squash(const float x)
-    {
-      // Easing: easeOutExpo
-      return 1.0f - std::pow(2.0f, -10.0f * x);
-    }
-
-    void updateMaxEnergy(const float mag)
-    {
-      // Smooth decay and track new spikes
-      m_recentMax = std::lerp(m_recentMax, mag, 0.05f);
-      if (mag > m_recentMax)
-        m_recentMax = mag;
-    }
-
-  private:
-
     RingParticleLayoutData_t m_data;
-
-    float m_recentMax { 0.1f };
     RingBufferAverager m_timedBuffer;
+    MaxEnergyTracker m_recentMax;
   };
 
 }
