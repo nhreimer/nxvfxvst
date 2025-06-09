@@ -51,5 +51,9 @@ namespace nx
 
     virtual void setOutlineColorPattern( const sf::Color & startColor, const sf::Color & endColor ) = 0;
     virtual std::pair< sf::Color, sf::Color > getOutlineColors() const = 0;
+
+    // the following have to do with the midi velocity or FFT energy
+    virtual void setEnergy( const float energy ) = 0;
+    virtual float getEnergy() const = 0;
   };
 }

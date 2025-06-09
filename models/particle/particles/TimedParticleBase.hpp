@@ -9,6 +9,9 @@ namespace nx
   {
   public:
 
+    void setEnergy(const float energy) override { m_energy = energy; }
+    float getEnergy() const override { return m_energy; }
+
     float getTimeRemainingPercentage() const override
     {
       return m_timeAliveInSeconds / ( m_expirationTimeInSeconds - m_spawnTimeInSeconds );
@@ -48,6 +51,7 @@ namespace nx
     float m_spawnTimeInSeconds { 0.f };
     float m_expirationTimeInSeconds { 0.f };
     float m_timeAliveInSeconds { 0.f };
+    float m_energy { 0.f };
   };
 
 

@@ -3,6 +3,7 @@
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 #include "models/particle/behavior/JitterBehavior.hpp"
 #include "models/particle/behavior/MagneticBehavior.hpp"
+#include "models/particle/behavior/EnergyFlowFieldBehavior.hpp"
 
 namespace nx
 {
@@ -135,6 +136,10 @@ namespace nx
       ImGui::SameLine();
       if ( ImGui::Button( "Magnetic##1" ) )
         createBehavior< MagneticBehavior >();
+
+      ImGui::SameLine();
+      if ( ImGui::Button( "Energy Flow Field##1" ) )
+        createBehavior< EnergyFlowFieldBehavior >();
 
       ImGui::TreePop();
       ImGui::Spacing();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "models/audio/IFFTResult.hpp"
 #include "models/InterfaceTypes.hpp"
 #include "models/audio/MaxEnergyTracker.hpp"
 
@@ -65,7 +66,7 @@ namespace nx
         const float eased = Easings::easeOutExpo( normMag );
 
         const float angle = static_cast<float>(i) * ( baseAngleStep + m_data.skewRotation ) + m_data.rotationOffset;
-        const float radius = spiralStartRadius + spiralTightness * i + eased * m_data.radiusMod;
+        const float radius = spiralStartRadius + spiralTightness * static_cast< float >(i) + eased * m_data.radiusMod;
 
         { // clockwise spiral
           const sf::Vector2f pos =

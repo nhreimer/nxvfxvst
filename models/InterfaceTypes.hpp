@@ -57,7 +57,8 @@ namespace nx
     E_InvalidBehavior,
     E_FreeFallBehavior,
     E_JitterBehavior,
-    E_MagneticBehavior
+    E_MagneticBehavior,
+    E_EnergyFlowFieldBehavior
   };
 
   enum class E_ParticleType : int8_t

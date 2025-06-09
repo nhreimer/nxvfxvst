@@ -1,5 +1,6 @@
 #pragma once
 
+#include "models/audio/IFFTResult.hpp"
 #include "models/InterfaceTypes.hpp"
 #include "models/audio/MaxEnergyTracker.hpp"
 #include "models/data/ParticleData_t.hpp"

@@ -104,6 +104,8 @@ namespace nx
       particle->setColorPattern( m_data.fillStartColor, m_data.fillEndColor );
 
       particle->setExpirationTimeInSeconds( m_data.timeoutInSeconds + particle->getSpawnTimeInSeconds() );
+
+      particle->setEnergy( velocity );
     }
 
   private:

@@ -56,13 +56,15 @@ namespace nx::test
       if (m_phase >= 1.f)
         m_phase -= 1.f;
 
+      const auto result = sample * m_amplitude;
+
       if ( m_clock.getElapsedTime().asSeconds() >= m_spikeIntervalInSeconds )
       {
         m_clock.restart();
-        return sample * m_amplitude * m_spikeMultiplier;
+        return std::abs( result * m_spikeMultiplier );
       }
 
-      return sample * m_amplitude;
+      return result;
     }
 
   private:
@@ -73,7 +75,7 @@ namespace nx::test
     float m_phase = 0.f;
     float m_time = 0.f;
     float m_amplitude = 0.8f;
-    float m_spikeMultiplier = 1.f;
+    float m_spikeMultiplier = 2.f;
     float m_spikeIntervalInSeconds = 3.f;
 
     sf::Clock m_clock;

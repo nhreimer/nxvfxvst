@@ -1,7 +1,6 @@
 #pragma once
 
 #include "models/InterfaceTypes.hpp"
-#include "models/audio/IFFTResult.hpp"
 
 #include "models/particle/generator/ParticleGeneratorBase.hpp"
 

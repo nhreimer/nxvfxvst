@@ -1,7 +1,8 @@
 // TessellatedGridLayout.hpp
 #pragma once
 
-#include "ParticleLayoutBase.hpp"
+#include "models/audio/IFFTResult.hpp"
+#include "models/particle/layout/ParticleLayoutBase.hpp"
 #include "models/data/ParticleLayoutData_t.hpp"
 
 namespace nx
@@ -13,9 +14,6 @@ namespace nx
     int32_t cols = 16;
     float gain = 1.f;
     float threshold = 0.1f;
-    //E_EasingType easingType = E_EasingType::E_Quadratic;
-    // sf::Color colorStart = sf::Color::Blue;
-    // sf::Color colorEnd = sf::Color::Cyan;
   };
 
   class TessellatedGridVisualizer final
