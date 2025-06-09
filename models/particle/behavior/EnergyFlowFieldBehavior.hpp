@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models/IParticleBehavior.hpp"
+#include "models/easings/PercentageEasing.hpp"
 
 namespace nx
 {
@@ -62,22 +63,15 @@ X(falloffExponent,    float       , 0.75f,    0.1f,  4.f, "Exponent for falloff 
 
     void applyOnUpdate(IParticle* p, const sf::Time& dt, const ParticleData_t& particleData) override
     {
-      // const auto& fft = particleData.fftResult->getSmoothedBuffer();
-      // const auto size = m_ctx.globalInfo.windowSize;
       const sf::Vector2f pos = p->getPosition();
 
-      // Map screen position to FFT bin index
-      //const float normX = pos.x / static_cast<float>(m_ctx.globalInfo.windowSize.x);
-      //const int binIndex = std::clamp(static_cast<int>(normX * FFT_BINS), 0, FFT_BINS - 1);
-
-      // const float energy = fft[binIndex];
       const float energy = p->getEnergy();
       if (energy < 1e-4f) return;
 
       float angle = energy * 360.f + m_data.angleOffset.first;
-      angle = angle * NX_D2R; // 3.14159265f / 180.f; // degrees to radians
-
-      float force = m_data.strength.first;
+      angle = angle * NX_D2R;
+      const auto normEnergy = std::clamp( energy, 0.f, 1.f );
+      float force = m_data.strength.first * m_easing.getEasing( normEnergy );
       if (m_data.useFalloff.first)
       {
         const float dist = std::max(length(pos - m_ctx.globalInfo.windowHalfSize), 1.f);
@@ -85,7 +79,8 @@ X(falloffExponent,    float       , 0.75f,    0.1f,  4.f, "Exponent for falloff 
       }
 
       const auto dir = sf::Vector2f{std::cos(angle), std::sin(angle)};
-      p->move(dir * force * dt.asSeconds());
+      const auto offset = dir * force * dt.asSeconds();
+      p->move(offset);
     }
 
     void drawMenu() override
@@ -93,6 +88,8 @@ X(falloffExponent,    float       , 0.75f,    0.1f,  4.f, "Exponent for falloff 
       if (ImGui::TreeNode("Energy Flow Field"))
       {
         EXPAND_SHADER_IMGUI(FLOW_BEHAVIOR_PARAMS, m_data)
+        ImGui::Separator();
+        m_easing.drawMenu();
         ImGui::TreePop();
         ImGui::Spacing();
       }
@@ -106,6 +103,7 @@ X(falloffExponent,    float       , 0.75f,    0.1f,  4.f, "Exponent for falloff 
 
     PipelineContext m_ctx;
     FlowData_t m_data;
+    PercentageEasing m_easing;
   };
 
 } // namespace nx
