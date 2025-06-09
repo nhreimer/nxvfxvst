@@ -13,10 +13,10 @@ namespace nx::test
     MidiGenerator( const int16_t channel,
                    const int32_t maxDelay,
                    const std::function< void( const Steinberg::Vst::Event& ) >& onEvent )
-      : m_rand( ++m_seed ),
-        m_channel( channel ),
-        m_maxDelay( maxDelay ),
-        m_onEvent( onEvent )
+      : m_onEvent(onEvent),
+        m_rand(++m_seed),
+        m_channel(channel),
+        m_maxDelay(maxDelay)
     {}
 
     bool isRunning() const { return m_isRunning; }

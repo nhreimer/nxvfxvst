@@ -35,6 +35,8 @@ namespace nx::test
         ImGui::SliderFloat( "Frequency##1", &m_frequency, 20.f, 20000.f, "%0.2f", ImGuiSliderFlags_Logarithmic );
         ImGui::SliderFloat( "Phase##1", &m_phase, 0.f, 5.f );
         ImGui::SliderFloat( "Amplitude##1", &m_amplitude, 0.f, 10.f );
+        ImGui::SliderFloat( "Spike Multiplier##1", &m_spikeMultiplier, 1.f, 20.f );
+        ImGui::SliderFloat( "Spike Interval (seconds)##1", &m_spikeIntervalInSeconds, 0.f, 20.f );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -54,6 +56,12 @@ namespace nx::test
       if (m_phase >= 1.f)
         m_phase -= 1.f;
 
+      if ( m_clock.getElapsedTime().asSeconds() >= m_spikeIntervalInSeconds )
+      {
+        m_clock.restart();
+        return sample * m_amplitude * m_spikeMultiplier;
+      }
+
       return sample * m_amplitude;
     }
 
@@ -65,6 +73,10 @@ namespace nx::test
     float m_phase = 0.f;
     float m_time = 0.f;
     float m_amplitude = 0.8f;
+    float m_spikeMultiplier = 1.f;
+    float m_spikeIntervalInSeconds = 3.f;
+
+    sf::Clock m_clock;
   };
 
 ///////////////////////////////////////////////////////////////////////////////
