@@ -15,6 +15,10 @@ struct VortexSinkVisualizerData_t : ParticleLayoutData_t
   float threshold = 0.02f;
   float radiusMod = 250.f;
   float resetInSeconds = 2.f;
+
+  float wobbleFrequency = 4.f;
+  float wobblePhaseOffset = 0.2f;
+  float wobbleAmplitude = 0.2f;
 };
 
 class VortexSinkVisualizer final : public ParticleLayoutBase< VortexSinkVisualizerData_t >
@@ -50,6 +54,12 @@ public:
       ImGui::SliderFloat("Threshold", &m_data.threshold, 0.f, 1.f);
       ImGui::SliderFloat("Radius Mod", &m_data.radiusMod, 0.f, 500.f);
       ImGui::SliderFloat( "Reset in seconds", &m_data.resetInSeconds, 0.f, 20.f );
+
+      ImGui::SeparatorText( "Wobble Options" );
+
+      ImGui::SliderFloat( "Wobble Amplitude", &m_data.wobbleAmplitude, 0.f, 1.f );
+      ImGui::SliderFloat( "Wobble Frequency (Hz)", &m_data.wobbleFrequency, 1.f, 10.f );
+      ImGui::SliderFloat( "Wobble Phase Offset", &m_data.wobblePhaseOffset, 0.f, 2.f );
 
       ImGui::Separator();
       m_easing.drawMenu();
@@ -90,8 +100,12 @@ public:
       //Easings::easeOutExpo(mag / (recentMax + 1e-5f) );
       //squash(mag / (m_recentMax + 1e-5f));
 
+      float wobble =
+        std::sin( m_data.wobbleFrequency * m_ctx.globalInfo.elapsedTimeSeconds +
+                  static_cast<float>(i) * m_data.wobblePhaseOffset ) * m_data.wobbleAmplitude;
+
       // Compute base angle for bin
-      float angle = static_cast<float>(i) * angleStep;
+      float angle = static_cast<float>(i) * angleStep * wobble;
       float radius = m_data.baseRadius + eased * m_data.radiusMod;
 
       // Spiral offset
