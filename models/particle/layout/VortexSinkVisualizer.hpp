@@ -52,6 +52,9 @@ public:
       ImGui::SliderFloat( "Reset in seconds", &m_data.resetInSeconds, 0.f, 20.f );
 
       ImGui::Separator();
+      m_easing.drawMenu();
+
+      ImGui::Separator();
       m_behaviorPipeline.drawMenu();
 
       ImGui::Separator();
@@ -72,7 +75,7 @@ public:
 
     //m_recentMaxEnergy.resetMaxEnergy();
     //const auto time = m_clock.restart();
-    float time = m_clock.getElapsedTime().asSeconds();
+    const float time = m_clock.getElapsedTime().asSeconds();
     if ( time >= m_data.resetInSeconds ) m_clock.restart();
 
     for (int32_t i = 0; i < FFT_BINS; ++i)
@@ -82,7 +85,10 @@ public:
 
       const float mag = fft[i] * m_data.gain;
       const float recentMax = m_recentMaxEnergy.updateMaxEnergy( mag );
-      const float eased = Easings::easeOutExpo( recentMax ); //Easings::easeOutExpo(mag / (recentMax + 1e-5f) ); // squash(mag / (m_recentMax + 1e-5f));
+      const float eased = m_easing.getEasing( recentMax );
+      //Easings::easeOutExpo( recentMax );
+      //Easings::easeOutExpo(mag / (recentMax + 1e-5f) );
+      //squash(mag / (m_recentMax + 1e-5f));
 
       // Compute base angle for bin
       float angle = static_cast<float>(i) * angleStep;
@@ -116,7 +122,7 @@ private:
 
   RingBufferAverager m_timedBuffer;
   MaxEnergyTracker m_recentMaxEnergy;
-
+  PercentageEasing m_easing;
   sf::Clock m_clock;
 };
 
