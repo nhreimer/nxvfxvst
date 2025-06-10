@@ -30,15 +30,27 @@ namespace nx
                                         const sf::Time& deltaTime,
                                         const ParticleData_t& particleData )
   {
-    const auto trail = p->getSpawnTimeInSeconds() / m_data.timeDivisor.first;
-    p->setPosition( { p->getPosition().x, p->getPosition().y + trail } );
+    const float elapsed = p->getTimeAliveInSeconds();
+    const float offset = elapsed * m_data.scrollRate.first;
+
+    p->setPosition({ p->getPosition().x,
+                     m_data.invert.first ? p->getPosition().y - offset
+                                         : p->getPosition().y + offset });
+    // const auto trail = p->getSpawnTimeInSeconds() / m_data.timeDivisor.first;
+    // const float offset = trail * deltaTime.asSeconds();
+    //
+    // if (!m_data.invert.first)
+    //   p->move({0.f, offset});     // Downward scroll
+    // else
+    //   p->move({0.f, -offset});    // Upward scroll
   }
 
   void FreeFallBehavior::drawMenu()
   {
     if ( ImGui::TreeNode( "Free Fall Behavior" ) )
     {
-      ImGui::SliderFloat( "##Free Fall Time", &m_data.timeDivisor.first, 0.5f, 50.f, "Free Fall Time %0.2f" );
+      ImGui::SliderFloat( "##Scroll Rate", &m_data.scrollRate.first, 0.f, 50.f, "Scroll Rate %0.2f" );
+      ImGui::Checkbox( "Invert", &m_data.invert.first );
       ImGui::TreePop();
       ImGui::Spacing();
     }

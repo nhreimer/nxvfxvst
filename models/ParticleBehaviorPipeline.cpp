@@ -4,6 +4,7 @@
 #include "models/particle/behavior/JitterBehavior.hpp"
 #include "models/particle/behavior/MagneticBehavior.hpp"
 #include "models/particle/behavior/EnergyFlowFieldBehavior.hpp"
+#include "models/particle/behavior/WaveBehavior.hpp"
 
 namespace nx
 {
@@ -40,6 +41,14 @@ namespace nx
 
         case E_BehaviorType::E_MagneticBehavior:
           deserializeBehavior< MagneticBehavior >( data );
+          break;
+
+        case E_BehaviorType::E_EnergyFlowFieldBehavior:
+          deserializeBehavior< EnergyFlowFieldBehavior >( data );
+          break;
+
+        case E_BehaviorType::E_WaveBehavior:
+          deserializeBehavior< WaveBehavior >( data );
           break;
 
         default:
@@ -137,9 +146,12 @@ namespace nx
       if ( ImGui::Button( "Magnetic##1" ) )
         createBehavior< MagneticBehavior >();
 
-      ImGui::SameLine();
       if ( ImGui::Button( "Energy Flow Field##1" ) )
         createBehavior< EnergyFlowFieldBehavior >();
+
+      ImGui::SameLine();
+      if ( ImGui::Button( "Wave##1" ) )
+        createBehavior< WaveBehavior >();
 
       ImGui::TreePop();
       ImGui::Spacing();

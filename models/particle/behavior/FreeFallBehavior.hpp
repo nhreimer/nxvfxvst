@@ -9,7 +9,8 @@ namespace nx
   {
 
 #define FREE_FALL_BEHAVIOR_PARAMS(X)                                            \
-X(timeDivisor,  float,  2.5f,   0.f, 50.f, "Time in seconds of falling", true )
+X(invert,       bool ,  false,  0  ,    0,    "Reverses the direction" , true ) \
+X(scrollRate,   float,  1.f,    0.f,    50.f, "Rate of movement"       , true )
 
     struct FreeFallData_t
     {

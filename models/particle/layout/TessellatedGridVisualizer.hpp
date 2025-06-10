@@ -71,10 +71,12 @@ namespace nx
           };
 
           auto * p = m_particles.emplace_back(
-            m_particleGeneratorManager.getParticleGenerator()->createParticle(eased, m_ctx.globalInfo.elapsedTimeSeconds));
+            m_particleGeneratorManager.getParticleGenerator()->createParticle(
+              eased, m_ctx.globalInfo.elapsedTimeSeconds));
 
           p->setPosition(pos);
           ParticleLayoutBase::notifyBehaviorOnSpawn(p);
+
         }
       }
 
