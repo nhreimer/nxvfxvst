@@ -1,5 +1,7 @@
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 
+#include "helpers/LineHelper.hpp"
+
 namespace nx
 {
 

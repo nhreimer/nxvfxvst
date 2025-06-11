@@ -5,6 +5,7 @@
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 #include "models/modifier/PerlinDeformerModifier.hpp"
 #include "models/modifier/RingZoneMeshModifier.hpp"
+#include "models/modifier/KnnMeshModifier.hpp"
 
 #include "data/PipelineContext.hpp"
 
@@ -75,6 +76,10 @@ namespace nx
 
         case E_ModifierType::E_MirrorModifier:
           deserializeModifier< MirrorModifier >( modifierData );
+          break;
+
+        case E_ModifierType::E_KnnMeshModifier:
+          deserializeModifier< KnnMeshModifier >( modifierData );
           break;
 
         default:
@@ -178,6 +183,10 @@ namespace nx
         ImGui::SameLine();
         if ( ImGui::Button( "Ring Zone Mesh##3" ) )
           createModifier< RingZoneMeshModifier >();
+
+        ImGui::SameLine();
+        if ( ImGui::Button( "KNN Mesh##1" ) )
+          createModifier< KnnMeshModifier >();
       }
 
       ImGui::SeparatorText( "Augmentation Modifiers" );

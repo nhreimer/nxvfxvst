@@ -2,6 +2,8 @@
 
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 
+#include "helpers/LineHelper.hpp"
+
 namespace nx
 {
 

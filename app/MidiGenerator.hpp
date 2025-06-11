@@ -33,7 +33,7 @@ namespace nx::test
       if ( ImGui::Button( "send midi" ) ) next();
 
       ImGui::SetNextItemWidth( 186.f );
-      ImGui::SliderInt( "##Max Delay", &m_maxDelay, 0, 5000, "Delay %d" );
+      ImGui::SliderInt( "##Max Delay", &m_maxDelay, 1, 5000, "Delay %d" );
 
       ImGui::PopID();
     }

@@ -50,6 +50,7 @@ namespace nx
     E_PerlinDeformerModifier,
     E_RingZoneMeshModifier,
     E_MirrorModifier,
+    E_KnnMeshModifier,
     E_TestModifier
   };
 

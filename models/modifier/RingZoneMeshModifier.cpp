@@ -1,5 +1,7 @@
 #include "models/modifier/RingZoneMeshModifier.hpp"
 
+#include "helpers/LineHelper.hpp"
+
 namespace nx
 {
 
