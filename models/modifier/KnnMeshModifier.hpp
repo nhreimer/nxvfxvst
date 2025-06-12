@@ -20,6 +20,9 @@ X(otherLineColor,    sf::Color, sf::Color(255,255,255,255), 0, 255, "Alternate/f
 X(invertColorTime,   bool,      false,  0,      1,       "Colors fade in over time rather than out", true) \
 X(curvature,         float,     0.25f,  -NX_PI,  NX_PI,  "Amount of curvature (arc)",             true)    \
 X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in the curve",       true)
+// X(coneAngleDeg,      float,    45.f, 5.f, 180.f, "Max cone angle", true)                                   \
+// X(maxConnections,    int32_t,  2, 1, 8, "Connections per particle", true)                                  \
+// X(direction,         sf::Vector2f, sf::Vector2f(0.f, 0.f), 0.f, 0.f, "Bias direction", false)
 
     struct KnnMeshData_t
     {
@@ -77,6 +80,7 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
         ImGui::TreePop();
         ImGui::Spacing();
       }
+
     }
 
     void update(const sf::Time&) override {}
@@ -105,7 +109,7 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
           if (i == j) continue;
 
           const auto* b = particles[j];
-          const float dist = distance(posA, b->getPosition());
+          const float dist = MathHelper::getDistance(posA, b->getPosition());
           if (dist <= m_data.maxDistance.first)
             distances.emplace_back(dist, j);
         }
@@ -117,12 +121,6 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
         {
           const auto& [dist, j] = distances[k];
           const auto* b = particles[j];
-
-          // auto * line = new sf::VertexArray(sf::PrimitiveType::Lines, 2);
-          // (*line)[0].position = posA;
-          // (*line)[1].position = b->getPosition();
-          //
-          // outArtifacts.push_back(line);
 
           auto * line = new CurvedLine(
             posA,
@@ -155,13 +153,98 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
       }
     }
 
+    // this uses a few directional bias options that are experimental
+    // void modify(
+    //   const ParticleLayoutData_t& layoutData,
+    //   std::deque<IParticle*>& particles,
+    //   std::deque<sf::Drawable*>& outArtifacts) override
+    // {
+    //   if (!isActive() || particles.empty()) return;
+    //
+    //   const float maxAngle = m_data.coneAngleDeg.first * 0.5f;
+    //   const float maxAngleRad = maxAngle * (NX_PI / 180.f);
+    //
+    //   const sf::Vector2f normalizedDir = normalize(m_data.direction.first);
+    //
+    //   for (const auto * source : particles)
+    //   {
+    //     std::vector< std::pair< IParticle*, float > > candidates;
+    //
+    //     for (auto * target : particles)
+    //     {
+    //       if (source == target)
+    //         continue;
+    //
+    //       const sf::Vector2f toTarget = target->getPosition() - source->getPosition();
+    //       const float dist = length(toTarget);
+    //       const sf::Vector2f dir = ( dist == 0.0f )
+    //         ? sf::Vector2f { 0.f, 0.f }
+    //         : toTarget / dist;
+    //
+    //       const float angle = std::acos(std::clamp(dot(dir, normalizedDir), -1.f, 1.f));
+    //
+    //       if (angle <= maxAngleRad)
+    //         candidates.emplace_back(target, dist);
+    //     }
+    //
+    //     std::ranges::sort(candidates, [](const auto& a, const auto& b)
+    //     {
+    //       return a.second < b.second;
+    //     });
+    //
+    //     const auto minSize = std::min<int32_t>(m_data.maxConnections.first, candidates.size());
+    //
+    //     for (int32_t i = 0; i < minSize; ++i)
+    //     {
+    //       auto * line = new CurvedLine(
+    //         source->getPosition(),
+    //         candidates[i].first->getPosition(),
+    //         m_data.curvature.first,
+    //         m_data.lineSegments.first);
+    //
+    //       line->setWidth(m_data.lineThickness.first);
+    //
+    //       if ( m_data.useParticleColors.first )
+    //       {
+    //         LineHelper::updateLineColors( line,
+    //           source,
+    //           candidates[i].first,
+    //           m_data.invertColorTime.first );
+    //       }
+    //       else
+    //       {
+    //         LineHelper::updateCustomLineColors(
+    //           line,
+    //           candidates[i].first,
+    //           source,
+    //           m_data.lineColor.first,
+    //           m_data.otherLineColor.first,
+    //           m_data.invertColorTime.first );
+    //       }
+    //
+    //       outArtifacts.push_back(line);
+    //     }
+    //   }
+    // }
+
   private:
-    static float distance(const sf::Vector2f& a, const sf::Vector2f& b)
+    static sf::Vector2f normalize(const sf::Vector2f& v)
     {
-      const auto dx = a.x - b.x;
-      const auto dy = a.y - b.y;
-      return std::sqrt(dx * dx + dy * dy);
+      const float len = std::sqrt(v.x * v.x + v.y * v.y);
+      return len > 0.f ? v / len : sf::Vector2f{1.f, 0.f};
     }
+
+    static float length(const sf::Vector2f& v)
+    {
+      return std::sqrt(v.x * v.x + v.y * v.y);
+    }
+
+    static float dot(const sf::Vector2f& a, const sf::Vector2f& b)
+    {
+      return a.x * b.x + a.y * b.y;
+    }
+
+  private:
 
     PipelineContext& m_ctx;
     KnnMeshData_t m_data;
