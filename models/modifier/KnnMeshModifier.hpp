@@ -85,6 +85,7 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
 
     void update(const sf::Time&) override {}
 
+    [[nodiscard]]
     bool isActive() const override { return m_data.isActive; }
 
     void processMidiEvent(const Midi_t&) override {}
