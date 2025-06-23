@@ -1,4 +1,5 @@
 #include "models/shader/BlenderShader.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

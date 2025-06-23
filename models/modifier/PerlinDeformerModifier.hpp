@@ -1,5 +1,17 @@
 #pragma once
 
+#include <cstdint>
+#include <deque>
+#include <string>
+
+#include <SFML/System/Time.hpp>
+
+#include "models/InterfaceTypes.hpp"
+#include "models/IParticle.hpp"
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
+
 namespace nx
 {
 

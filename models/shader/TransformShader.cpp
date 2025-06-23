@@ -1,5 +1,7 @@
 #include "models/shader/TransformShader.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
   TransformShader::TransformShader( PipelineContext& context )

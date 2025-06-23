@@ -1,5 +1,12 @@
 #pragma once
 
+#include "helpers/SerialHelper.hpp"
+#include "models/IParticle.hpp"
+#include "models/IParticleLayout.hpp"
+#include "models/data/ParticleData_t.hpp"
+#include "models/data/ParticleLayoutData_t.hpp"
+#include "models/data/PipelineContext.hpp"
+
 namespace nx
 {
 

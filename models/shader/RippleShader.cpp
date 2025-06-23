@@ -1,4 +1,5 @@
 #include "models/shader/RippleShader.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/Transformable.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/System/Time.hpp>
+
 namespace nx
 {
 

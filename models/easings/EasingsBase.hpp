@@ -8,7 +8,7 @@
 namespace nx
 {
 
-#define EASING_TYPE_LIST(X)                                                                       \
+#define EASING_TYPE_LIST(X)                                                                    \
 X(E_Disabled,         "Disabled",         "easeDisabled",         Easings::useNone          )  \
 X(E_Fixed,            "Fixed",            "easeFixed",            Easings::useNone          )  \
 X(E_TimeContinuous,   "TimeContinuous",   "easeTimeContinuous",   Easings::useNone          )  \
@@ -101,7 +101,8 @@ X(E_Elastic,          "Elastic",          "easeOutElastic",       Easings::easeO
 
       if (ImGui::BeginCombo("##Easings", currentLabel))
       {
-#define X(eid, label, func)                                                        \
+
+#define X(eid, label, easeLabel, func)                                             \
 {                                                                                  \
 const int32_t idx = static_cast<int32_t>(E_EasingType::eid);                       \
 const bool isSelected = (currentIndex == idx);                                     \

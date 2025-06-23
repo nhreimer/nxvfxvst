@@ -1,6 +1,13 @@
 #pragma once
 
+#include "models/InterfaceTypes.hpp"
+#include "models/IShader.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
+#include "models/easings/TimeEasing.hpp"
 #include "models/shader/BlenderShader.hpp"
+#include "shapes/MidiNoteControl.hpp"
+#include "shapes/TimedCursorPosition.hpp"
 
 namespace nx
 {

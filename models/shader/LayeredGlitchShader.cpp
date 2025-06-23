@@ -1,4 +1,5 @@
 #include "models/shader/LayeredGlitchShader.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

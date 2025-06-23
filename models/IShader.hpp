@@ -1,7 +1,12 @@
 #pragma once
 
+#include <SFML/System/Time.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+
+#include "models/InterfaceTypes.hpp"
+#include "models/data/Midi_t.hpp"
 #include "models/ISerializable.hpp"
-#include "models/ShaderMacros.hpp"
+#include "vst/analysis/AudioAnalyzer.hpp"
 
 namespace nx
 {

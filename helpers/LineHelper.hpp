@@ -1,5 +1,7 @@
 #pragma once
 
+#include "helpers/ColorHelper.hpp"
+
 namespace nx
 {
 

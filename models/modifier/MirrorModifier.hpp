@@ -1,7 +1,15 @@
 #pragma once
 
-#include "../data/PipelineContext.hpp"
+#include <deque>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/System/Time.hpp>
+
+#include "models/data/PipelineContext.hpp"
 #include "models/InterfaceTypes.hpp"
+#include "models/IParticle.hpp"
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/Midi_t.hpp"
 
 namespace nx
 {

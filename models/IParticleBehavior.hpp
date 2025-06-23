@@ -1,6 +1,10 @@
 #pragma once
 
+#include "models/IParticle.hpp"
+#include "models/ISerializable.hpp"
 #include "models/InterfaceTypes.hpp"
+
+#include "data/ParticleData_t.hpp"
 
 namespace nx
 {

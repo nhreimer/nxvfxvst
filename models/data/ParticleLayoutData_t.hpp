@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Graphics/BlendMode.hpp>
+
 namespace nx
 {
   struct ParticleLayoutData_t

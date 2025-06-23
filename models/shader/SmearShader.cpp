@@ -1,5 +1,7 @@
 #include "models/shader/SmearShader.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
   SmearShader::SmearShader( PipelineContext& context )

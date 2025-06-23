@@ -5,6 +5,8 @@
 #include <memory>
 #include <thread>
 
+#include "log/Logger.hpp"
+
 namespace nx
 {
 

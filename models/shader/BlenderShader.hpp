@@ -1,5 +1,9 @@
 #pragma once
 
+#include <SFML/Graphics/RenderTexture.hpp>
+
+#include "utils/LazyTexture.hpp"
+
 namespace nx
 {
 

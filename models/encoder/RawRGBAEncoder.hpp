@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Graphics/Texture.hpp>
+
 #include "models/EventRecorder.hpp"
 #include "models/IEncoder.hpp"
 

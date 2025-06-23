@@ -1,5 +1,7 @@
 #include "models/particle/behavior/JitterBehavior.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 

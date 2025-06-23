@@ -4,7 +4,6 @@
 #include <thread>
 
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 #include <base/source/fobject.h>
 #include <pluginterfaces/gui/iplugview.h>
@@ -25,11 +24,12 @@ namespace nx
                           public Steinberg::IPlugFrame
   {
 
+  private:
     struct X11Details_t
     {
       Display * display { nullptr };
-      void * parentHwnd { nullptr };
-      ::Window childHwnd { nullptr };
+      ::Window parentHwnd { 0 };
+      ::Window childHwnd { 0 };
       int32_t screen { -1 };
       bool isRunning { false };
       std::unique_ptr< std::thread > processingThread;
@@ -52,6 +52,9 @@ namespace nx
       if ( m_details.isRunning )
         removed();
     }
+
+    void saveState(nlohmann::json& j) override { m_eventFacade.saveState( j ); }
+    void restoreState(nlohmann::json& j) override { m_eventFacade.restoreState( j ); }
 
     ////////////////////////////////////////////////////////////////////////////////
     Steinberg::tresult isPlatformTypeSupported( Steinberg::FIDString type ) override
@@ -106,7 +109,7 @@ namespace nx
         ::XCloseDisplay( m_details.display );
 
         m_details.display = nullptr;
-        m_details.childHwnd = nullptr;
+        m_details.childHwnd = 0;
       }
 
       return Steinberg::kResultTrue;
@@ -243,8 +246,8 @@ namespace nx
         return false;
       }
 
-      m_details.parentHwnd = parent;
-      m_details.screen = ::DefaultScreen( m_details.display );
+      m_details.parentHwnd = reinterpret_cast< ::Window >( parent );
+      m_details.screen = DefaultScreen( m_details.display );
 
       // XCreateSimpleWindow inherits its attributes from its parent
       m_details.childHwnd = ::XCreateSimpleWindow(
@@ -255,8 +258,8 @@ namespace nx
         m_rect.getWidth(),
         m_rect.getHeight(),
         1,
-        ::BlackPixel( m_details.display, m_details.screen ),
-        ::WhitePixel( m_details.display, m_details.screen ) );
+        BlackPixel( m_details.display, m_details.screen ),
+        WhitePixel( m_details.display, m_details.screen ) );
 
       ::XMapWindow( m_details.display, m_details.childHwnd );
       ::XFlush( m_details.display );
@@ -275,11 +278,6 @@ namespace nx
       LOG_INFO( "SFML Render Window OpenGL version {}.{}.",
         m_sfContext.majorVersion,
         m_sfContext.minorVersion );
-
-      if ( !::AllowSetForegroundWindow( ASFW_ANY ) )
-      {
-        LOG_WARN( "failed to allow foreground. interactivity may be limited." );
-      }
 
       if ( !m_details.renderThread->setActive( true ) )
       {
@@ -337,7 +335,7 @@ namespace nx
     X11Details_t m_details;
 
     // our frame rate is fixed in linux for the time being
-    constexpr int32_t FRAME_RATE_MS = 16;
-    constexpr int32_t FPS = 60; // approximately
+    inline static int32_t FRAME_RATE_MS = 16;
+    inline static int32_t FPS = 60; // approximately
   };
 }

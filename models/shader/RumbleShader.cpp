@@ -1,4 +1,5 @@
 #include "models/shader/RumbleShader.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

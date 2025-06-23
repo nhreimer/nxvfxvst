@@ -1,5 +1,6 @@
 #pragma once
 
+#include "data/PipelineContext.hpp"
 #include "models/IParticleBehavior.hpp"
 
 namespace nx

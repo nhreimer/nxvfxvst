@@ -1,5 +1,9 @@
 #include "models/modifier/MirrorModifier.hpp"
 
+#include <nlohmann/json.hpp>
+
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
   /////////////////////////////////////////////////////////

@@ -1,5 +1,7 @@
 #include "models/modifier/PerlinDeformerModifier.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 

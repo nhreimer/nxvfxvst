@@ -4,6 +4,7 @@
 #include "models/data/ParticleLineData_t.hpp"
 #include "shapes/CurvedLine.hpp"
 #include "helpers/ColorHelper.hpp"
+#include "models/ShaderMacros.hpp"
 
 namespace nx
 {

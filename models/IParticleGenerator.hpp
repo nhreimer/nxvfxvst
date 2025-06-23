@@ -1,5 +1,9 @@
 #pragma once
 
+#include "models/data/Midi_t.hpp"
+#include "models/data/ParticleData_t.hpp"
+#include "models/ISerializable.hpp"
+
 namespace nx
 {
   struct IFFTResult;

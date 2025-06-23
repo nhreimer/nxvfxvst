@@ -1,6 +1,9 @@
 #pragma once
 
+#include <SFML/Graphics/Glsl.hpp>
+
 #include "helpers/MenuHelper.hpp"
+#include "log/Logger.hpp"
 
 namespace nx
 {

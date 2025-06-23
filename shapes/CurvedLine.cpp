@@ -1,5 +1,7 @@
 #include "shapes/CurvedLine.hpp"
 
+#include <cmath>
+
 namespace nx
 {
 

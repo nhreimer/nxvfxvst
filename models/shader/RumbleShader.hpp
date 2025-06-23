@@ -3,6 +3,8 @@
 #include "helpers/CommonHeaders.hpp"
 #include "models/shader/BlenderShader.hpp"
 
+#include "models/ShaderMacros.hpp"
+
 namespace nx
 {
 

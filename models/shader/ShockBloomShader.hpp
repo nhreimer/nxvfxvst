@@ -4,6 +4,11 @@
 #include "models/data/PipelineContext.hpp"
 #include "models/shader/BlenderShader.hpp"
 
+#include "models/ShaderMacros.hpp"
+#include "models/easings/TimeEasing.hpp"
+#include "shapes/MidiNoteControl.hpp"
+#include "shapes/TimedCursorPosition.hpp"
+
 namespace nx
 {
 

@@ -1,4 +1,10 @@
 #pragma once
+#include <algorithm>
+#include <cstdint>
+#include <imgui.h>
+#include <string>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Glsl.hpp>
 
 namespace nx
 {
@@ -8,8 +14,8 @@ namespace nx
     static sf::Color lerpColor(const sf::Color &a, const sf::Color &b, float t)
     {
       t = std::clamp(t, 0.f, 1.f);
-      return sf::Color(static_cast< uint8_t >(a.r + (b.r - a.r) * t), static_cast< uint8_t >(a.g + (b.g - a.g) * t),
-                       static_cast< uint8_t >(a.b + (b.b - a.b) * t), static_cast< uint8_t >(a.a + (b.a - a.a) * t));
+      return {static_cast< uint8_t >(a.r + (b.r - a.r) * t), static_cast< uint8_t >(a.g + (b.g - a.g) * t),
+                       static_cast< uint8_t >(a.b + (b.b - a.b) * t), static_cast< uint8_t >(a.a + (b.a - a.a) * t)};
     }
 
     ///

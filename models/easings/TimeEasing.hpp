@@ -1,5 +1,8 @@
 #pragma once
 
+#include <SFML/System/Clock.hpp>
+#include <SFML/System//Time.hpp>
+
 #include "models/easings/EasingsBase.hpp"
 
 namespace nx

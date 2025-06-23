@@ -39,7 +39,7 @@ namespace nx
 
     void drawMenu() override
     {
-      ImGui::Text( "Particle count: %d", m_particleLayout.getParticles().size() );
+      ImGui::Text( "Particle count: %d", static_cast<int32_t>(m_particleLayout.getParticles().size()) );
       ImGui::Separator();
       m_scaler.drawMenu();
       m_particleLayout.drawAudioMenu();

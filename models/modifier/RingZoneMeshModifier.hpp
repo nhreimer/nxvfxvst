@@ -1,6 +1,16 @@
 #pragma once
 
+#include <deque>
+#include <SFML/System/Time.hpp>
+#include <SFML/Graphics/Color.hpp>
+
+#include "models/InterfaceTypes.hpp"
+#include "models/IParticle.hpp"
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
 #include "shapes/CurvedLine.hpp"
+#include "helpers/MathHelper.hpp"
 
 namespace nx
 {

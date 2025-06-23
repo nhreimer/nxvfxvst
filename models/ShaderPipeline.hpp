@@ -1,8 +1,15 @@
 #pragma once
 
 #include <mutex>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/System/Time.hpp>
+#include <SFML/Window/Event.hpp>
 
+#include "models/InterfaceTypes.hpp"
+#include "data/Midi_t.hpp"
+#include "models/IShader.hpp"
 #include "data/PipelineContext.hpp"
+#include "utils/LazyTexture.hpp"
 #include "utils/RingBufferAverager.hpp"
 
 namespace nx

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "helpers/CommonHeaders.hpp"
+#include "models/ShaderMacros.hpp"
 
 namespace nx
 {

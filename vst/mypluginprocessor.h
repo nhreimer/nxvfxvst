@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <SFML/System/Clock.hpp>
+
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include "helpers/Definitions.hpp"
 #include "vst/analysis/AudioAnalyzer.hpp"

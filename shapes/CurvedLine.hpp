@@ -1,5 +1,12 @@
 #pragma once
 
+#include <SFML/Graphics/Drawable.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
+
 namespace nx
 {
   class CurvedLine final : public sf::Drawable

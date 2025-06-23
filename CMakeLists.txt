@@ -20,10 +20,6 @@ else()
   message(STATUS "Path to VST3 SDK found")
 endif()
 
-# required for fmt and msvc to force utf-8
-add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
 set( NX_CPP_FILES
 
   utils/LazyTexture.cpp
@@ -116,9 +112,6 @@ if ( BUILD_PLUGIN )
 
   target_include_directories( ${PROJECT_NAME}
     PRIVATE
-
-    # must used the patched version
-#    C:/Precision/projects/SFML/include
   )
 
   if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
@@ -129,13 +122,8 @@ if ( BUILD_PLUGIN )
       PRIVATE
 
       sdk
-      Rpcrt4.lib
-      dwmapi.lib
+      xcb-util
 
-      # you should use the patched version in the README.MD file
-#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
-#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-window-s-d.lib
-#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-graphics-s-d.lib
       SFML::Window
       SFML::Graphics
       ImGui-SFML::ImGui-SFML
@@ -152,8 +140,7 @@ if ( BUILD_PLUGIN )
       PRIVATE
 
       sdk
-      Rpcrt4.lib
-      dwmapi.lib
+      xcb-util
 
       nlohmann_json::nlohmann_json
       SFML::Window
@@ -221,8 +208,6 @@ else()
     PRIVATE
 
     #  sdk
-    Rpcrt4.lib
-    dwmapi.lib
 
     SFML::Window
     SFML::Graphics
@@ -246,13 +231,12 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 
   set( COMPILE_DEFS
     -DNOMINMAX
-    -DWINDOWS_LEAN_AND_MEAN
-    -DWIN32
-    -D_WINDOWS
+    -DLINUX
     -D_UNICODE
     -DUNICODE
     -DSPDLOG_USE_STD_FORMAT
     -DDEBUG
+    -D_DEBUG
     -DBUILD_NUMBER="d${BUILD_NUMBER}"
   )
 
@@ -266,11 +250,10 @@ else()
 
   set( COMPILE_DEFS
     -DNOMINMAX
-    -DWINDOWS_LEAN_AND_MEAN
-    -DWIN32
-    -D_WINDOWS
+    -DLINUX
     -D_UNICODE
     -DUNICODE
+    -DRELEASE
     -DSPDLOG_USE_STD_FORMAT
     -DBUILD_NUMBER="r${BUILD_NUMBER}"
   )
@@ -283,10 +266,10 @@ else()
 
 endif()
 
-target_precompile_headers( ${PROJECT_NAME}
-  PRIVATE
-  helpers/CommonHeaders.hpp
-)
+#target_precompile_headers( ${PROJECT_NAME}
+#  PRIVATE
+#  helpers/CommonHeaders.hpp
+#)
 
 if ( NX_LOG_FILE_DISABLED )
   add_compile_definitions( NX_LOG_FILE_DISABLED=1 )

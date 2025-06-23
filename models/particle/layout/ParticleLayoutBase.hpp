@@ -1,6 +1,9 @@
 #pragma once
 
+#include <deque>
+
 #include "helpers/ColorHelper.hpp"
+#include "models/IParticleLayout.hpp"
 
 #include "models/ParticleBehaviorPipeline.hpp"
 #include "models/easings/PercentageEasing.hpp"

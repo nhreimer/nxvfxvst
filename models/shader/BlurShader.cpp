@@ -1,4 +1,5 @@
 #include "models/shader/BlurShader.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Glsl.hpp>
+#include <SFML/Graphics/BlendMode.hpp>
 
 #include "models/easings/EasingsBase.hpp"
 #include "models/InterfaceTypes.hpp"

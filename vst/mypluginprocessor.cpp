@@ -5,6 +5,8 @@
 #include "mypluginprocessor.h"
 #include "myplugincids.h"
 
+#include <SFML/System/Time.hpp>
+
 #include "pluginterfaces/vst/ivstevents.h"
 #include "base/source/fstreamer.h"
 

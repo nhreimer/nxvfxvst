@@ -69,6 +69,13 @@ VST3 SDK lives and where your dependency manager resides. The following setup us
 -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
 -DNX_LOG_FILE=C:/path/to/log/file.log
 -DBUILD_PLUGIN=OFF
+
+-Dvst3sdk_SOURCE_DIR=/home/nhr/Documents/vst3sdk
+-DVCPKG_TARGET_TRIPLET=x64-linux
+-DCMAKE_TOOLCHAIN_FILE=/home/nhr/Documents/vcpkg/scripts/buildsystems/vcpkg.cmake
+-DNX_LOG_FILE=/home/nhr/Documents/nxvfxvst.log
+-DBUILD_PLUGIN=OFF
+
 ```
 
 ## Standalone Application
@@ -150,6 +157,22 @@ target_link_libraries( ${PROJECT_NAME}
   nlohmann_json::nlohmann_json
 )
 ```
+
+### Linux Build
+
+You should use gcc 13+. Be sure to have ninja and cmake installed as well. This setup uses vcpkg, but it's not required. 
+
+```bash
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+sudo apt install pkg-config libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libgl1-mesa-dev
+
+vcpkg install sfml:x64-linux
+...
+
+```
+
 ---
 
 # Architecture
@@ -376,6 +399,7 @@ Processes a stack of IParticleModifier objects sequentially. It modifies the par
 | Full Mesh Lines      |                    |
 | Sequential Lines     |                    |
 | Ring Zone Mesh Lines |                    |
+| KNN Mesh Lines       |                    | 
 | Perlin Deformer      |                    |
 | Mirror               | CPU-side mirroring |
 

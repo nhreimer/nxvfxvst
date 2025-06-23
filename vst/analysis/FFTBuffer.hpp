@@ -1,11 +1,15 @@
 #pragma once
 
 #include <array>
+#include <atomic>
+
+#include <SFML/System/Clock.hpp>
 
 #include "pluginterfaces/vst/ivstattributes.h"
 #include "pluginterfaces/vst/ivstmessage.h"
 
 #include "helpers/Definitions.hpp"
+#include "log/Logger.hpp"
 
 namespace nx
 {

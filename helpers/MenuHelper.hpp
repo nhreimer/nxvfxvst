@@ -1,5 +1,8 @@
 #pragma once
 
+#include <imgui.h>
+#include <SFML/Graphics/BlendMode.hpp>
+
 namespace nx
 {
 

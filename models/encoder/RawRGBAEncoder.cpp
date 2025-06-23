@@ -1,8 +1,10 @@
 #include "models/encoder/RawRGBAEncoder.hpp"
 
 #include <fstream>
+#include <SFML/Graphics/Image.hpp>
 
 #include "helpers/Definitions.hpp"
+#include "log/Logger.hpp"
 
 namespace nx
 {

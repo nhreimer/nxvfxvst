@@ -1,5 +1,14 @@
 #pragma once
 
+#include <deque>
+#include <SFML/System/Time.hpp>
+
+#include "models/IParticle.hpp"
+#include "models/ISerializable.hpp"
+#include "models/data/ParticleLayoutData_t.hpp"
+#include "models/data/Midi_t.hpp"
+#include "models/InterfaceTypes.hpp"
+
 namespace nx
 {
   struct IParticleModifier : public ISerializable< E_ModifierType >

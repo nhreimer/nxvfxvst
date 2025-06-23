@@ -1,5 +1,6 @@
 #pragma once
 
+#include "helpers/SerialHelper.hpp"
 #include "models/IParticleBehavior.hpp"
 #include "models/easings/PercentageEasing.hpp"
 

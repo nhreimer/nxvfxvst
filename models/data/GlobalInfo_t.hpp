@@ -1,5 +1,8 @@
 #pragma once
 
+#include <SFML/Graphics/View.hpp>
+#include <cstdint>
+
 namespace nx
 {
   /// Holds the following info:
