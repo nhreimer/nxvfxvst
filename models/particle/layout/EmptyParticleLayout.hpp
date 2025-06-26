@@ -37,12 +37,6 @@ namespace nx
     }
 
     [[nodiscard]]
-    const ParticleLayoutData_t &getParticleLayoutData() const override
-    {
-      return m_layoutData;
-    }
-
-    [[nodiscard]]
     const ParticleData_t &getParticleData() const override
     {
       return m_particleData;
@@ -57,7 +51,6 @@ namespace nx
   private:
 
     ParticleData_t m_particleData;
-    ParticleLayoutData_t m_layoutData;
     std::deque< IParticle * > m_particles;
   };
 

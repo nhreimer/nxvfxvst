@@ -44,7 +44,7 @@ namespace nx
 
   /////////////////////////////////////////////////////////
   /// PUBLIC
-  void RingZoneMeshModifier::modify(const ParticleLayoutData_t & data,
+  void RingZoneMeshModifier::modify(const sf::BlendMode& blendMode,
                                     std::deque< IParticle * > &particles,
                                     std::deque< sf::Drawable * > &outArtifacts)
   {

@@ -89,7 +89,7 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
 
     void processMidiEvent(const Midi_t&) override {}
 
-    void modify(const ParticleLayoutData_t&,
+    void modify(const sf::BlendMode& blendMode,
                 std::deque<IParticle*>& particles,
                 std::deque<sf::Drawable*>& outArtifacts) override
     {

@@ -110,7 +110,7 @@ namespace nx
 
   void EllipticalLayout::addParticle( const Midi_t& midiEvent )
   {
-    const float angleSlice = midiEvent.pitch * 1.f / m_data.slices;
+    const float angleSlice = static_cast< float >( midiEvent.pitch ) * ( 1.f / m_data.slices );
     const float arcRad = sf::degrees(m_data.arcSpreadDegrees).asRadians();
     const float baseAngle = arcRad * angleSlice;
 

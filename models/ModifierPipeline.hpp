@@ -40,8 +40,8 @@ public:
   void processMidiEvent( const Midi_t& midiEvent ) const;
 
   sf::RenderTexture * applyModifiers(
-    const ParticleLayoutData_t& particleLayoutData,
-    std::deque< IParticle* >& particles );
+    std::deque< IParticle* >& particles,
+    const sf::BlendMode& blendMode );
 
 private:
 

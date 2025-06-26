@@ -26,9 +26,6 @@ namespace nx
     void processAudioBuffer( const IFFTResult& fftResult ) const;
 
     [[nodiscard]]
-    const ParticleLayoutData_t& getParticleOptions() const;
-
-    [[nodiscard]]
     std::deque< IParticle* >& getParticles() const;
 
     void drawAudioMenu();

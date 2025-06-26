@@ -46,7 +46,7 @@ namespace nx
   /////////////////////////////////////////////////////////
   /// PUBLIC
   void ParticleSequentialLineModifier::modify(
-     const ParticleLayoutData_t& particleLayoutData,
+     const sf::BlendMode& blendMode,
      std::deque< IParticle* >& particles,
      std::deque< sf::Drawable* >& outArtifacts )
   {

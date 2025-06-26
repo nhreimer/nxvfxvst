@@ -44,11 +44,6 @@ namespace nx
     m_particleLayout->processAudioBuffer( fftResult );
   }
 
-  const ParticleLayoutData_t& ParticleLayoutManager::getParticleOptions() const
-  {
-    return m_particleLayout->getParticleLayoutData();
-  }
-
   std::deque< IParticle* >& ParticleLayoutManager::getParticles() const
   {
     return m_particleLayout->getParticles();

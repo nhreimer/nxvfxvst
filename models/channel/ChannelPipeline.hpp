@@ -79,8 +79,8 @@ namespace nx
       request( [ this ]
       {
         const auto * modifierTexture = m_modifierPipeline.applyModifiers(
-          m_particleLayout.getParticleOptions(),
-          m_particleLayout.getParticles() );
+          m_particleLayout.getParticles(),
+          m_blendMode );
 
         m_outputTexture = m_shaderPipeline.draw( modifierTexture );
       } );

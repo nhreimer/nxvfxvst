@@ -43,7 +43,7 @@ namespace nx
 
   /////////////////////////////////////////////////////////
   /// PUBLIC
-  void MirrorModifier::modify(const ParticleLayoutData_t & layoutData,
+  void MirrorModifier::modify(const sf::BlendMode& blendMode,
               std::deque< IParticle * > &particles,
               std::deque< sf::Drawable * > &outArtifacts)
   {

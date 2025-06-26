@@ -90,8 +90,8 @@ namespace nx
   }
 
   sf::RenderTexture * ModifierPipeline::applyModifiers(
-    const ParticleLayoutData_t& particleLayoutData,
-    std::deque< IParticle* >& particles )
+    std::deque< IParticle* >& particles,
+    const sf::BlendMode& blendMode )
   {
     m_outputTexture.ensureSize( m_ctx.globalInfo.windowSize );
 
@@ -100,13 +100,13 @@ namespace nx
     for ( const auto& modifier : m_modifiers )
     {
       if ( modifier->isActive() )
-        modifier->modify( particleLayoutData, particles, newArtifacts );
+        modifier->modify( blendMode, particles, newArtifacts );
     }
 
     m_outputTexture.clear( sf::Color::Transparent );
 
     drawArtifacts( newArtifacts, m_blendMode );
-    drawParticles( particles, particleLayoutData.blendMode );
+    drawParticles( particles, blendMode );
 
     m_outputTexture.display();
     return m_outputTexture.get();

@@ -5,7 +5,7 @@
 namespace nx
 {
 
-  struct EllipticalLayoutData_t : public ParticleLayoutData_t
+  struct EllipticalLayoutData_t
   {
     float radiusX = 300.f;
     float radiusY = 200.f;

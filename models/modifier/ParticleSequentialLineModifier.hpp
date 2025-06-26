@@ -58,7 +58,7 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
     void update( const sf::Time &deltaTime ) override {}
 
     void modify(
-       const ParticleLayoutData_t& particleLayoutData,
+       const sf::BlendMode& blendMode,
        std::deque< IParticle* >& particles,
        std::deque< sf::Drawable* >& outArtifacts ) override;
 

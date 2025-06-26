@@ -25,8 +25,8 @@ namespace nx
 
     virtual void drawMenu() = 0;
 
-    [[nodiscard]]
-    virtual const ParticleLayoutData_t& getParticleLayoutData() const = 0;
+    // [[nodiscard]]
+    // virtual const ParticleLayoutData_t& getParticleLayoutData() const = 0;
 
     [[nodiscard]]
     virtual const ParticleData_t& getParticleData() const = 0;

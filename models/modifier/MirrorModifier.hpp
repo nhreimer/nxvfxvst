@@ -63,7 +63,7 @@ X(mirrorOutlineColor, sf::Color, sf::Color::White, 0, 255, "Outline color for mi
       m_data.lastVelocityNorm.first = midi.velocity;
     }
 
-    void modify(const ParticleLayoutData_t & layoutData,
+    void modify(const sf::BlendMode& blendMode,
                 std::deque< IParticle * > &particles,
                 std::deque< sf::Drawable * > &outArtifacts) override;
 

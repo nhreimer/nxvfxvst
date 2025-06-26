@@ -16,7 +16,6 @@ namespace nx
   template < typename TParticleData >
   class ParticleLayoutBase : public IParticleLayout
   {
-    static_assert( std::is_base_of_v< ParticleLayoutData_t, TParticleData >, "Invalid inherited template parameter" );
 
   public:
 
@@ -60,12 +59,6 @@ namespace nx
           m_particles.erase( m_particles.begin() + i );
         }
       }
-    }
-
-    [[nodiscard]]
-    const ParticleLayoutData_t& getParticleLayoutData() const override
-    {
-      return m_data;
     }
 
     [[nodiscard]]
@@ -144,6 +137,8 @@ namespace nx
     ParticleGeneratorManager m_particleGeneratorManager;
 
     PercentageEasing m_fadeEasing;
+
+    sf::BlendMode m_blendMode { sf::BlendAdd };
   };
 
 }

@@ -55,7 +55,7 @@ X(drawSpokes,    bool,    true,     0,      1,        "Toggle drawing of radial 
     bool isActive() const override { return m_data.isActive; }
     void processMidiEvent(const Midi_t &) override {}
 
-    void modify(const ParticleLayoutData_t &,
+    void modify(const sf::BlendMode& blendMode,
                 std::deque< IParticle * > &particles,
                 std::deque< sf::Drawable * > &outArtifacts) override;
 
