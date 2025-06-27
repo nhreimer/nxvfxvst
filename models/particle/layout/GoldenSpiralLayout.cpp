@@ -12,15 +12,7 @@ namespace nx
           { "type", SerialHelper::serializeEnum( getType() ) }
     };
 
-    j[ "depth" ] = m_data.depth;
-    j[ "scaleFactor" ] = m_data.scaleFactor;
-    j[ "angleOffset" ] = m_data.angleOffset;
-    j[ "baseRadius" ] = m_data.baseRadius;
-    j[ "spiralTightness" ] = m_data.spiralTightness;
-    j[ "useClamp" ] = m_data.useClamp;
-    j[ "useRadiusFalloff" ] = m_data.useRadiusFalloff;
-    j[ "radiusFalloff" ] = m_data.radiusFalloff;
-    j[ "spiralInward" ] = m_data.spiralInward;
+    EXPAND_SHADER_PARAMS_TO_JSON(GOLDEN_SPIRAL_LAYOUT_PARAMS)
 
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
@@ -32,16 +24,7 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      m_data.depth = j["depth"].get<int>();
-      m_data.scaleFactor = j["scaleFactor"].get<float>();
-      m_data.angleOffset = j["angleOffset"].get<float>();
-      m_data.baseRadius = j["baseRadius"].get<float>();
-
-      m_data.radiusFalloff = j["radiusFalloff"].get<float>();
-      m_data.useClamp = j["useClamp"].get<bool>();
-      m_data.spiralTightness = j["spiralTightness"].get<float>();
-      m_data.spiralInward = j["spiralInward"].get<bool>();
-      m_data.useRadiusFalloff = j["useRadiusFalloff"].get<bool>();
+      EXPAND_SHADER_PARAMS_FROM_JSON(GOLDEN_SPIRAL_LAYOUT_PARAMS)
     }
     else
     {
@@ -69,17 +52,16 @@ namespace nx
       m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       ImGui::SeparatorText( "Spiral Options" );
-      ImGui::SliderInt("Particle Count", &m_data.depth, 1, 100);
-      ImGui::SliderFloat("Base Radius", &m_data.baseRadius, 0.01f, 10.f);
-      ImGui::SliderFloat("Scale Factor", &m_data.scaleFactor, 1.01f, 2.0f);
-      ImGui::SliderFloat("Angle Offset", &m_data.angleOffset, 0.f, 360.f);
 
-      ImGui::SeparatorText("Spiral Tweaks");
-      ImGui::SliderFloat("Tightness", &m_data.spiralTightness, 0.1f, 2.0f);
-      ImGui::Checkbox("Use Clamp", &m_data.useClamp);
-      ImGui::Checkbox("Spiral Inward", &m_data.spiralInward);
-      //ImGui::Checkbox("Shrink Outer Particles", &m_data.useRadiusFalloff);
-      //ImGui::SliderFloat("Radius Falloff", &m_data.radiusFalloff, 0.01f, 2.0f);
+      const auto currentRadius = m_data.baseRadius.first;
+
+      EXPAND_SHADER_IMGUI(GOLDEN_SPIRAL_LAYOUT_PARAMS, m_data)
+
+      if ( currentRadius != m_data.baseRadius.first )
+      {
+        m_timedCursorPosition.setPosition( m_ctx.globalInfo.windowHalfSize,
+                                           sf::Vector2f { currentRadius, currentRadius } );
+      }
 
       ImGui::Separator();
       m_behaviorPipeline.drawMenu();
@@ -87,20 +69,23 @@ namespace nx
       ImGui::TreePop();
       ImGui::Spacing();
     }
+
+    if ( !m_timedCursorPosition.hasExpired() )
+      m_timedCursorPosition.drawPosition();
   }
 
   void GoldenSpiralLayout::addMidiEvent(const Midi_t &midiEvent)
   {
     const auto pitchSlices =
-      static_cast< int32_t >( midiEvent.pitch / static_cast< float >( m_data.depth ) );
+      static_cast< int32_t >( midiEvent.pitch / static_cast< float >( m_data.depth.first ) );
 
-    for ( int32_t i = 1; i <= m_data.depth; ++i )
+    for ( int32_t i = 1; i <= m_data.depth.first; ++i )
     {
       auto * p = m_particles.emplace_back(
         m_particleGeneratorManager.getParticleGenerator()->createParticle(
           midiEvent, m_ctx.globalInfo.elapsedTimeSeconds ) );
 
-      const auto pos = getSpiralPosition( i * pitchSlices, m_data.depth );
+      const auto pos = getSpiralPosition( i * pitchSlices, m_data.depth.first );
       p->setPosition( pos );
       ParticleLayoutBase::notifyBehaviorOnSpawn( p );
     }
@@ -110,15 +95,17 @@ namespace nx
   sf::Vector2f GoldenSpiralLayout::getSpiralPosition( const int index,
                                   const int total ) const
   {
-    const int i = m_data.spiralInward ? (total - 1) - index : index;
+    const int i = m_data.spiralInward.first ? (total - 1) - index : index;
 
-    const float angleDeg = static_cast< float >( i ) * GOLDEN_ANGLE_DEG * m_data.spiralTightness + m_data.angleOffset;
+    const float angleDeg =
+      static_cast< float >( i ) * GOLDEN_ANGLE_DEG * m_data.spiralTightness.first + m_data.angleOffset.first;
+
     const float angleRad = angleDeg * NX_D2R; //(3.14159265f / 180.f);
 
     float radius = 0.f;
-    if ( m_data.useClamp )
+    if ( m_data.useClamp.first )
     {
-      radius = m_data.baseRadius * std::pow(m_data.scaleFactor, index);
+      radius = m_data.baseRadius.first * std::pow(m_data.scaleFactor.first, index);
       const float maxR = m_ctx.globalInfo.windowSize.x * 0.45f;
 
       if ( radius > maxR )
@@ -128,7 +115,7 @@ namespace nx
       }
     }
     else
-      radius = m_data.baseRadius * std::pow(m_data.scaleFactor, i);
+      radius = m_data.baseRadius.first * std::pow(m_data.scaleFactor.first, i);
 
     return
     {

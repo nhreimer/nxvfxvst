@@ -5,25 +5,41 @@
 namespace nx
 {
 
-  struct GoldenSpiralLayoutData_t : public ParticleLayoutData_t
+  namespace layout::goldenspiral
   {
-    int depth = 3; // Total number of particles
-    float scaleFactor = 1.1f; // How much each radius increases
-    float angleOffset = 0.f; // Rotate the whole spiral
-    float baseRadius = 3.f; // radius of circle
+#define GOLDEN_SPIRAL_LAYOUT_PARAMS(X)                                                                       \
+X(depth,             int,     3,      1,   512,    "Total number of particles",              true)           \
+X(scaleFactor,       float,   1.1f,   0.01f, 5.0f, "Radius increase multiplier",             true)           \
+X(angleOffset,       float,   0.0f,  -360.f, 360.f,"Rotation of entire spiral",             true)            \
+X(baseRadius,        float,   3.0f,   0.1f, 100.f, "Initial particle radius",               true)            \
+X(spiralTightness,   float,   1.0f,   0.01f, 10.0f,"Spacing of spiral curve",               true)            \
+X(useClamp,          bool,    false,  0,    1,     "Clamp max radius based on screen",      false)           \
+X(spiralInward,      bool,    false,  0,    1,     "Spiral inward instead of outward",      false)           \
+X(radiusFalloff,     float,   0.98f,  0.0f, 1.0f,  "Unused: radius falloff per step",       false)           \
+X(useRadiusFalloff,  bool,    false,  0,    1,     "Unused: enable radius falloff",         false)
 
-    float spiralTightness = 1.f;
-    bool useClamp = false;
-    bool spiralInward = false;
+    struct GoldenSpiralLayoutData_t
+    {
+      bool isActive = true;
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(GOLDEN_SPIRAL_LAYOUT_PARAMS)
+    };
 
-    // the following two are disabled
-    float radiusFalloff = 0.98f;
-    bool useRadiusFalloff = false;
-  };
+    enum class E_GoldenSpiralParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(GOLDEN_SPIRAL_LAYOUT_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_GoldenSpiralParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(GOLDEN_SPIRAL_LAYOUT_PARAMS)
+    };
+
+  }
 
   /// this is useful for adding time-based effects to a screen without
   /// having particles on the screen.
-  class GoldenSpiralLayout final : public ParticleLayoutBase< GoldenSpiralLayoutData_t >
+  class GoldenSpiralLayout final : public ParticleLayoutBase< layout::goldenspiral::GoldenSpiralLayoutData_t >
   {
   public:
     explicit GoldenSpiralLayout(PipelineContext& context)
@@ -49,8 +65,12 @@ namespace nx
                                     const int total ) const;
 
   private:
+
+    TimedCursorPosition m_timedCursorPosition;
+
     static constexpr float GOLDEN_RATIO = 1.61803398875f;
     static constexpr float GOLDEN_ANGLE_DEG = 137.5f;
+
   };
 
 } // namespace nx

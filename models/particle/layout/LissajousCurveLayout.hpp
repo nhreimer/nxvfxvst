@@ -6,14 +6,31 @@
 namespace nx
 {
 
-  struct LissajousCurveLayoutData_t : public ParticleLayoutData_t
+  namespace layout::lissajous
   {
-    float phaseAStep { 2.0f };
-    float phaseBStep { 3.0f };
+#define LISSAJOUS_CURVE_LAYOUT_PARAMS(X)                                                              \
+X(phaseAStep,    float, 2.0f, 0.1f, 20.0f, "Horizontal oscillation multiplier (A)",  true)            \
+X(phaseBStep,    float, 3.0f, 0.1f, 20.0f, "Vertical oscillation multiplier (B)",    true)            \
+X(phaseDelta,    float, 0.5f, 0.0f, 2.0f,  "Phase offset between X and Y curves",    true)            \
+X(phaseSpread,   float, 0.5f, 0.0f, 5.0f,  "Spread between points along the curve",  true)
 
-    float phaseDelta { 0.5f };
-    float phaseSpread { 0.5f };
-  };
+    struct LissajousCurveLayoutData_t
+    {
+      bool isActive = true;
+      EXPAND_SHADER_PARAMS_FOR_STRUCT(LISSAJOUS_CURVE_LAYOUT_PARAMS)
+    };
+
+    enum class E_LissajousCurveParam
+    {
+      EXPAND_SHADER_PARAMS_FOR_ENUM(LISSAJOUS_CURVE_LAYOUT_PARAMS)
+      LastItem
+    };
+
+    static inline const std::array<std::string, static_cast<size_t>(E_LissajousCurveParam::LastItem)> m_paramLabels =
+    {
+      EXPAND_SHADER_PARAM_LABELS(LISSAJOUS_CURVE_LAYOUT_PARAMS)
+    };
+  }
 
   /// This layout places each particle along a mathematically beautiful Lissajous curve using parametric sine functions
   /// x = A * sin(a * t + δ)
@@ -24,7 +41,7 @@ namespace nx
   /// b = velocity-based frequency
   /// t = time or phase (based on global time)
   /// δ = offset to prevent overlap or to animate drift
-  class LissajousCurveLayout final : public ParticleLayoutBase< LissajousCurveLayoutData_t >
+  class LissajousCurveLayout final : public ParticleLayoutBase< layout::lissajous::LissajousCurveLayoutData_t >
   {
   public:
 

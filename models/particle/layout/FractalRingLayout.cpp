@@ -12,12 +12,8 @@ namespace nx
      { "type", SerialHelper::serializeEnum( getType() ) }
     };
 
-    j[ "depthLimit" ] = m_data.depthLimit;
-    j[ "radialSpread" ] = m_data.radialSpread;
-    j[ "baseRingCount" ] = m_data.baseRingCount;
-    j[ "radiusAdjustment" ] = m_data.radiusAdjustment;
-    j[ "delayFractalFadesMultiplier" ] = m_data.delayFractalFadesMultiplier;
-    j[ "enableFractalFades" ] = m_data.enableFractalFades;
+    EXPAND_SHADER_PARAMS_TO_JSON(FRACTAL_RING_LAYOUT_PARAMS)
+
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
     j[ "easings" ] = m_fadeEasing.serialize();
@@ -28,16 +24,7 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      m_data.depthLimit = j["depthLimit"];
-      m_data.radialSpread = j["radialSpread"];
-      m_data.baseRingCount = j["baseRingCount"];
-      m_data.radiusAdjustment = j["radiusAdjustment"];
-      m_data.delayFractalFadesMultiplier = j["delayFractalFadesMultiplier"];
-      m_data.enableFractalFades = j["enableFractalFades"];
-    }
-    else
-    {
-      LOG_DEBUG( "failed to find type for {}", SerialHelper::serializeEnum( getType() ) );
+      EXPAND_SHADER_PARAMS_FROM_JSON(FRACTAL_RING_LAYOUT_PARAMS)
     }
 
     if ( j.contains( "behaviors" ) )
@@ -66,29 +53,29 @@ namespace nx
     // Advance or reset depth
     switch (m_data.fractalDepthTraversalMode)
     {
-      case E_FractalDepthTraversalMode::E_Forward:
+      case layout::fractalring::E_FractalDepthTraversalMode::E_Forward:
         ++m_currentDepth;
-        if (m_currentDepth > m_data.depthLimit)
+        if (m_currentDepth > m_data.depthLimit.first)
           m_currentDepth = 1;
         break;
 
-      case E_FractalDepthTraversalMode::E_Reverse:
+      case layout::fractalring::E_FractalDepthTraversalMode::E_Reverse:
         m_currentDepth--;
         if (m_currentDepth < 1)
-          m_currentDepth = m_data.depthLimit;
+          m_currentDepth = m_data.depthLimit.first;
         break;
 
-      case E_FractalDepthTraversalMode::E_PingPong:
-        m_currentDepth += m_data.depthDirection;
-        if (m_currentDepth >= m_data.depthLimit)
+      case layout::fractalring::E_FractalDepthTraversalMode::E_PingPong:
+        m_currentDepth += m_data.depthDirection.first;
+        if (m_currentDepth >= m_data.depthLimit.first)
         {
-          m_currentDepth = m_data.depthLimit;
-          m_data.depthDirection = -1;
+          m_currentDepth = m_data.depthLimit.first;
+          m_data.depthDirection.first = -1;
         }
         else if (m_currentDepth <= 1)
         {
           m_currentDepth = 1;
-          m_data.depthDirection = 1;
+          m_data.depthDirection.first = 1;
         }
         break;
       default:
@@ -106,26 +93,26 @@ namespace nx
       m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
       ImGui::Separator();
-      ImGui::SliderInt("Spawn Depth", &m_data.depthLimit, 0, 4);
-      ImGui::SliderInt("Base Ring Count", &m_data.baseRingCount, 0, 8);
-      ImGui::SliderFloat( "Radius Adjustment", &m_data.radiusAdjustment, 0.f, 1.f );
-      ImGui::SliderFloat( "Radial Spread", &m_data.radialSpread, 0.f, 5.f );
-      ImGui::Checkbox( "Enable Fractal Depth Fade", &m_data.enableFractalFades );
-      ImGui::SliderFloat( "Fractal Depth Fade Offset", &m_data.delayFractalFadesMultiplier, 0.f, 5.f );
-
+      EXPAND_SHADER_IMGUI(FRACTAL_RING_LAYOUT_PARAMS, m_data)
       ImGui::SeparatorText( "Fractal Depth Traversal" );
 
-      if ( ImGui::RadioButton( "Forward##1", m_data.fractalDepthTraversalMode == E_FractalDepthTraversalMode::E_Forward ) )
+      if ( ImGui::RadioButton(
+        "Forward##1",
+        m_data.fractalDepthTraversalMode == layout::fractalring::E_FractalDepthTraversalMode::E_Forward ) )
       {
-        m_data.fractalDepthTraversalMode = E_FractalDepthTraversalMode::E_Forward;
+        m_data.fractalDepthTraversalMode = layout::fractalring::E_FractalDepthTraversalMode::E_Forward;
       }
-      else if ( ImGui::RadioButton( "Reverse##1", m_data.fractalDepthTraversalMode == E_FractalDepthTraversalMode::E_Reverse ) )
+      else if ( ImGui::RadioButton(
+        "Reverse##1",
+        m_data.fractalDepthTraversalMode == layout::fractalring::E_FractalDepthTraversalMode::E_Reverse ) )
       {
-        m_data.fractalDepthTraversalMode = E_FractalDepthTraversalMode::E_Reverse;
+        m_data.fractalDepthTraversalMode = layout::fractalring::E_FractalDepthTraversalMode::E_Reverse;
       }
-      else if ( ImGui::RadioButton( "Ping-Pong##1", m_data.fractalDepthTraversalMode == E_FractalDepthTraversalMode::E_PingPong ) )
+      else if ( ImGui::RadioButton(
+        "Ping-Pong##1",
+        m_data.fractalDepthTraversalMode == layout::fractalring::E_FractalDepthTraversalMode::E_PingPong ) )
       {
-        m_data.fractalDepthTraversalMode = E_FractalDepthTraversalMode::E_PingPong;
+        m_data.fractalDepthTraversalMode = layout::fractalring::E_FractalDepthTraversalMode::E_PingPong;
       }
 
       ImGui::Separator();
@@ -136,7 +123,6 @@ namespace nx
     }
   }
 
-
   void FractalRingLayout::spawnFractalRing( const Midi_t& midiEvent,
                          const int depth,
                          const float adjustedRadius,
@@ -146,30 +132,30 @@ namespace nx
     if (depth <= 0)
       return;
 
-    const float lastRadius = adjustedRadius / m_data.radiusAdjustment;
+    const float lastRadius = adjustedRadius / m_data.radiusAdjustment.first;
 
-    const float angleStep = NX_TAU / static_cast< float >(m_data.baseRingCount);
+    const float angleStep = NX_TAU / static_cast< float >(m_data.baseRingCount.first);
 
     auto& particleData = m_particleGeneratorManager.getParticleGenerator()->getData();
 
-    for (int i = 0; i < m_data.baseRingCount; ++i)
+    for (int i = 0; i < m_data.baseRingCount.first; ++i)
     {
       const float angle = static_cast< float >(i) * angleStep;
 
       sf::Vector2f pos =
       {
-        lastPosition.x + std::cos(angle) * ( ( adjustedRadius + lastRadius ) * m_data.radialSpread ),
-        lastPosition.y + std::sin(angle) * ( ( adjustedRadius + lastRadius ) * m_data.radialSpread )
+        lastPosition.x + std::cos(angle) * ( ( adjustedRadius + lastRadius ) * m_data.radialSpread.first ),
+        lastPosition.y + std::sin(angle) * ( ( adjustedRadius + lastRadius ) * m_data.radialSpread.first )
       };
 
       auto* p = createParticle(midiEvent, adjustedRadius);
       p->setPosition(pos);
 
-      if ( m_data.enableFractalFades )
+      if ( m_data.enableFractalFades.first )
       {
         p->setExpirationTimeInSeconds(
           p->getExpirationTimeInSeconds() - static_cast< int32_t >(
-          m_data.delayFractalFadesMultiplier *
+          m_data.delayFractalFadesMultiplier.first *
           static_cast< float >(depth) *
           static_cast< float >(particleData.timeoutInSeconds)) );
       }
@@ -177,11 +163,10 @@ namespace nx
       spawnFractalRing(
         midiEvent,
         depth - 1,
-        adjustedRadius * m_data.radiusAdjustment,
+        adjustedRadius * m_data.radiusAdjustment.first,
         pos
       );
     }
-
   }
 
   IParticle * FractalRingLayout::createParticle( const Midi_t& midiEvent,

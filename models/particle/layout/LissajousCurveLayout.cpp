@@ -11,10 +11,7 @@ namespace nx
       { "type", SerialHelper::serializeEnum( getType() ) }
     };
 
-    j[ "phaseAStep" ] = m_data.phaseAStep;
-    j[ "phaseBStep" ] = m_data.phaseBStep;
-    j[ "phaseDelta" ] = m_data.phaseDelta;
-    j[ "phaseSpread" ] = m_data.phaseSpread;
+    EXPAND_SHADER_PARAMS_TO_JSON(LISSAJOUS_CURVE_LAYOUT_PARAMS)
 
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
@@ -26,10 +23,7 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      m_data.phaseAStep = j.value( "phaseAStep", 2.0f );
-      m_data.phaseBStep = j.value( "phaseBStep", 3.0f );
-      m_data.phaseDelta = j.value( "phaseDelta", 0.5f );
-      m_data.phaseSpread = j.value( "phaseSpread", 0.5f );
+      EXPAND_SHADER_PARAMS_FROM_JSON(LISSAJOUS_CURVE_LAYOUT_PARAMS)
     }
     else
     {
@@ -54,11 +48,7 @@ namespace nx
       ImGui::Separator();
       m_particleGeneratorManager.getParticleGenerator()->drawMenu();
 
-      //ImGui::SliderFloat("Phase", &m_data.phase, 0.f, 1.0f);
-      ImGui::SliderFloat("a Phase Step", &m_data.phaseAStep, 0.f, 5.0f);
-      ImGui::SliderFloat("b Phase Step", &m_data.phaseBStep, 0.f, 5.0f);
-      ImGui::SliderFloat("Phase Delta", &m_data.phaseDelta, 0.f, 2.0f);
-      ImGui::SliderFloat("Phase Spread", &m_data.phaseSpread, 0.f, 1.0f);
+      EXPAND_SHADER_IMGUI(LISSAJOUS_CURVE_LAYOUT_PARAMS, m_data)
 
       ImGui::Separator();
       m_behaviorPipeline.drawMenu();
@@ -70,13 +60,13 @@ namespace nx
 
   void LissajousCurveLayout::addMidiEvent( const Midi_t &midiEvent )
   {
-    const float a = m_data.phaseAStep + static_cast< float >(midiEvent.pitch % 4); // X frequency
-    const float b = m_data.phaseBStep + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
+    const float a = m_data.phaseAStep.first + static_cast< float >(midiEvent.pitch % 4); // X frequency
+    const float b = m_data.phaseBStep.first + static_cast< float >(static_cast< int32_t >(midiEvent.velocity) % 5); // Y frequency
 
     const float localT = m_ctx.globalInfo.elapsedTimeSeconds;
 
-    const float x = ( static_cast< float >( m_ctx.globalInfo.windowSize.x ) * m_data.phaseSpread ) * sin(a * localT + m_data.phaseDelta);
-    const float y = ( static_cast< float >( m_ctx.globalInfo.windowSize.y ) * m_data.phaseSpread ) * sin(b * localT);
+    const float x = ( static_cast< float >( m_ctx.globalInfo.windowSize.x ) * m_data.phaseSpread.first ) * sin(a * localT + m_data.phaseDelta.first);
+    const float y = ( static_cast< float >( m_ctx.globalInfo.windowSize.y ) * m_data.phaseSpread.first ) * sin(b * localT);
 
     auto * p = m_particles.emplace_back(
       m_particleGeneratorManager.getParticleGenerator()->createParticle(
