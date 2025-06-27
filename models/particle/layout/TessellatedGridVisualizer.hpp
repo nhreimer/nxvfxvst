@@ -3,21 +3,38 @@
 
 #include "models/audio/IFFTResult.hpp"
 #include "models/particle/layout/ParticleLayoutBase.hpp"
-#include "models/data/ParticleLayoutData_t.hpp"
 
 namespace nx
 {
-  struct TessellatedGridVisualizerData_t : public ParticleLayoutData_t
+
+namespace layout::tessellatedGrid
+{
+#define TESSELLATED_GRID_VISUALIZER_PARAMS(X)                                                   \
+X(rows,      int32_t, 8,    1,   32,  "Number of rows in the grid",                true)        \
+X(cols,      int32_t, 16,   1,   64,  "Number of columns in the grid",             true)        \
+X(gain,      float,   1.f,  0.f, 100.f, "Multiplier for intensity/reactivity",     true)        \
+X(threshold, float,   0.1f, 0.f, 1.f,  "Minimum value before triggering response", true)
+
+  struct TessellatedGridVisualizerData_t
   {
     bool isActive = true;
-    int32_t rows = 8;
-    int32_t cols = 16;
-    float gain = 1.f;
-    float threshold = 0.1f;
+    EXPAND_SHADER_PARAMS_FOR_STRUCT(TESSELLATED_GRID_VISUALIZER_PARAMS)
   };
 
+  enum class E_TessellatedGridParam
+  {
+    EXPAND_SHADER_PARAMS_FOR_ENUM(TESSELLATED_GRID_VISUALIZER_PARAMS)
+    LastItem
+  };
+
+  static inline const std::array<std::string, static_cast<size_t>(E_TessellatedGridParam::LastItem)> m_paramLabels =
+  {
+    EXPAND_SHADER_PARAM_LABELS(TESSELLATED_GRID_VISUALIZER_PARAMS)
+  };
+}
+
   class TessellatedGridVisualizer final
-    : public ParticleLayoutBase< TessellatedGridVisualizerData_t >
+    : public ParticleLayoutBase< layout::tessellatedGrid::TessellatedGridVisualizerData_t >
   {
   public:
 
@@ -26,9 +43,33 @@ namespace nx
     {}
 
     [[nodiscard]]
-    nlohmann::json serialize() const override { return {}; }
+    nlohmann::json serialize() const override
+    {
+      nlohmann::json j =
+      {
+        { "type", SerialHelper::serializeEnum( getType() ) }
+      };
 
-    void deserialize(const nlohmann::json &j) override {}
+      EXPAND_SHADER_PARAMS_TO_JSON(TESSELLATED_GRID_VISUALIZER_PARAMS)
+
+      j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
+      j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
+      return j;
+    }
+
+    void deserialize(const nlohmann::json &j) override
+    {
+      if ( SerialHelper::isTypeGood( j, getType() ) )
+      {
+        EXPAND_SHADER_PARAMS_FROM_JSON(TESSELLATED_GRID_VISUALIZER_PARAMS)
+      }
+
+      if ( j.contains( "particleGenerator" ) )
+        m_particleGeneratorManager.getParticleGenerator()->deserialize( j.at( "particleGenerator" ) );
+
+      if ( j.contains( "behaviors" ) )
+        m_behaviorPipeline.loadPipeline( j.at( "behaviors" ) );
+    }
 
     [[nodiscard]]
     E_LayoutType getType() const override { return E_LayoutType::E_TessellationVisualizer; }
@@ -40,23 +81,23 @@ namespace nx
       const auto& fft = fftResult.getSmoothedBuffer();
       const auto& size = m_ctx.globalInfo.windowSize;
 
-      const float cellW = static_cast< float >(size.x) / static_cast<float>(m_data.cols);
-      const float cellH = static_cast< float >(size.y) / static_cast<float>(m_data.rows);
-      const int totalCells = m_data.rows * m_data.cols;
+      const float cellW = static_cast< float >(size.x) / static_cast<float>(m_data.cols.first);
+      const float cellH = static_cast< float >(size.y) / static_cast<float>(m_data.rows.first);
+      const int totalCells = m_data.rows.first * m_data.cols.first;
 
-      for (int row = 0; row < m_data.rows; ++row)
+      for (int row = 0; row < m_data.rows.first; ++row)
       {
-        for (int col = 0; col < m_data.cols; ++col)
+        for (int col = 0; col < m_data.cols.first; ++col)
         {
-          const int cellIdx = row * m_data.cols + col;
+          const int cellIdx = row * m_data.cols.first + col;
           const int binIdx = (cellIdx * FFT_BINS) / totalCells;
 
           if (binIdx >= FFT_BINS)
             continue;
 
-          const float mag = fft[binIdx] * m_data.gain;
+          const float mag = fft[binIdx] * m_data.gain.first;
 
-          if (mag < m_data.threshold)
+          if (mag < m_data.threshold.first)
             continue;
 
           const float recentMax = m_recentMaxEnergy.updateMaxEnergy( mag );
@@ -93,10 +134,7 @@ namespace nx
         m_particleGeneratorManager.getParticleGenerator()->drawMenu();
         ImGui::SeparatorText( "Tessellation Layout Options" );
 
-        ImGui::SliderInt("Grid Rows", &m_data.rows, 1, 32);
-        ImGui::SliderInt("Grid Cols", &m_data.cols, 1, 64);
-        ImGui::SliderFloat("Gain", &m_data.gain, 1.f, 100.f);
-        ImGui::SliderFloat("Threshold", &m_data.threshold, 0.f, 1.f);
+        EXPAND_SHADER_IMGUI(TESSELLATED_GRID_VISUALIZER_PARAMS, m_data)
 
         ImGui::Separator();
         m_behaviorPipeline.drawMenu();
@@ -110,7 +148,7 @@ namespace nx
     }
 
   private:
-    TessellatedGridVisualizerData_t m_data;
+    layout::tessellatedGrid::TessellatedGridVisualizerData_t m_data;
     RingBufferAverager m_timedBuffer;
     MaxEnergyTracker m_recentMaxEnergy;
   };
