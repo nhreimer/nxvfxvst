@@ -11,13 +11,7 @@ namespace nx
       { "type", SerialHelper::serializeEnum( getType() ) }
     };
 
-    j[ "radiusX" ] = m_data.radiusX;
-    j[ "radiusY" ] = m_data.radiusY;
-    j[ "arcSpreadDegrees" ] = m_data.arcSpreadDegrees;
-    j[ "rotationDegrees" ] = m_data.rotationDegrees;
-    j[ "sequential" ] = m_data.sequential;
-    j[ "slices" ] = m_data.slices;
-    j[ "centerOffset" ] = { { "x", m_data.centerOffset.x }, { "y", m_data.centerOffset.y } };
+    EXPAND_SHADER_PARAMS_TO_JSON(ELLIPTICAL_LAYOUT_PARAMS)
 
     j[ "behaviors" ] = m_behaviorPipeline.savePipeline();
     j[ "particleGenerator" ] = m_particleGeneratorManager.getParticleGenerator()->serialize();
@@ -29,15 +23,7 @@ namespace nx
   {
     if ( SerialHelper::isTypeGood( j, getType() ) )
     {
-      m_data.radiusX = j.value( "radiusX", 300.f );
-      m_data.radiusY = j.value( "radiusY", 200.f );
-      m_data.arcSpreadDegrees = j.value( "arcSpreadDegrees", 360.f );
-      m_data.rotationDegrees = j.value( "rotationDegrees", 0.f );
-      m_data.sequential = j.value( "sequential", true );
-      m_data.slices = j.value( "slices", 12.f );
-
-      m_data.centerOffset = sf::Vector2f { j[ "centerOffset" ].value( "x", 0.f ),
-                                             j[ "centerOffset" ].value( "y", 0.f ) };
+      EXPAND_SHADER_PARAMS_FROM_JSON(ELLIPTICAL_LAYOUT_PARAMS)
     }
 
     if ( j.contains( "particleGenerator" ) )
@@ -52,7 +38,7 @@ namespace nx
 
   void EllipticalLayout::addMidiEvent(const Midi_t &midiEvent)
   {
-    if ( m_data.sequential ) addSequentialParticle( midiEvent );
+    if ( m_data.sequential.first ) addSequentialParticle( midiEvent );
     else addParticle( midiEvent );
   }
 
@@ -66,13 +52,21 @@ namespace nx
 
       ImGui::SeparatorText( "Elliptical Options" );
 
-      ImGui::Checkbox( "Sequential", &m_data.sequential );
-      ImGui::SliderFloat("Radius X", &m_data.radiusX, 50.f, 1000.f);
-      ImGui::SliderFloat("Radius Y", &m_data.radiusY, 50.f, 1000.f);
-      ImGui::SliderFloat("Arc Spread (deg)", &m_data.arcSpreadDegrees, 10.f, 360.f);
-      ImGui::SliderFloat("Ellipse Rotation (deg)", &m_data.rotationDegrees, -180.f, 180.f);
-      ImGui::SliderFloat2("Center Offset", &m_data.centerOffset.x, -500.f, 500.f);
-      ImGui::SliderFloat("Slices", &m_data.slices, 1.f, 36.f);
+      const float oldCenterX = m_data.centerOffsetX.first;
+      const float oldCenterY = m_data.centerOffsetY.first;
+
+      const float currentRadiusX = m_data.radiusX.first;
+      const float currentRadiusY = m_data.radiusY.first;
+
+      EXPAND_SHADER_IMGUI(ELLIPTICAL_LAYOUT_PARAMS, m_data)
+
+      if ( oldCenterX != m_data.centerOffsetX.first || oldCenterY != m_data.centerOffsetY.first ||
+           currentRadiusX != m_data.radiusX.first || currentRadiusY != m_data.radiusY.first )
+      {
+        const sf::Vector2f calibrated { m_data.centerOffsetX.first * static_cast< float >(m_ctx.globalInfo.windowSize.x),
+                                        m_data.centerOffsetY.first * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
+        m_timedCursor.setPosition( calibrated, sf::Vector2f { m_data.radiusX.first, m_data.radiusY.first }, 100000 );
+      }
 
       ImGui::SeparatorText( "Behaviors" );
       m_behaviorPipeline.drawMenu();
@@ -80,20 +74,27 @@ namespace nx
       ImGui::TreePop();
       ImGui::Spacing();
     }
+
+    if ( !m_timedCursor.hasExpired() )
+      m_timedCursor.drawPosition();
   }
 
   void EllipticalLayout::addSequentialParticle( const Midi_t& midiEvent )
   {
-    const float arcRad = sf::degrees(m_data.arcSpreadDegrees).asRadians();
+    const float arcRad = sf::degrees(m_data.arcSpreadDegrees.first).asRadians();
     const float baseAngle = arcRad * m_angleCursor;
 
-    const float rotRad = sf::degrees(m_data.rotationDegrees).asRadians();
+    const float rotRad = sf::degrees(m_data.rotationDegrees.first).asRadians();
     const float angle = baseAngle + rotRad;
 
-    const float x = std::cos(angle) * m_data.radiusX;
-    const float y = std::sin(angle) * m_data.radiusY;
+    const float x = std::cos(angle) * m_data.radiusX.first;
+    const float y = std::sin(angle) * m_data.radiusY.first;
 
-    const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
+    const sf::Vector2f pos =
+      m_ctx.globalInfo.windowHalfSize +
+        sf::Vector2f { m_data.centerOffsetX.first * m_data.centerOffsetX.first,
+                         m_data.centerOffsetY.first * m_data.centerOffsetY.first } +
+        sf::Vector2f(x, y);
 
     auto * p = m_particles.emplace_back(
       m_particleGeneratorManager.getParticleGenerator()->createParticle(
@@ -104,23 +105,28 @@ namespace nx
     ParticleLayoutBase::notifyBehaviorOnSpawn( p );
 
     // advance cursor
-    m_angleCursor += 1.f / m_data.slices; // 12 evenly spaced notes per full ring
+    m_angleCursor += 1.f / m_data.slices.first; // 12 evenly spaced notes per full ring
     if (m_angleCursor > 1.f) m_angleCursor -= 1.f;
   }
 
   void EllipticalLayout::addParticle( const Midi_t& midiEvent )
   {
-    const float angleSlice = static_cast< float >( midiEvent.pitch ) * ( 1.f / m_data.slices );
-    const float arcRad = sf::degrees(m_data.arcSpreadDegrees).asRadians();
+    const float angleSlice = static_cast< float >( midiEvent.pitch ) * ( 1.f / m_data.slices.first );
+    const float arcRad = sf::degrees(m_data.arcSpreadDegrees.first).asRadians();
     const float baseAngle = arcRad * angleSlice;
 
-    const float rotRad = sf::degrees(m_data.rotationDegrees).asRadians();
+    const float rotRad = sf::degrees(m_data.rotationDegrees.first).asRadians();
     const float angle = baseAngle + rotRad;
 
-    const float x = std::cos(angle) * m_data.radiusX;
-    const float y = std::sin(angle) * m_data.radiusY;
+    const float x = std::cos(angle) * m_data.radiusX.first;
+    const float y = std::sin(angle) * m_data.radiusY.first;
 
-    const sf::Vector2f pos = m_ctx.globalInfo.windowHalfSize + m_data.centerOffset + sf::Vector2f(x, y);
+    const sf::Vector2f calibrated { m_data.centerOffsetX.first * static_cast< float >(m_ctx.globalInfo.windowSize.x),
+                                    m_data.centerOffsetY.first * static_cast< float >(m_ctx.globalInfo.windowSize.y) };
+
+    const sf::Vector2f pos =
+        calibrated +
+        sf::Vector2f(x, y);
 
     auto * p = m_particles.emplace_back(
       m_particleGeneratorManager.getParticleGenerator()->createParticle(
