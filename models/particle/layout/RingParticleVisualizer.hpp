@@ -41,7 +41,9 @@ X(threshold,       float, 0.1f,   0.f,   1.f,    "Minimum level required to trig
   public:
     explicit RingParticleVisualizer( PipelineContext& ctx )
       : ParticleLayoutBase( ctx )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(RING_PARTICLE_LAYOUT_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override

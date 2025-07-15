@@ -49,7 +49,9 @@ X(mirrorSkewRotation,   float,  0.f,   -NX_PI, NX_PI,"Skew rotation for mirror c
 
     explicit SpiralEchoVisualizer( PipelineContext& ctx )
       : ParticleLayoutBase( ctx )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(SPIRAL_LAYOUT_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override

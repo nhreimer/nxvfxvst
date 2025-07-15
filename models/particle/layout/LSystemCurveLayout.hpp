@@ -60,7 +60,9 @@ X(stepsPerNote,    int32_t, 1,     1,   16,     "Curve steps triggered per MIDI 
   public:
     explicit LSystemCurveLayout(PipelineContext& context)
       : ParticleLayoutBase( context )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(LSYSTEM_CURVE_LAYOUT_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override;

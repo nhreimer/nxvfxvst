@@ -44,7 +44,9 @@ X(useRadiusFalloff,  bool,    false,  0,    1,     "Unused: enable radius fallof
   public:
     explicit GoldenSpiralLayout(PipelineContext& context)
         : ParticleLayoutBase(context)
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(GOLDEN_SPIRAL_LAYOUT_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override;

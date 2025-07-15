@@ -45,7 +45,9 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
 
     explicit KnnMeshModifier( PipelineContext& ctx )
       : m_ctx( ctx )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(KNN_MESH_LINE_MODIFIER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override

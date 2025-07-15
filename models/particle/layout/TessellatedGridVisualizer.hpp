@@ -40,7 +40,9 @@ X(threshold, float,   0.1f, 0.f, 1.f,  "Minimum value before triggering response
 
     explicit TessellatedGridVisualizer( PipelineContext& ctx )
       : ParticleLayoutBase( ctx )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(TESSELLATED_GRID_VISUALIZER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override

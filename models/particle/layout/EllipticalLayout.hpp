@@ -44,7 +44,9 @@ X(slices,            float,       12.f,      1.f,     128.f,  "Number of slices"
 
     explicit EllipticalLayout( PipelineContext& context )
       : ParticleLayoutBase( context )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(ELLIPTICAL_LAYOUT_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override;

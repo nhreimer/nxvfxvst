@@ -39,7 +39,9 @@ X(enableMirroring,  bool,    true,   0,      1,      "Mirror waveform across hor
 
     explicit PlotLineVisualizer( PipelineContext& ctx )
       : ParticleLayoutBase( ctx )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(PLOT_LINE_VISUALIZER_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override

@@ -47,7 +47,9 @@ X(phaseSpread,   float, 0.5f, 0.0f, 5.0f,  "Spread between points along the curv
 
     explicit LissajousCurveLayout( PipelineContext& context )
       : ParticleLayoutBase( context )
-    {}
+    {
+      EXPAND_SHADER_VST_BINDINGS(LISSAJOUS_CURVE_LAYOUT_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     nlohmann::json serialize() const override;

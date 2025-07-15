@@ -13,6 +13,14 @@ A real-time, modular, multithreaded rendering VST3 Video Effects Engine Plugin f
 
 Synchronize midi events and audio data to highly customizable visuals.
 
+# Media
+
+### Reaper v7.28. nxvfxvst v1.0.1.0 pre-alpha. 1 channel, 2 effects
+![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWd1ZXEwMHl0NDJlczVmYnQ3YzAzY2w3bGU3dDE1M3QwZjloY3JiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJvrv2p5RFCdWlpItl/giphy.gif)
+
+### Reaper v7.28 nxvfxst v1.0.8.0 pre-alpha. 1 channel, 4 effects
+![Alt Text](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaTA1NWt5YW15bjh6bnU5bmN4a3VuMjZtdmt0NDA0MzF6bms3MGk0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Os4AJXRxO7AV5TygMO/giphy.gif)
+
 ## Features
 
 ### Right-click to hide/show menus!
@@ -506,11 +514,4 @@ Contributions, ideas, bug reports, and suggestions are welcome!
   * Controls work directly with BPM
 * Rehydrate dynamically assigned parameters
 
-# Media
-
-### Reaper v7.28. nxvfxvst v1.0.1.0 pre-alpha. 1 channel, 2 effects
-![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWd1ZXEwMHl0NDJlczVmYnQ3YzAzY2w3bGU3dDE1M3QwZjloY3JiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJvrv2p5RFCdWlpItl/giphy.gif)
-
-### Reaper v7.28 nxvfxst v1.0.8.0 pre-alpha. 1 channel, 4 effects
-![Alt Text](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaTA1NWt5YW15bjh6bnU5bmN4a3VuMjZtdmt0NDA0MzF6bms3MGk0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Os4AJXRxO7AV5TygMO/giphy.gif)
 

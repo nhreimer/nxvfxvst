@@ -53,7 +53,9 @@ public:
 
   explicit FractalRingLayout( PipelineContext& context )
     : ParticleLayoutBase( context )
-  {}
+  {
+    EXPAND_SHADER_VST_BINDINGS(FRACTAL_RING_LAYOUT_PARAMS, m_ctx.vstContext.paramBindingManager)
+  }
 
   [[nodiscard]]
   nlohmann::json serialize() const override;

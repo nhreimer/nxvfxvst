@@ -45,7 +45,9 @@ public:
 
   explicit VortexSinkVisualizer(PipelineContext& ctx)
     : ParticleLayoutBase(ctx)
-  {}
+  {
+    EXPAND_SHADER_VST_BINDINGS(VORTEX_SINK_VISUALIZER_PARAMS, m_ctx.vstContext.paramBindingManager)
+  }
 
   [[nodiscard]]
   nlohmann::json serialize() const override
