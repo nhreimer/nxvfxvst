@@ -208,7 +208,7 @@ namespace nx
     OnControlUnRegistrationCallback m_onUnRegistrationCallback;
     int32_t m_nextAvailableVSTParamID { 0 };
     std::array< VSTParamBinding, PARAMETERS_ENABLED > m_bindings;
-    inline static std::string m_emptyString = "";
+    inline static std::string m_emptyString;
     // std::vector<VSTParamBinding> m_bindings; // key = VST Param ID
   };
 }

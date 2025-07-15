@@ -16,13 +16,15 @@ public:
   {}
 
   void toggleBypass() { m_isBypassed = !m_isBypassed; }
+
+  [[nodiscard]]
   bool isBypassed() const { return m_isBypassed; }
 
   void clear() { m_modifiers.clear(); }
 
   void update( const sf::Time& deltaTime ) const;
 
-  void deleteModifier( const int position );
+  void deleteModifier( int position );
 
   void destroyTextures()
   {
@@ -31,6 +33,7 @@ public:
     m_outputTexture.destroy();
   }
 
+  [[nodiscard]]
   nlohmann::json saveModifierPipeline() const;
 
   void loadModifierPipeline( const nlohmann::json& j );
@@ -55,6 +58,7 @@ private:
   void drawArtifacts( const std::deque< sf::Drawable* >& artifacts,
                       const sf::BlendMode& blendMode )
   {
+    m_artifactCount = artifacts.size();
     for ( const auto * artifact : artifacts )
     {
       m_outputTexture.draw( *artifact, blendMode );
@@ -94,6 +98,8 @@ private:
   sf::BlendMode m_blendMode { sf::BlendAdd };
 
   std::vector< std::unique_ptr< IParticleModifier > > m_modifiers;
+
+  size_t m_artifactCount { 0 };
 };
 
 }
