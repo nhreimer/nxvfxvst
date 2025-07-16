@@ -15,6 +15,7 @@ namespace nx
       return m_recentMax;
     }
 
+    [[nodiscard]]
     float getRecentMaxEnergy() const { return m_recentMax; }
 
     void resetMaxEnergy() { m_recentMax = 0.1f; }

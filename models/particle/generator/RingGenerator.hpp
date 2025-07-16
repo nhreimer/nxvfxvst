@@ -8,6 +8,10 @@ namespace nx
   {
   public:
 
+    explicit RingParticleGenerator( PipelineContext& ctx )
+      : ParticleGeneratorBase( ctx )
+    {}
+
     [[nodiscard]]
     E_ParticleType getType() const override { return E_ParticleType::E_RingParticle; }
 
@@ -17,7 +21,7 @@ namespace nx
 
       auto &data = getData();
 
-      ImGui::SliderFloat( "Ring Width", &data.width, 0.f, data.radius );
+      ImGui::SliderFloat( "Ring Width", &data.width.first, 0.f, data.radius.first );
     }
 
     [[nodiscard]]

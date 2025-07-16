@@ -116,7 +116,7 @@ namespace nx
   {
     ImGui::Separator();
     ImGui::Text( "Modifiers: %d", m_modifiers.size() );
-    ImGui::Text( "Artifacts: %ull", m_artifactCount );
+    ImGui::Text( "Artifacts: %d", m_artifactCount );
 
     int deletePos = -1;
     int swapA = -1;

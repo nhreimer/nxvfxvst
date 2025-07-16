@@ -4,7 +4,6 @@
 #include "models/IParticleGenerator.hpp"
 
 #include "helpers/ColorHelper.hpp"
-#include "helpers/SerialHelper.hpp"
 
 #include "models/data/ParticleData_t.hpp"
 #include "models/data/Midi_t.hpp"
@@ -20,6 +19,17 @@ namespace nx
 
   public:
 
+    explicit ParticleGeneratorBase( PipelineContext& ctx )
+      : m_ctx( ctx )
+    {
+      EXPAND_SHADER_VST_BINDINGS(PARTICLE_DATA_PARAMS, m_ctx.vstContext.paramBindingManager)
+    }
+
+    ~ParticleGeneratorBase() override
+    {
+      m_ctx.vstContext.paramBindingManager.unregisterAllControlsOwnedBy( this );
+    }
+
     void drawMenu() override
     {
       drawAppearanceMenu();
@@ -29,36 +39,14 @@ namespace nx
     [[nodiscard]]
     nlohmann::json serialize() const override
     {
-      return
-      {
-        { "type", getType() },
-        { "fillStartColor", SerialHelper::convertColorToJson( m_data.fillStartColor ) },
-        { "fillEndColor", SerialHelper::convertColorToJson( m_data.fillEndColor ) },
-        { "outlineStartColor", SerialHelper::convertColorToJson( m_data.outlineStartColor ) },
-        { "outlineEndColor", SerialHelper::convertColorToJson( m_data.outlineEndColor ) },
-        { "outlineThickness", m_data.outlineThickness },
-        { "radius", m_data.radius },
-        { "pointCount", m_data.pointCount },
-        { "timeoutInSeconds", m_data.timeoutInSeconds },
-        { "boostVelocity", m_data.boostVelocity },
-        { "velocitySizeMultiplier", m_data.velocitySizeMultiplier }
-        //{ "blendMode", SerialHelper::convertBlendModeToString( m_data.blendMode ) }
-      };
+      nlohmann::json j;
+      EXPAND_SHADER_PARAMS_TO_JSON(PARTICLE_DATA_PARAMS)
+      return j;
     }
 
     void deserialize(const nlohmann::json &j) override
     {
-      m_data.fillStartColor = SerialHelper::convertColorFromJson(j.at("fillStartColor"), sf::Color::White);
-      m_data.fillEndColor = SerialHelper::convertColorFromJson(j.at("fillEndColor"), sf::Color::Black);
-      m_data.outlineStartColor = SerialHelper::convertColorFromJson(j.at("outlineStartColor"), sf::Color::White);
-      m_data.outlineEndColor = SerialHelper::convertColorFromJson(j.at("outlineEndColor"), sf::Color::White);
-      m_data.outlineThickness = j.value("outlineThickness", 0.f);
-      m_data.radius = j.value("radius", 30.f);
-      m_data.pointCount = j.value("pointCount", 30);
-      m_data.timeoutInSeconds = j.value("timeoutInSeconds", 1.f);
-      m_data.boostVelocity = j.value("boostVelocity", 0.f);
-      m_data.velocitySizeMultiplier = j.value("velocitySizeMultiplier", 0.f);
-      //m_data.blendMode = SerialHelper::convertBlendModeFromString(j.value("blendMode", "None"));
+      EXPAND_SHADER_PARAMS_FROM_JSON(PARTICLE_DATA_PARAMS)
     }
 
     [[nodiscard]]
@@ -81,29 +69,29 @@ namespace nx
                      const float timeStampInSeconds )
     {
       const auto initialStartColor = ColorHelper::getColorPercentage(
-        m_data.fillStartColor,
-        std::min( velocity + m_data.boostVelocity, 1.f ) );
+        m_data.fillStartColor.first,
+        std::min( velocity + m_data.boostVelocity.first, 1.f ) );
 
       const auto initialEndColor = ColorHelper::getColorPercentage(
-        m_data.fillEndColor,
-        std::min( velocity + m_data.boostVelocity, 1.f ) );
+        m_data.fillEndColor.first,
+        std::min( velocity + m_data.boostVelocity.first, 1.f ) );
 
       particle->setColorPattern( initialStartColor, initialEndColor );
       // particle->setOutlineThickness( m_data.outlineThickness );
 
       const auto initialOutlineStartColor = ColorHelper::getColorPercentage(
-        m_data.outlineStartColor,
-        std::min( velocity + m_data.boostVelocity, 1.f ) );
+        m_data.outlineStartColor.first,
+        std::min( velocity + m_data.boostVelocity.first, 1.f ) );
 
       const auto initialOutlineEndColor = ColorHelper::getColorPercentage(
-        m_data.outlineEndColor,
-        std::min( velocity + m_data.boostVelocity, 1.f ) );
+        m_data.outlineEndColor.first,
+        std::min( velocity + m_data.boostVelocity.first, 1.f ) );
 
       particle->setOutlineColorPattern( initialOutlineStartColor, initialOutlineEndColor );
 
-      particle->setColorPattern( m_data.fillStartColor, m_data.fillEndColor );
+      particle->setColorPattern( m_data.fillStartColor.first, m_data.fillEndColor.first );
 
-      particle->setExpirationTimeInSeconds( m_data.timeoutInSeconds + particle->getSpawnTimeInSeconds() );
+      particle->setExpirationTimeInSeconds( m_data.timeoutInSeconds.first + particle->getSpawnTimeInSeconds() );
 
       particle->setEnergy( velocity );
     }
@@ -115,15 +103,15 @@ namespace nx
       if ( ImGui::TreeNode( "Particle Appearance" ) )
       {
 
-        ColorHelper::drawImGuiColorEdit4( "Particle Color A##1", m_data.fillStartColor );
-        ColorHelper::drawImGuiColorEdit4( "Particle Color B##2", m_data.fillEndColor );
+        ColorHelper::drawImGuiColorEdit4( "Particle Color A##1", m_data.fillStartColor.first );
+        ColorHelper::drawImGuiColorEdit4( "Particle Color B##2", m_data.fillEndColor.first );
 
         ImGui::Separator();
 
-        ImGui::SliderFloat( "Thickness##2", &m_data.outlineThickness, 0.f, 25.f );
+        ImGui::SliderFloat( "Thickness##2", &m_data.outlineThickness.first, 0.f, 25.f );
 
-        ColorHelper::drawImGuiColorEdit4( "Particle Outline A##1", m_data.outlineStartColor );
-        ColorHelper::drawImGuiColorEdit4( "Particle Outline B##1", m_data.outlineEndColor );
+        ColorHelper::drawImGuiColorEdit4( "Particle Outline A##1", m_data.outlineStartColor.first );
+        ColorHelper::drawImGuiColorEdit4( "Particle Outline B##1", m_data.outlineEndColor.first );
 
         ImGui::SeparatorText( "Fade Easings" );
 
@@ -136,12 +124,12 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Particle Adjust" ) )
       {
-        int32_t sides = m_data.pointCount;
-        if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) m_data.pointCount = sides;
-        ImGui::SliderFloat( "Radius##1", &m_data.radius, 0.0f, 150.0f );
-        ImGui::SliderFloat( "Timeout##1", &m_data.timeoutInSeconds, 0.015, 5.f );
-        ImGui::SliderFloat( "Boost##1", &m_data.boostVelocity, 0.f, 1.f );
-        ImGui::SliderFloat( "Velocity Size Mult##1", &m_data.velocitySizeMultiplier, 0.f, 50.f );
+        int32_t sides = m_data.pointCount.first;
+        if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) m_data.pointCount.first = sides;
+        ImGui::SliderFloat( "Radius##1", &m_data.radius.first, 0.0f, 150.0f );
+        ImGui::SliderFloat( "Timeout##1", &m_data.timeoutInSeconds.first, 0.015, 5.f );
+        ImGui::SliderFloat( "Boost##1", &m_data.boostVelocity.first, 0.f, 1.f );
+        ImGui::SliderFloat( "Velocity Size Mult##1", &m_data.velocitySizeMultiplier.first, 0.f, 50.f );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -150,6 +138,9 @@ namespace nx
 
   private:
 
+    PipelineContext& m_ctx;
+
     TData m_data;
+
   };
 }

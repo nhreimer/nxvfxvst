@@ -1,6 +1,8 @@
 #pragma once
 
+#include "log/Logger.hpp"
 #include "helpers/MenuHelper.hpp"
+#include "models/easings/EasingsBase.hpp"
 
 namespace nx
 {
@@ -144,7 +146,11 @@ namespace nx
       // NOT SUPPORTED
       return 0.f;
     }
-
+    else if constexpr (std::is_same_v<T, E_EasingType>)
+    {
+      // NOT SUPPORTED
+      return 0.f;
+    }
     return 0.f;
   }
 }

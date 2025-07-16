@@ -21,7 +21,8 @@ namespace nx
 
     explicit ParticleLayoutBase( PipelineContext& context )
       : m_ctx( context ),
-        m_behaviorPipeline( context )
+        m_behaviorPipeline( context ),
+        m_particleGeneratorManager( context )
     {}
 
     ~ParticleLayoutBase() override
@@ -94,13 +95,13 @@ namespace nx
 
       const auto nextStartColor =
         ColorHelper::getNextColor(
-          particleData.fillStartColor,
+          particleData.fillStartColor.first,
           sf::Color::Black, // the bg color: which ought to be adjustable
           percentage );
 
       const auto nextEndColor =
         ColorHelper::getNextColor(
-          particleData.fillEndColor,
+          particleData.fillEndColor.first,
           sf::Color::Black,
           percentage );
 
@@ -114,13 +115,13 @@ namespace nx
 
       const auto nextStartColor =
         ColorHelper::getNextColor(
-          particleData.outlineStartColor,
+          particleData.outlineStartColor.first,
           sf::Color::Black,
           percentage );
 
       const auto nextEndColor =
         ColorHelper::getNextColor(
-          particleData.outlineEndColor,
+          particleData.outlineEndColor.first,
           sf::Color::Black,
           percentage );
 

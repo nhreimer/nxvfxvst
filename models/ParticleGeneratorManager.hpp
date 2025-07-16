@@ -11,8 +11,9 @@ namespace nx
 
   public:
 
-    ParticleGeneratorManager()
-      : m_particleGenerator( std::make_unique< CircleParticleGenerator >() )
+    explicit ParticleGeneratorManager( PipelineContext& ctx )
+      : m_ctx( ctx ),
+        m_particleGenerator( std::make_unique< CircleParticleGenerator >( ctx ) )
     {}
 
     void drawMenu()
@@ -20,9 +21,9 @@ namespace nx
       if ( ImGui::TreeNode( "Particles Available" ) )
       {
         if ( ImGui::RadioButton( "Circles##1", E_ParticleType::E_CircleParticle == m_particleGenerator->getType() ) )
-          m_particleGenerator.reset( new CircleParticleGenerator() );
+          m_particleGenerator.reset( new CircleParticleGenerator( m_ctx ) );
         if ( ImGui::RadioButton( "Rings##1", E_ParticleType::E_RingParticle == m_particleGenerator->getType() ) )
-          m_particleGenerator.reset( new RingParticleGenerator() );
+          m_particleGenerator.reset( new RingParticleGenerator( m_ctx ) );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -33,6 +34,8 @@ namespace nx
     IParticleGenerator * getParticleGenerator() const { return m_particleGenerator.get(); }
 
   private:
+
+    PipelineContext& m_ctx;
 
     std::unique_ptr< IParticleGenerator > m_particleGenerator;
 

@@ -10,9 +10,14 @@
 namespace nx
 {
 
+#define RING_PARTICLE_PARAMS(X)                                          \
+PARTICLE_DATA_PARAMS(X)                                                  \
+X(width,  float, 10.f, 0.f, 10.f,   "Ring width", true)
+
   struct RingParticleData_t : public ParticleData_t
   {
-    float width { 10.f };
+    //float width { 10.f };
+    EXPAND_SHADER_PARAMS_FOR_STRUCT(RING_PARTICLE_PARAMS)
   };
 
   class RingParticle final : public TimedParticleBase
@@ -23,12 +28,12 @@ namespace nx
     RingParticle( const RingParticleData_t& data,
                   const float timeStamp )
       : m_data( data ),
-        m_radiusOverride( data.radius ),
-        m_ring( sf::PrimitiveType::TriangleStrip, data.pointCount * 2 + 2 )
+        m_radiusOverride( data.radius.first ),
+        m_ring( sf::PrimitiveType::TriangleStrip, data.pointCount.first * 2 + 2 )
     {
       m_spawnTimeInSeconds = timeStamp;
       updateShape();
-      setColorPattern( m_data.fillStartColor, m_data.fillEndColor );
+      setColorPattern( m_data.fillStartColor.first, m_data.fillEndColor.first );
     }
 
     RingParticle( const RingParticleData_t& data,
@@ -39,7 +44,7 @@ namespace nx
     {
       m_spawnTimeInSeconds = spawnTimeStampInSeconds;
       updateShape();
-      setColorPattern( m_data.fillStartColor, m_data.fillEndColor );
+      setColorPattern( m_data.fillStartColor.first, m_data.fillEndColor.first );
     }
 
     RingParticle(const RingParticle &other) = delete;
@@ -55,9 +60,9 @@ namespace nx
       return p;
     }
 
-    uint8_t getPointCount() const override { return m_data.pointCount; }
+    uint8_t getPointCount() const override { return m_data.pointCount.first; }
 
-    float getOutlineThickness() const override { return m_data.outlineThickness; }
+    float getOutlineThickness() const override { return m_data.outlineThickness.first; }
 
     float getRadius() const override { return m_radiusOverride; }
 
@@ -93,7 +98,7 @@ namespace nx
 
     std::pair< sf::Color, sf::Color > getColors() const override
     {
-      return std::make_pair( m_data.fillStartColor, m_data.fillEndColor );
+      return std::make_pair( m_data.fillStartColor.first, m_data.fillEndColor.first );
     }
 
     void setOutlineColorPattern( const sf::Color & startColor, const sf::Color & endColor ) override
@@ -103,7 +108,7 @@ namespace nx
 
     std::pair< sf::Color, sf::Color > getOutlineColors() const override
     {
-      return std::make_pair( m_data.outlineStartColor, m_data.outlineEndColor );
+      return std::make_pair( m_data.outlineStartColor.first, m_data.outlineEndColor.first );
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -130,8 +135,8 @@ namespace nx
         m_ring[ i ].position = { m_radiusOverride * x, m_radiusOverride * y };
 
         // inner
-        m_ring[ i + 1 ].position = { ( m_radiusOverride - m_data.width ) * x,
-                                     ( m_radiusOverride - m_data.width ) * y };
+        m_ring[ i + 1 ].position = { ( m_radiusOverride - m_data.width.first ) * x,
+                                     ( m_radiusOverride - m_data.width.first ) * y };
       }
     }
 

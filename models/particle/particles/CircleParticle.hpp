@@ -25,7 +25,7 @@ namespace nx
     CircleParticle( const ParticleData_t& data,
                     const float spawnTimeStampInSeconds )
       : m_data( data ),
-        m_radiusOverride( m_data.radius )
+        m_radiusOverride( m_data.radius.first )
     {
       m_spawnTimeInSeconds = spawnTimeStampInSeconds;
       update();
@@ -53,9 +53,9 @@ namespace nx
       return p;
     }
 
-    uint8_t getPointCount() const override { return m_data.pointCount; }
+    uint8_t getPointCount() const override { return m_data.pointCount.first; }
 
-    float getOutlineThickness() const override { return m_data.outlineThickness; }
+    float getOutlineThickness() const override { return m_data.outlineThickness.first; }
 
     sf::FloatRect getLocalBounds() const override { return m_bounds; }
 
@@ -64,7 +64,7 @@ namespace nx
       return getTransform().transformRect(getLocalBounds());
     }
 
-    float getRadius() const override { return m_data.radius; }
+    float getRadius() const override { return m_data.radius.first; }
 
     void setColorPattern(  const sf::Color & startColor, const sf::Color & endColor ) override
     {
@@ -74,13 +74,13 @@ namespace nx
     [[nodiscard]]
     std::pair< sf::Color, sf::Color > getColors() const override
     {
-      return std::make_pair( m_data.fillStartColor, m_data.fillEndColor );
+      return std::make_pair( m_data.fillStartColor.first, m_data.fillEndColor.first );
     }
 
     [[nodiscard]]
     std::pair< sf::Color, sf::Color > getOutlineColors() const override
     {
-      return std::make_pair( m_data.outlineStartColor, m_data.outlineEndColor );
+      return std::make_pair( m_data.outlineStartColor.first, m_data.outlineEndColor.first );
     }
 
     void setOutlineColorPattern( const sf::Color & startColor, const sf::Color & endColor ) override
@@ -97,7 +97,7 @@ namespace nx
       target.draw(m_vertices, states);
 
       // Render the outline
-      if (m_data.outlineThickness != 0)
+      if (m_data.outlineThickness.first != 0)
       {
         states.texture = nullptr;
         target.draw(m_outlineVertices, states);
@@ -109,7 +109,7 @@ namespace nx
     sf::Vector2f getPointPosition(const uint8_t index) const
     {
       const auto angle =
-      static_cast< float >(index) / static_cast< float >(m_data.pointCount) * sf::degrees(360.f) - sf::degrees(90.f);
+      static_cast< float >(index) / static_cast< float >(m_data.pointCount.first) * sf::degrees(360.f) - sf::degrees(90.f);
 
       return sf::Vector2f(m_radiusOverride, m_radiusOverride) +
              sf::Vector2f(m_radiusOverride, angle);
@@ -148,7 +148,7 @@ namespace nx
     void updateOutline()
     {
       // Return if there is no outline
-      if (m_data.outlineThickness == 0.f)
+      if (m_data.outlineThickness.first == 0.f)
       {
         m_outlineVertices.clear();
         m_bounds = m_insideBounds;
@@ -184,7 +184,7 @@ namespace nx
 
         // Update the outline points
         m_outlineVertices[ i * 2 + 0 ].position = p1;
-        m_outlineVertices[ i * 2 + 1 ].position = p1 + normal * m_data.outlineThickness;
+        m_outlineVertices[ i * 2 + 1 ].position = p1 + normal * m_data.outlineThickness.first;
       }
 
       // Duplicate the first point at the end, to close the outline

@@ -15,6 +15,10 @@ namespace nx
   {
   public:
 
+    explicit CircleParticleGenerator( PipelineContext& ctx )
+      : ParticleGeneratorBase( ctx )
+    {}
+
     [[nodiscard]]
     E_ParticleType getType() const override { return E_ParticleType::E_CircleParticle; }
 

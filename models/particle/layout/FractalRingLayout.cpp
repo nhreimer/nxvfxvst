@@ -48,7 +48,7 @@ namespace nx
     // spawnFractalRing( midiEvent, m_data.depthLimit, m_data.radius, pos );
 
     // Only spawn one level of fractal on each MIDI note
-    spawnFractalRing(midiEvent, m_currentDepth, m_particleGeneratorManager.getParticleGenerator()->getData().radius, pos);
+    spawnFractalRing(midiEvent, m_currentDepth, m_particleGeneratorManager.getParticleGenerator()->getData().radius.first, pos);
 
     // Advance or reset depth
     switch (m_data.fractalDepthTraversalMode)
@@ -157,7 +157,7 @@ namespace nx
           p->getExpirationTimeInSeconds() - static_cast< int32_t >(
           m_data.delayFractalFadesMultiplier.first *
           static_cast< float >(depth) *
-          static_cast< float >(particleData.timeoutInSeconds)) );
+          static_cast< float >(particleData.timeoutInSeconds.first)) );
       }
 
       spawnFractalRing(
