@@ -19,10 +19,16 @@ namespace nx
 
   public:
 
-    explicit ParticleGeneratorBase( PipelineContext& ctx )
+    ParticleGeneratorBase( PipelineContext& ctx,
+                           const bool createVstBinding )
       : m_ctx( ctx )
     {
-      EXPAND_SHADER_VST_BINDINGS(PARTICLE_DATA_PARAMS, m_ctx.vstContext.paramBindingManager)
+      // we put this here, so that child classes can perform their own
+      // binding based on any modifications to ParticleData_t they've made
+      if ( createVstBinding )
+      {
+        EXPAND_SHADER_VST_BINDINGS(PARTICLE_DATA_PARAMS, m_ctx.vstContext.paramBindingManager)
+      }
     }
 
     ~ParticleGeneratorBase() override
@@ -32,8 +38,15 @@ namespace nx
 
     void drawMenu() override
     {
-      drawAppearanceMenu();
-      drawAdjustmentMenu();
+      if ( ImGui::TreeNode( "Particle Options" ) )
+      {
+        EXPAND_SHADER_IMGUI(PARTICLE_DATA_PARAMS, m_data)
+
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
+      // drawAppearanceMenu();
+      // drawAdjustmentMenu();
     }
 
     [[nodiscard]]
@@ -103,17 +116,19 @@ namespace nx
       if ( ImGui::TreeNode( "Particle Appearance" ) )
       {
 
-        ColorHelper::drawImGuiColorEdit4( "Particle Color A##1", m_data.fillStartColor.first );
-        ColorHelper::drawImGuiColorEdit4( "Particle Color B##2", m_data.fillEndColor.first );
+        // ColorHelper::drawImGuiColorEdit4( "Particle Color A##1", m_data.fillStartColor.first );
+        // ColorHelper::drawImGuiColorEdit4( "Particle Color B##2", m_data.fillEndColor.first );
+        //
+        // ImGui::Separator();
+        //
+        // ImGui::SliderFloat( "Thickness##2", &m_data.outlineThickness.first, 0.f, 25.f );
+        //
+        // ColorHelper::drawImGuiColorEdit4( "Particle Outline A##1", m_data.outlineStartColor.first );
+        // ColorHelper::drawImGuiColorEdit4( "Particle Outline B##1", m_data.outlineEndColor.first );
+        //
+        // ImGui::SeparatorText( "Fade Easings" );
 
-        ImGui::Separator();
 
-        ImGui::SliderFloat( "Thickness##2", &m_data.outlineThickness.first, 0.f, 25.f );
-
-        ColorHelper::drawImGuiColorEdit4( "Particle Outline A##1", m_data.outlineStartColor.first );
-        ColorHelper::drawImGuiColorEdit4( "Particle Outline B##1", m_data.outlineEndColor.first );
-
-        ImGui::SeparatorText( "Fade Easings" );
 
         ImGui::TreePop();
         ImGui::Spacing();
@@ -124,19 +139,19 @@ namespace nx
     {
       if ( ImGui::TreeNode( "Particle Adjust" ) )
       {
-        int32_t sides = m_data.pointCount.first;
-        if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) m_data.pointCount.first = sides;
-        ImGui::SliderFloat( "Radius##1", &m_data.radius.first, 0.0f, 150.0f );
-        ImGui::SliderFloat( "Timeout##1", &m_data.timeoutInSeconds.first, 0.015, 5.f );
-        ImGui::SliderFloat( "Boost##1", &m_data.boostVelocity.first, 0.f, 1.f );
-        ImGui::SliderFloat( "Velocity Size Mult##1", &m_data.velocitySizeMultiplier.first, 0.f, 50.f );
+        // int32_t sides = m_data.pointCount.first;
+        // if ( ImGui::SliderInt( "Sides##1", &sides, 3, 30 ) ) m_data.pointCount.first = sides;
+        // ImGui::SliderFloat( "Radius##1", &m_data.radius.first, 0.0f, 150.0f );
+        // ImGui::SliderFloat( "Timeout##1", &m_data.timeoutInSeconds.first, 0.015, 5.f );
+        // ImGui::SliderFloat( "Boost##1", &m_data.boostVelocity.first, 0.f, 1.f );
+        // ImGui::SliderFloat( "Velocity Size Mult##1", &m_data.velocitySizeMultiplier.first, 0.f, 50.f );
 
         ImGui::TreePop();
         ImGui::Spacing();
       }
     }
 
-  private:
+  protected:
 
     PipelineContext& m_ctx;
 

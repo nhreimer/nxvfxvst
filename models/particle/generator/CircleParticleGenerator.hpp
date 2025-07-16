@@ -16,7 +16,7 @@ namespace nx
   public:
 
     explicit CircleParticleGenerator( PipelineContext& ctx )
-      : ParticleGeneratorBase( ctx )
+      : ParticleGeneratorBase( ctx, true )
     {}
 
     [[nodiscard]]

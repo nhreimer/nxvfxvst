@@ -22,34 +22,15 @@ X( outlineEndColor,    sf::Color, sf::Color(255, 255, 255),      0, 255, "Partic
   struct ParticleData_t
   {
     EXPAND_SHADER_PARAMS_FOR_STRUCT(PARTICLE_DATA_PARAMS)
-    // and you can apply easings to it
-    // E_EasingType colorEasing { E_EasingType::E_Linear };
-    //
-    // float outlineThickness { 0.f };
-    //
-    // float radius { 10.f };
-    // int32_t pointCount { 30 };
-    //
-    // float velocitySizeMultiplier { 1.f };
-    // float boostVelocity { 0.f };
-    //
-    // float timeoutInSeconds { 0.75f };
-    //
-    // sf::Color fillStartColor { sf::Color::White };
-    // sf::Color fillEndColor { sf::Color::White };
-    //
-    // sf::Color outlineStartColor { sf::Color::White };
-    // sf::Color outlineEndColor { sf::Color::White };
-
   };
 
-  enum class E_VortexSinkParam
+  enum class E_ParticleDataParams
   {
     EXPAND_SHADER_PARAMS_FOR_ENUM(PARTICLE_DATA_PARAMS)
     LastItem
   };
 
-  static inline const std::array<std::string, static_cast<size_t>(E_VortexSinkParam::LastItem)> m_paramLabels =
+  static inline const std::array<std::string, static_cast<size_t>(E_ParticleDataParams::LastItem)> m_paramLabels =
   {
     EXPAND_SHADER_PARAM_LABELS(PARTICLE_DATA_PARAMS)
   };

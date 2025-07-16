@@ -12,11 +12,10 @@ namespace nx
 
 #define RING_PARTICLE_PARAMS(X)                                          \
 PARTICLE_DATA_PARAMS(X)                                                  \
-X(width,  float, 10.f, 0.f, 10.f,   "Ring width", true)
+X(width,  float, 10.f, 0.f, 150.f,   "Ring width", true)
 
   struct RingParticleData_t : public ParticleData_t
   {
-    //float width { 10.f };
     EXPAND_SHADER_PARAMS_FOR_STRUCT(RING_PARTICLE_PARAMS)
   };
 

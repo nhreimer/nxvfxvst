@@ -9,19 +9,23 @@ namespace nx
   public:
 
     explicit RingParticleGenerator( PipelineContext& ctx )
-      : ParticleGeneratorBase( ctx )
-    {}
+      : ParticleGeneratorBase( ctx, false )
+    {
+      EXPAND_SHADER_VST_BINDINGS(RING_PARTICLE_PARAMS, ctx.vstContext.paramBindingManager)
+    }
 
     [[nodiscard]]
     E_ParticleType getType() const override { return E_ParticleType::E_RingParticle; }
 
     void drawMenu() override
     {
-      ParticleGeneratorBase::drawMenu();
+      if ( ImGui::TreeNode( "Particle Options" ) )
+      {
+        EXPAND_SHADER_IMGUI(RING_PARTICLE_PARAMS, getData())
 
-      auto &data = getData();
-
-      ImGui::SliderFloat( "Ring Width", &data.width.first, 0.f, data.radius.first );
+        ImGui::TreePop();
+        ImGui::Spacing();
+      }
     }
 
     [[nodiscard]]
