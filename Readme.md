@@ -13,6 +13,10 @@ A real-time, modular, multithreaded rendering VST3 Video Effects Engine Plugin f
 
 Synchronize midi events and audio data to highly customizable visuals.
 
+# Releases
+
+Binary releases through GitHub can be found [here](https://github.com/nhreimer/nxvfxvst/tags)
+
 # Media
 
 ### Reaper v7.28. nxvfxvst v1.0.1.0 pre-alpha. 1 channel, 2 effects
@@ -345,6 +349,7 @@ Manages the particle layout (initial placement & creation) and passes particles 
 | Ring Particle   | audio          |
 | Spiral Echo     | audio          |
 | Plot Line       | audio          |
+| Vortex Sink     | audio          |
 
 ### Particle Generator
 
@@ -369,6 +374,8 @@ e.g., Jitter, Gravity, Spread. Cannot be used for adding or removing particles.
 | Jitter        |             |
 | Magnetic      |             |
 | Radial Spread |             |
+| Energy Flow   |             |
+| Wave          |             | 
 
 ## Modifier Pipeline
 
@@ -384,6 +391,7 @@ Processes a stack of IParticleModifier objects sequentially. It modifies the par
 | Full Mesh Lines      |                    |
 | Sequential Lines     |                    |
 | Ring Zone Mesh Lines |                    |
+| KNN Mesh Lines       |                    |
 | Perlin Deformer      |                    |
 | Mirror               | CPU-side mirroring |
 
