@@ -72,15 +72,26 @@ Binary releases through GitHub can be found [here](https://github.com/nhreimer/n
 
 # Getting Started
 
-Regardless of which version you build, you will need to specify where the
-VST3 SDK lives and where your dependency manager resides. The following setup uses vcpkg configuration.
+This project uses CMake and vcpkg.
+
+## Linux
 
 ```bash
--Dvst3sdk_SOURCE_DIR=C:/path/to/vst3sdk
--DVCPKG_TARGET_TRIPLET=x64-windows-static-md
--DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
--DNX_LOG_FILE=C:/path/to/log/file.log
--DBUILD_PLUGIN=OFF
+cd nxvfxvst
+vcpkg install
+cmake --preset linux-gcc
+cd build/linux-gcc
+ninja
+```
+
+## Windows
+
+```bash
+cd nxvfxvst
+vcpkg install
+cmake --preset windows-msvc
+cd build/windows-msvc
+ninja
 ```
 
 ## Standalone Application

@@ -53,6 +53,7 @@ cmake-build-debug-visual-studio/
 cmake-build-release-visual-studio/
 resource/
 build/
+vcpkg_installed/
 
 # jetbrains
 .idea/

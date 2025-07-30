@@ -1,0 +1,12 @@
+{
+  "dependencies": [
+    "imgui",
+    "imgui-sfml",
+    "kissfft",
+    "nlohmann-json",
+    "sfml",
+    "spdlog",
+    "vst3sdk",
+    "concurrentqueue"
+  ]
+}
