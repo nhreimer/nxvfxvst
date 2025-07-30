@@ -37,9 +37,10 @@ namespace nx
       m_clock.restart();
     }
 
+    [[nodiscard]]
     bool hasExpired() const
     {
-      return m_initialized && m_clock.getElapsedTime().asSeconds() >= m_timeoutInSeconds;
+      return m_initialized && m_clock.getElapsedTime().asSeconds() >= static_cast< float >( m_timeoutInSeconds );
     }
 
     void drawPosition() const

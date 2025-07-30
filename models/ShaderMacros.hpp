@@ -19,6 +19,15 @@
 #include "helpers/MenuHelper.hpp"
 #include "models/easings/EasingsBase.hpp"
 
+/******************************************************************************
+ * this is poorly named and needs to be updated since its role has expanded to
+ * include all components that have user controls.
+ *
+ * the following macros and  functions are used to automate VSTParameter binding,
+ * unbinding, JSON serialization, ImGui controls, and a few other features.
+ * they're not strictly necessary, but they significantly improve the quality of
+ * life at the expense of macro usage and all the perils that come with them.
+ ******************************************************************************/
 namespace nx
 {
 

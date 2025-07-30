@@ -315,7 +315,7 @@ private:
     if ( m_win32.currentFPS > refreshRate )
     {
       LOG_INFO("FPS set too high at {}. lowered to {}.", m_win32.currentFPS, refreshRate);
-      m_win32.currentFPS = refreshRate;
+      m_win32.currentFPS = static_cast< int32_t >(refreshRate);
     }
 
     const BOOL success = ::CreateTimerQueueTimer(
@@ -331,7 +331,9 @@ private:
           ::QueryPerformanceCounter(&now);
 
           const double elapsedMs =
-              1000.0 * static_cast<double>(now.QuadPart - self->m_lastTick.QuadPart) / self->m_perfFreq.QuadPart;
+              1000.0 *
+                static_cast<double>(now.QuadPart - self->m_lastTick.QuadPart) /
+                static_cast< double >(self->m_perfFreq.QuadPart);
 
           const double expectedMs = 1000.0 / static_cast<double>(self->m_win32.currentFPS);
 

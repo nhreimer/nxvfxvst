@@ -80,7 +80,7 @@ namespace nx
 
       for (int i = 0; i <= m_segments; ++i)
       {
-        const float t = static_cast<float>(i) / m_segments;
+        const float t = static_cast<float>(i) / static_cast< float >( m_segments );
         const float u = 1.f - t;
 
         const auto point = u * u * m_start + 2.f * u * t * control + t * t * m_end;

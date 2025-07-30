@@ -47,12 +47,12 @@ namespace nx::win32
       DEVMODE devMode = {};
       devMode.dmSize = sizeof(devMode);
 
-      if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &devMode))
+      if ( ::EnumDisplaySettings( nullptr, ENUM_CURRENT_SETTINGS, &devMode ) )
       {
-        if (devMode.dmDisplayFrequency > 1)
+        if ( devMode.dmDisplayFrequency > 1 )
         {
           LOG_INFO( "Windows display reported refresh rate" );
-          return (devMode.dmDisplayFrequency);
+          return devMode.dmDisplayFrequency;
         }
       }
 
