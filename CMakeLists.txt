@@ -95,22 +95,21 @@ set( NX_CPP_FILES
 if ( ${CMAKE_BUILD_VST3} )
   message( STATUS "BUILDING VST3 PLUGIN" )
 
-  option(SMTG_ENABLE_VST3_PLUGIN_EXAMPLES "Enable VST 3 Plug-in Examples" OFF)
-  option(SMTG_ENABLE_VST3_HOSTING_EXAMPLES "Enable VST 3 Hosting Examples" OFF)
-  option(SMTG_ENABLE_VSTGUI_SUPPORT "Enable VSTGUI Support" OFF)
-  option(SMTG_MDA_VST3_VST2_COMPATIBLE "Build MDA Examples" OFF)
-  option(SMTG_ADD_VST3_UTILITIES "Build VST Utilities" OFF)
+  set(SMTG_ENABLE_VST3_PLUGIN_EXAMPLES OFF)
+  set(SMTG_ENABLE_VST3_HOSTING_EXAMPLES OFF)
+  set(SMTG_ENABLE_VSTGUI_SUPPORT OFF)
+  set(SMTG_MDA_VST3_VST2_COMPATIBLE OFF)
+
+  set(SMTG_ADD_VST3_UTILITIES ON)
+  set(SMTG_BUILD_MODULEINFOTOOL ON)
+
   option(SMTG_CXX_STANDARD "CXX Standard" 20) # this might not be required since we inform CMake already
   if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     option(SMTG_ENABLE_TARGET_VARS_LOG "" ON)
   endif()
-  # you can use this to turn on /MT instead of /MD (but it's NOT recommended!). you will also need to
-  # go to the presets and remove this "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
-  # if ( WIN32 )
-  #   option(SMTG_USE_STATIC_CRT "Enable static CRuntime" OFF)
-  # endif()
 
   add_subdirectory(${vst3sdk_SOURCE_DIR} ${vst3sdk_SOURCE_DIR})
+
   smtg_enable_vst3_sdk()
 
   smtg_add_vst3plugin(${PROJECT_NAME}
