@@ -15,6 +15,8 @@
 
 #include "models/particle/layout/FractalRingLayout.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 

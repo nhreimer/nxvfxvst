@@ -15,6 +15,8 @@
 
 #include "models/particle/layout/LSystemCurveLayout.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 
@@ -97,11 +99,11 @@ namespace nx
     if (m_lsystemStack.empty())
     {
       // Start a new tree!
-      const auto offsetX = midiEvent.pitch / 106.f;
+      const auto offsetX = static_cast< float >(midiEvent.pitch) / 106.f;
       const sf::Vector2f position =
       {
-        m_ctx.globalInfo.windowSize.x * offsetX,
-        m_ctx.globalInfo.windowSize.y * offsetX
+        static_cast< float >(m_ctx.globalInfo.windowSize.x) * offsetX,
+        static_cast< float >(m_ctx.globalInfo.windowSize.y) * offsetX
       };
 
       m_currentDepth = 1;
@@ -140,7 +142,7 @@ namespace nx
     }
 
     // Extend to the next segment
-    const float tightness = 1.f + ( m_data.depth.first - m_currentDepth ) * m_data.depthFactor.first;
+    const float tightness = 1.f + static_cast< float >(m_data.depth.first - m_currentDepth) * m_data.depthFactor.first;
     const sf::Vector2f dir = MathHelper::polarToCartesian(state.angleDeg,
                               m_data.segmentLength.first * m_data.spreadFactor.first * tightness);
     const sf::Vector2f newPos = ( state.position + dir );

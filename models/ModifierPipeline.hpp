@@ -18,6 +18,7 @@
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 
 #include "data/PipelineContext.hpp"
+#include "utils/LazyTexture.hpp"
 
 namespace nx
 {

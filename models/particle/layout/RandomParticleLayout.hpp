@@ -17,6 +17,7 @@
 
 #include <random>
 
+#include "models/data/ParticleLayoutData_t.hpp"
 #include "models/particle/layout/ParticleLayoutBase.hpp"
 
 namespace nx
@@ -35,6 +36,7 @@ public:
 
   void deserialize(const nlohmann::json &j) override;
 
+  [[nodiscard]]
   E_LayoutType getType() const override { return E_LayoutType::E_RandomLayout; }
 
   void drawMenu() override;

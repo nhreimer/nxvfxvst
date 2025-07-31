@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
+
 namespace nx
 {
 
@@ -68,6 +72,7 @@ X(perlinColor,       sf::Color, sf::Color(255, 255, 255, 100), 0, 255, "Fallback
     [[nodiscard]]
     E_ModifierType getType() const override { return E_ModifierType::E_PerlinDeformerModifier; }
 
+    [[nodiscard]]
     bool isActive() const override { return m_data.isActive; }
     void processMidiEvent(const Midi_t &midiEvent) override {}
 
@@ -85,7 +90,8 @@ X(perlinColor,       sf::Color, sf::Color(255, 255, 255, 100), 0, 255, "Fallback
 
   private:
 
-    float getNoise( const float x, const float y ) const;
+    [[nodiscard]]
+    float getNoise( float x, float y ) const;
 
     // hash noise: fast but low quality
     static float getHashNoise(float x, float y);
@@ -95,11 +101,11 @@ X(perlinColor,       sf::Color, sf::Color(255, 255, 255, 100), 0, 255, "Fallback
 
     // Smooth blend between grid points
     // Simple 2D value noise with bilinear interpolation
-    static float getValueNoise( const float x, const float y);
+    static float getValueNoise( float x, float y);
 
     // Fractal Brownian Motion
     // Layered noise — adds complexity and control
-    static float getFBM( const float x, const float y, const int octaves);
+    static float getFBM( float x, float y, int octaves);
 
 
   private:

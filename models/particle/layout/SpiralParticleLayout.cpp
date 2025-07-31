@@ -19,6 +19,7 @@
 
 #include "helpers/MathHelper.hpp"
 #include "helpers/MidiHelper.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

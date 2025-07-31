@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "models/IParticleLayout.hpp"
+
 #include "helpers/ColorHelper.hpp"
 
 #include "models/ParticleBehaviorPipeline.hpp"

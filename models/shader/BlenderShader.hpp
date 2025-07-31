@@ -14,6 +14,7 @@
  */
 
 #pragma once
+#include "utils/LazyTexture.hpp"
 
 namespace nx
 {
@@ -29,8 +30,8 @@ namespace nx
 
     [[nodiscard]]
     sf::RenderTexture * applyShader(const sf::RenderTexture * originalTexture,
-                                  const sf::RenderTexture * effectTexture,
-                                  const float mixFactor );
+                                    const sf::RenderTexture * effectTexture,
+                                    float mixFactor );
 
     void destroyTextures()
     {

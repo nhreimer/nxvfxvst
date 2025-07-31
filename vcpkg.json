@@ -1,4 +1,6 @@
 {
+  "name": "nxvfxvst",
+  "version": "1.0.0",
   "dependencies": [
     "imgui",
     "imgui-sfml",
@@ -6,7 +8,8 @@
     "nlohmann-json",
     "sfml",
     "spdlog",
-    "vst3sdk",
     "concurrentqueue"
-  ]
+  ],
+  "overrides": [],
+  "features": {}
 }

@@ -17,6 +17,8 @@
 
 #include "models/InterfaceTypes.hpp"
 #include "models/IParticleBehavior.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {

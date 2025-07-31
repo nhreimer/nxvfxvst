@@ -16,6 +16,7 @@
 #include "models/modifier/ParticleSequentialLineModifier.hpp"
 
 #include "helpers/LineHelper.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

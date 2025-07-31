@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
+
 #include "shapes/CurvedLine.hpp"
 
 namespace nx
@@ -60,13 +64,17 @@ X(drawSpokes,    bool,    true,     0,      1,        "Toggle drawing of radial 
       EXPAND_SHADER_VST_BINDINGS(RING_ZONE_MESH_MODIFIER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
+    [[nodiscard]]
     E_ModifierType getType() const override { return E_ModifierType::E_RingZoneMeshModifier; }
 
+    [[nodiscard]]
     nlohmann::json serialize() const override;
 
     void deserialize(const nlohmann::json &j) override;
     void drawMenu() override;
     void update(const sf::Time &) override {}
+
+    [[nodiscard]]
     bool isActive() const override { return m_data.isActive; }
     void processMidiEvent(const Midi_t &) override {}
 

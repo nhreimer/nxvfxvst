@@ -16,6 +16,8 @@
 
 #include "models/particle/layout/GoldenSpiralLayout.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 
@@ -24,7 +26,7 @@ namespace nx
   {
     nlohmann::json j =
     {
-          { "type", SerialHelper::serializeEnum( getType() ) }
+      { "type", SerialHelper::serializeEnum( getType() ) }
     };
 
     EXPAND_SHADER_PARAMS_TO_JSON(GOLDEN_SPIRAL_LAYOUT_PARAMS)

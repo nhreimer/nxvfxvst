@@ -15,6 +15,8 @@
 
 #include "models/particle/layout/EllipticalLayout.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 

@@ -36,7 +36,7 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe",
-        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
         "CMAKE_CXX_FLAGS": "/DUNICODE /DNOMINMAX /DWINDOWS_LEAN_AND_MEAN /DWIN32 /DSPDLOG_USE_STD_FORMAT"
       }
     },
@@ -51,13 +51,14 @@
       }
     },
     {
-      "name": "windows-msvc-release",
-      "displayName": "Windows MSVC with Ninja (Release)",
+      "name": "windows-msvc-vst3-debug",
+      "displayName": "Windows MSVC with Ninja (VST3 Debug)",
       "inherits": "windows-msvc",
-      "binaryDir": "${sourceDir}/build/windows-msvc/release",
+      "binaryDir": "${sourceDir}/build/windows-msvc/vst3/debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_BUILD_VST3": "OFF"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_VST3": "ON",
+        "NX_LOG_FILE": "${sourceDir}/build/windows-msvc/vst3/debug/nxvfxvst_log_file.txt"
       }
     },
     {
@@ -81,8 +82,8 @@
       "configurePreset": "windows-msvc-debug"
     },
     {
-      "name": "build-windows-msvc-release",
-      "configurePreset": "windows-msvc-release"
+      "name": "build-windows-msvc-vst3-debug",
+      "configurePreset": "windows-msvc-vst3-debug"
     },
     {
       "name": "build-windows-msvc-vst3-release",

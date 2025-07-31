@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include "helpers/ColorHelper.hpp"
+
+#include "shapes/CurvedLine.hpp"
+
 namespace nx
 {
 

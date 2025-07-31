@@ -15,8 +15,11 @@
 
 #pragma once
 
+#include "helpers/Definitions.hpp"
 #include "models/ISerializable.hpp"
+#include "models/InterfaceTypes.hpp"
 #include "models/ShaderMacros.hpp"
+#include "models/data/Midi_t.hpp"
 
 namespace nx
 {

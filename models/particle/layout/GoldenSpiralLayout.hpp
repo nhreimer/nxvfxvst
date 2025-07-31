@@ -16,6 +16,7 @@
 #pragma once
 
 #include "models/particle/layout/ParticleLayoutBase.hpp"
+#include "shapes/TimedCursorPosition.hpp"
 
 namespace nx
 {
