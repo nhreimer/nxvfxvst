@@ -12,7 +12,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "vst3sdk_SOURCE_DIR": "$env{VST3_SDK_ROOT}"
       },
       "environment": {
         "CMAKE_MAKE_PROGRAM": "ninja"
@@ -27,12 +28,65 @@
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++"
       }
+    },
+    {
+      "name": "windows-msvc",
+      "inherits": "vcpkg",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
+        "CMAKE_CXX_FLAGS": "/DUNICODE /DNOMINMAX /DWINDOWS_LEAN_AND_MEAN /DWIN32 /DSPDLOG_USE_STD_FORMAT"
+      }
+    },
+    {
+      "name": "windows-msvc-debug",
+      "displayName": "Windows MSVC with Ninja (Debug)",
+      "inherits": "windows-msvc",
+      "binaryDir": "${sourceDir}/build/windows-msvc/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_VST3": "OFF"
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "displayName": "Windows MSVC with Ninja (Release)",
+      "inherits": "windows-msvc",
+      "binaryDir": "${sourceDir}/build/windows-msvc/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_VST3": "OFF"
+      }
+    },
+    {
+      "name": "windows-msvc-vst3-release",
+      "displayName": "Windows MSVC with Ninja (VST3 Release)",
+      "inherits": "windows-msvc",
+      "binaryDir": "${sourceDir}/build/windows-msvc/vst3/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_VST3": "ON"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "build-linux-gcc",
       "configurePreset": "linux-gcc"
+    },
+    {
+      "name": "build-windows-msvc-debug",
+      "configurePreset": "windows-msvc-debug"
+    },
+    {
+      "name": "build-windows-msvc-release",
+      "configurePreset": "windows-msvc-release"
+    },
+    {
+      "name": "build-windows-msvc-vst3-release",
+      "configurePreset": "windows-msvc-vst3-release"
     }
   ]
 }

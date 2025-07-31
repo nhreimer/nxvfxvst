@@ -77,6 +77,7 @@ This project uses CMake and vcpkg.
 ## Linux
 
 ```bash
+export VST3_SDK_ROOT=/path/to/vst3sdk
 cd nxvfxvst
 vcpkg install
 cmake --preset linux-gcc
@@ -85,6 +86,8 @@ ninja
 ```
 
 ## Windows
+
+Ensure VST3_SDK_ROOT is set in your environment variables.
 
 ```bash
 cd nxvfxvst
