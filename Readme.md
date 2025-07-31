@@ -81,6 +81,14 @@ Binary releases through GitHub can be found [here](https://github.com/nhreimer/n
 
 Set the environment variable VST3_SDK_ROOT to your VST3 SDK directory.
 
+```bash
+# windows
+$env:VST3_SDK_ROOT = "c:\my\path\to\vst3sdk"
+
+#linux
+export VST3_SDK_ROOT=/my/path/to/vst3sdk
+```
+
 ## CMake Presets
 
 There are a number of CMake presets that you can use. If you're an IDE user, 
@@ -100,8 +108,7 @@ presets available (still in the testing phase):
 cd nxvfxvst
 vcpkg install
 cmake --preset linux-gcc
-cd build/linux-gcc
-ninja
+# building on linux isn't completely functional yet.
 ```
 
 ## Windows
@@ -118,9 +125,10 @@ presets available:
 cd nxvfxvst
 vcpkg install
 cmake --preset windows-msvc-vst3-release
-cd build/windows-msvc
-ninja
+cmake --build --preset build-windows-msvc-vst3-release
 ```
+
+you MUST run in admin mode for the symbolic link to be created.
 
 ---
 
