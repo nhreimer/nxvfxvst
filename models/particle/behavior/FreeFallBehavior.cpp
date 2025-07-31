@@ -17,6 +17,8 @@
 
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 

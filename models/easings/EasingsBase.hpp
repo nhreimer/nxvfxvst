@@ -64,6 +64,7 @@ X(E_Elastic,          "Elastic",          "easeOutElastic",       Easings::easeO
 
   public:
 
+    [[nodiscard]]
     nlohmann::json serialize() const
     {
       return
@@ -89,6 +90,7 @@ X(E_Elastic,          "Elastic",          "easeOutElastic",       Easings::easeO
       setEasingType( m_data.easingType );
     }
 
+    [[nodiscard]]
     E_EasingType getEasingType() const { return m_data.easingType; }
 
     void setEasingType(const E_EasingType easingType)
@@ -104,6 +106,7 @@ X(E_Elastic,          "Elastic",          "easeOutElastic",       Easings::easeO
       }
     }
 
+    [[nodiscard]]
     float getDecayRate() const { return m_data.decayRate; }
 
     void drawMenu()

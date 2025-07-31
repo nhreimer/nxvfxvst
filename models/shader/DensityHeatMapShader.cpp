@@ -16,6 +16,7 @@
 #include "models/shader/DensityHeatMapShader.hpp"
 
 #include "helpers/ColorHelper.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

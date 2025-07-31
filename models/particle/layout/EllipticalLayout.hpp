@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include "models/particle/layout/ParticleLayoutBase.hpp"
 #include "models/ShaderMacros.hpp"
+#include "models/particle/layout/ParticleLayoutBase.hpp"
+#include "shapes/TimedCursorPosition.hpp"
 
 namespace nx
 {

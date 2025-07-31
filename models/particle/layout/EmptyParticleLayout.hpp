@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include "helpers/SerialHelper.hpp"
+#include "models/IParticleLayout.hpp"
+#include "models/data/PipelineContext.hpp"
+
 namespace nx
 {
 

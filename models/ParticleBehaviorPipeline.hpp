@@ -16,6 +16,7 @@
 #pragma once
 
 #include "models/IParticleBehavior.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {

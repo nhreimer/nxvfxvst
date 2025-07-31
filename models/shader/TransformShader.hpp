@@ -17,6 +17,18 @@
 
 #include "models/shader/BlenderShader.hpp"
 
+#include "helpers/CommonHeaders.hpp"
+#include "helpers/SerialHelper.hpp"
+
+#include "models/IShader.hpp"
+#include "models/data/PipelineContext.hpp"
+#include "models/easings/TimeEasing.hpp"
+
+#include "shapes/MidiNoteControl.hpp"
+#include "shapes/TimedCursorPosition.hpp"
+
+#include "utils/LazyTexture.hpp"
+
 namespace nx
 {
   class TransformShader final : public IShader

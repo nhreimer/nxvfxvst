@@ -16,6 +16,7 @@
 #pragma once
 
 #include "ParticleLayoutBase.hpp"
+#include "models/data/ParticleLayoutData_t.hpp"
 
 namespace nx
 {

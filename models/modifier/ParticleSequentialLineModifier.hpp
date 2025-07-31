@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include "shapes/CurvedLine.hpp"
-#include "helpers/CommonHeaders.hpp"
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {
@@ -60,14 +61,17 @@ X(lineSegments,      int32_t,   20,     1,      200,     "Number of segments in 
 
     void drawMenu() override;
 
+    [[nodiscard]]
     bool isActive() const override { return m_isActive; }
 
     void processMidiEvent(const Midi_t &midiEvent) override {}
 
+    [[nodiscard]]
     nlohmann::json serialize() const override;
 
     void deserialize( const nlohmann::json& j ) override;
 
+    [[nodiscard]]
     E_ModifierType getType() const override { return E_ModifierType::E_SequentialModifier; }
 
     void update( const sf::Time &deltaTime ) override {}

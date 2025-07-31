@@ -15,6 +15,8 @@
 
 #include "models/particle/behavior/MagneticBehavior.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
 

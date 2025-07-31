@@ -18,6 +18,7 @@
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 
 #include "helpers/LineHelper.hpp"
+#include "helpers/SerialHelper.hpp"
 
 namespace nx
 {

@@ -15,10 +15,9 @@
 
 #pragma once
 
-#include "helpers/CommonHeaders.hpp"
-#include "models/data/ParticleLineData_t.hpp"
-#include "shapes/CurvedLine.hpp"
-#include "helpers/ColorHelper.hpp"
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {

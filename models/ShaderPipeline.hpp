@@ -17,7 +17,11 @@
 
 #include <mutex>
 
-#include "data/PipelineContext.hpp"
+#include "models/InterfaceTypes.hpp"
+#include "models/IShader.hpp"
+#include "models/data/Midi_t.hpp"
+#include "models/data/PipelineContext.hpp"
+#include "utils/LazyTexture.hpp"
 #include "utils/RingBufferAverager.hpp"
 
 namespace nx
@@ -78,17 +82,21 @@ namespace nx
 
     void clear() { m_shaders.clear(); }
 
-    void deleteShader( const int position );
+    void deleteShader( int position );
 
+    [[nodiscard]]
     nlohmann::json saveShaderPipeline() const;
-    void loadShaderPipeline( const nlohmann::json& j );
-    void swapShaderPositions( const int from, const int to );
 
+    void loadShaderPipeline( const nlohmann::json& j );
+    void swapShaderPositions( int from, int to );
+
+    [[nodiscard]]
     size_t size() const { return m_shaders.size(); }
 
-    IShader * getShader( const int position ) const;
+    [[nodiscard]]
+    IShader * getShader( int position ) const;
 
-    IShader * createShader( const E_ShaderType shaderType,
+    IShader * createShader( E_ShaderType shaderType,
                             const nlohmann::json& j );
 
   private:

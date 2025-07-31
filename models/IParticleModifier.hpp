@@ -15,6 +15,12 @@
 
 #pragma once
 
+#include "models/InterfaceTypes.hpp"
+#include "models/ISerializable.hpp"
+#include "models/IParticle.hpp"
+
+#include "models/data/Midi_t.hpp"
+
 namespace nx
 {
   struct IParticleModifier : public ISerializable< E_ModifierType >
@@ -25,6 +31,7 @@ namespace nx
 
     virtual void update( const sf::Time& deltaTime ) = 0;
 
+    [[nodiscard]]
     virtual bool isActive() const = 0;
 
     virtual void processMidiEvent( const Midi_t& midiEvent ) = 0;

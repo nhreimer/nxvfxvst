@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include "../data/PipelineContext.hpp"
-#include "models/InterfaceTypes.hpp"
+#include "models/IParticleModifier.hpp"
+#include "models/ShaderMacros.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {
@@ -61,8 +62,10 @@ X(mirrorOutlineColor, sf::Color, sf::Color::White, 0, 255, "Outline color for mi
       EXPAND_SHADER_VST_BINDINGS(MIRROR_MODIFIER_PARAMS, m_ctx.vstContext.paramBindingManager)
     }
 
+    [[nodiscard]]
     E_ModifierType getType() const override { return E_ModifierType::E_MirrorModifier; }
 
+    [[nodiscard]]
     nlohmann::json serialize() const override;
 
     void deserialize( const nlohmann::json& j ) override;
@@ -71,6 +74,7 @@ X(mirrorOutlineColor, sf::Color, sf::Color::White, 0, 255, "Outline color for mi
 
     void update(const sf::Time &) override {}
 
+    [[nodiscard]]
     bool isActive() const override { return m_data.isActive; }
 
     void processMidiEvent(const Midi_t & midi) override

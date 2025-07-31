@@ -1,0 +1,93 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "vcpkg",
+      "generator": "Ninja",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "vst3sdk_SOURCE_DIR": "$env{VST3_SDK_ROOT}"
+      },
+      "environment": {
+        "CMAKE_MAKE_PROGRAM": "ninja"
+      }
+    },
+    {
+      "name": "linux-gcc",
+      "displayName": "Linux GCC with Ninja",
+      "inherits": "vcpkg",
+      "binaryDir": "${sourceDir}/build/linux-gcc",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "inherits": "vcpkg",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
+        "CMAKE_CXX_FLAGS": "/DUNICODE /DNOMINMAX /DWINDOWS_LEAN_AND_MEAN /DWIN32 /DSPDLOG_USE_STD_FORMAT"
+      }
+    },
+    {
+      "name": "windows-msvc-debug",
+      "displayName": "Windows MSVC with Ninja (Debug)",
+      "inherits": "windows-msvc",
+      "binaryDir": "${sourceDir}/build/windows-msvc/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_VST3": "OFF"
+      }
+    },
+    {
+      "name": "windows-msvc-vst3-debug",
+      "displayName": "Windows MSVC with Ninja (VST3 Debug)",
+      "inherits": "windows-msvc",
+      "binaryDir": "${sourceDir}/build/windows-msvc/vst3/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_VST3": "ON",
+        "NX_LOG_FILE": "${sourceDir}/build/windows-msvc/vst3/debug/nxvfxvst_log_file.txt"
+      }
+    },
+    {
+      "name": "windows-msvc-vst3-release",
+      "displayName": "Windows MSVC with Ninja (VST3 Release)",
+      "inherits": "windows-msvc",
+      "binaryDir": "${sourceDir}/build/windows-msvc/vst3/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_VST3": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-linux-gcc",
+      "configurePreset": "linux-gcc"
+    },
+    {
+      "name": "build-windows-msvc-debug",
+      "configurePreset": "windows-msvc-debug"
+    },
+    {
+      "name": "build-windows-msvc-vst3-debug",
+      "configurePreset": "windows-msvc-vst3-debug"
+    },
+    {
+      "name": "build-windows-msvc-vst3-release",
+      "configurePreset": "windows-msvc-vst3-release"
+    }
+  ]
+}

@@ -17,7 +17,13 @@
 
 #include "helpers/CommonHeaders.hpp"
 #include "models/shader/BlenderShader.hpp"
-#include "vst/VSTStateContext.hpp"
+
+#include "models/IShader.hpp"
+#include "models/InterfaceTypes.hpp"
+#include "models/data/Midi_t.hpp"
+#include "models/data/PipelineContext.hpp"
+#include "models/easings/TimeEasing.hpp"
+#include "shapes/MidiNoteControl.hpp"
 
 namespace nx
 {
@@ -66,11 +72,13 @@ X(mixFactor,         float, 1.0f,    0.f,   1.f, "Mix between original and effec
     /// ISERIALIZABLE
     ///////////////////////////////////////////////////////
 
+    [[nodiscard]]
     nlohmann::json serialize() const override;
 
     void deserialize( const nlohmann::json& j ) override;
 
     // identify type for easier loading
+    [[nodiscard]]
     E_ShaderType getType() const override { return E_ShaderType::E_BlurShader; }
 
     void update( const sf::Time& deltaTime ) override {}

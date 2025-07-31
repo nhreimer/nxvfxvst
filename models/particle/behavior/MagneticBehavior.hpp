@@ -16,6 +16,8 @@
 #pragma once
 
 #include "models/IParticleBehavior.hpp"
+#include "models/data/PipelineContext.hpp"
+#include "shapes/TimedCursorPosition.hpp"
 
 namespace nx
 {

@@ -15,6 +15,9 @@
 
 #pragma once
 
+#include "models/data/ParticleData_t.hpp"
+#include "models/data/Midi_t.hpp"
+
 namespace nx
 {
   struct IFFTResult;

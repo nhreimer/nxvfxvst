@@ -1,28 +1,45 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.28)
+
+project(nxvfxvst
+  VERSION 1.1.5.0
+  DESCRIPTION "nxvfxvst VST 3 Plug-in"
+)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(GitVersion)
 
 set(CMAKE_CXX_STANDARD 20)
 
-message( "BUILD: ${CMAKE_BUILD_TYPE}" )
+message( STATUS "PROJECT: ${PROJECT_NAME}" )
+message( STATUS "BUILD: ${CMAKE_BUILD_TYPE}" )
+message( STATUS "CMAKE_BINARY_DIR is: ${CMAKE_BINARY_DIR}" )
 
 if ( NX_LOG_FILE )
-  message(STATUS "Logging directory set to: ${NX_LOG_FILE}")
+  message( STATUS "Logging file set to: `${NX_LOG_FILE}`" )
   set( NX_LOG_FILE_DISABLED FALSE )
 else()
   set( NX_LOG_FILE_DISABLED TRUE )
 endif()
 
-if(NOT vst3sdk_SOURCE_DIR)
-  message(FATAL_ERROR "Path to VST3 SDK is empty!")
+# this gets set in the CMakePresets.json (from the VST3_SDK_ROOT environment variable)
+if(NOT DEFINED vst3sdk_SOURCE_DIR OR "${vst3sdk_SOURCE_DIR}" STREQUAL "")
+  message(FATAL_ERROR "vst3sdk_SOURCE_DIR environment variable is not set or empty")
 else()
-  message(STATUS "Path to VST3 SDK found")
+  message(STATUS "found VST3 SDK directory: ${vst3sdk_SOURCE_DIR}")
 endif()
 
-# required for fmt and msvc to force utf-8
-add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+set(SFML_STATIC_LIBRARIES TRUE)
+
+#-----------------------------------------------------------------------------#
+
+find_package(SFML COMPONENTS Graphics Window REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(ImGui-SFML REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(unofficial-concurrentqueue CONFIG REQUIRED)
+find_package(kissfft CONFIG REQUIRED COMPONENTS float)
+
+#-----------------------------------------------------------------------------#
 
 set( NX_CPP_FILES
 
@@ -30,7 +47,6 @@ set( NX_CPP_FILES
 
   shapes/CurvedLine.cpp
 
-#  models/encoder/FFMpegEncoder.cpp
   models/encoder/RawRGBAEncoder.cpp
 
   models/modifier/MirrorModifier.cpp
@@ -74,31 +90,26 @@ set( NX_CPP_FILES
   models/shader/TransformShader.cpp
 )
 
-if ( BUILD_PLUGIN )
+#-----------------------------------------------------------------------------#
 
+if ( ${CMAKE_BUILD_VST3} )
   message( STATUS "BUILDING VST3 PLUGIN" )
 
-  project(nxvfxvst
-    # This is your plug-in version number. Change it here only.
-    # Version number symbols usable in C++ can be found in
-    # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 1.1.4.0
-    DESCRIPTION "nxvfxvst VST 3 Plug-in"
-  )
+  set(SMTG_ENABLE_VST3_PLUGIN_EXAMPLES OFF)
+  set(SMTG_ENABLE_VST3_HOSTING_EXAMPLES OFF)
+  set(SMTG_ENABLE_VSTGUI_SUPPORT OFF)
+  set(SMTG_MDA_VST3_VST2_COMPATIBLE OFF)
 
-  set(SFML_STATIC_LIBRARIES TRUE)
-  find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
-#  find_package(spdlog CONFIG REQUIRED)
-  find_package(ImGui-SFML REQUIRED)
-  find_package(nlohmann_json CONFIG REQUIRED)
-  find_package(unofficial-concurrentqueue CONFIG REQUIRED)
-  find_package(kissfft CONFIG REQUIRED COMPONENTS float)
+  set(SMTG_ADD_VST3_UTILITIES ON)
+  set(SMTG_BUILD_MODULEINFOTOOL ON)
 
-  option(SMTG_ENABLE_VST3_PLUGIN_EXAMPLES "Enable VST 3 Plug-in Examples" OFF)
-  option(SMTG_ENABLE_VST3_HOSTING_EXAMPLES "Enable VST 3 Hosting Examples" OFF)
+  option(SMTG_CXX_STANDARD "CXX Standard" 20) # this might not be required since we inform CMake already
+  if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    option(SMTG_ENABLE_TARGET_VARS_LOG "" ON)
+  endif()
 
-  #add_subdirectory(${vst3sdk_SOURCE_DIR} ${PROJECT_BINARY_DIR}/vst3sdk)
   add_subdirectory(${vst3sdk_SOURCE_DIR} ${vst3sdk_SOURCE_DIR})
+
   smtg_enable_vst3_sdk()
 
   smtg_add_vst3plugin(${PROJECT_NAME}
@@ -114,179 +125,62 @@ if ( BUILD_PLUGIN )
     ${NX_CPP_FILES}
   )
 
-  target_include_directories( ${PROJECT_NAME}
-    PRIVATE
+  smtg_target_configure_version_file(${PROJECT_NAME})
 
-    # must used the patched version
-#    C:/Precision/projects/SFML/include
-  )
+  if(MSVC)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
-  if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
-
-    find_package(spdlog CONFIG REQUIRED)
-    target_link_directories(${PROJECT_NAME} PRIVATE ${FFMPEG_LIBRARY_DIRS})
-    target_link_libraries( ${PROJECT_NAME}
-      PRIVATE
-
-      sdk
-      Rpcrt4.lib
-      dwmapi.lib
-
-      # you should use the patched version in the README.MD file
-#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-system-s-d.lib
-#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-window-s-d.lib
-#      C:/Precision/projects/SFML/cmake-build-debug/lib/sfml-graphics-s-d.lib
-      SFML::Window
-      SFML::Graphics
-      ImGui-SFML::ImGui-SFML
-      spdlog::spdlog_header_only
-      nlohmann_json::nlohmann_json
-
-      unofficial::concurrentqueue::concurrentqueue
-      kissfft::kissfft
+    smtg_target_set_debug_executable(${PROJECT_NAME}
+      "$(ProgramW6432)/Steinberg/VST3PluginTestHost/VST3PluginTestHost.exe"
+      "--pluginfolder \"$(OutDir)/\""
     )
-
-  else()
-
-    target_link_libraries( ${PROJECT_NAME}
-      PRIVATE
-
-      sdk
-      Rpcrt4.lib
-      dwmapi.lib
-
-      nlohmann_json::nlohmann_json
-      SFML::Window
-      SFML::Graphics
-      ImGui-SFML::ImGui-SFML
-
-      unofficial::concurrentqueue::concurrentqueue
-      kissfft::kissfft
-    )
-
   endif()
 
-  smtg_target_configure_version_file(nxvfxvst)
-
-  if(SMTG_MAC)
-    smtg_target_set_bundle(nxvfxvst
-      BUNDLE_IDENTIFIER org.nx.nxvfxvst
-      COMPANY_NAME "nx"
-    )
-    smtg_target_set_debug_executable(nxvfxvst
-      "/Applications/VST3PluginTestHost.app"
-      "--pluginfolder;$(BUILT_PRODUCTS_DIR)"
-    )
-  elseif(SMTG_WIN)
-    if(MSVC)
-      set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-
-      smtg_target_set_debug_executable(${PROJECT_NAME}
-        "$(ProgramW6432)/Steinberg/VST3PluginTestHost/VST3PluginTestHost.exe"
-        "--pluginfolder \"$(OutDir)/\""
-      )
-    endif()
-  endif(SMTG_MAC)
-
 else()
-
-  message( STATUS "BUILDING STANDALONE APPLICATION" )
-
-  project(RVTestPlatform)
-
-  # keep this set no matter what because we rely on some Vst constructs even in the
-  # application version.
-
-  set(SFML_STATIC_LIBRARIES TRUE)
-  find_package(SFML 3.0.0 COMPONENTS Graphics Window REQUIRED)
-  find_package(spdlog CONFIG REQUIRED)
-  find_package(ImGui-SFML REQUIRED)
-  find_package(nlohmann_json CONFIG REQUIRED)
-  find_package(unofficial-concurrentqueue CONFIG REQUIRED)
-  find_package(kissfft CONFIG REQUIRED COMPONENTS float)
+  message( STATUS "BUILDING APPLICATION" )
 
   add_executable(${PROJECT_NAME}
     main.cpp
 
     app/EventFacadeApp.cpp
-
     ${NX_CPP_FILES}
   )
-  target_link_directories( ${PROJECT_NAME}
-    PRIVATE
-    unofficial::concurrentqueue::concurrentqueue
-  )
-
-  target_link_libraries( ${PROJECT_NAME}
-    PRIVATE
-
-    #  sdk
-    Rpcrt4.lib
-    dwmapi.lib
-
-    SFML::Window
-    SFML::Graphics
-    ImGui-SFML::ImGui-SFML
-    spdlog::spdlog_header_only
-    nlohmann_json::nlohmann_json
-    kissfft::kissfft
-  )
-
 endif()
+
+#-----------------------------------------------------------------------------#
 
 target_include_directories( ${PROJECT_NAME}
   PRIVATE
+
   ${CMAKE_SOURCE_DIR}
   ${vst3sdk_SOURCE_DIR}
-  ${FFMPEG_INCLUDE_DIRS}
-  ${FFNVCODEC_INCLUDE_DIRS}
 )
 
-if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
+#-----------------------------------------------------------------------------#
 
-  set( COMPILE_DEFS
-    -DNOMINMAX
-    -DWINDOWS_LEAN_AND_MEAN
-    -DWIN32
-    -D_WINDOWS
-    -D_UNICODE
-    -DUNICODE
-    -DSPDLOG_USE_STD_FORMAT
-    -DDEBUG
-    -DBUILD_NUMBER="d${BUILD_NUMBER}"
-  )
+target_link_libraries( ${PROJECT_NAME}
+  PRIVATE
 
-  if ( BUILD_PLUGIN )
-    list( APPEND COMPILE_DEFS -DBUILD_PLUGIN )
-  endif()
+  $<$<PLATFORM_ID:Windows>:dwmapi.lib>
+  $<$<BOOL:${CMAKE_BUILD_VST3}>:sdk>
 
-  add_definitions( ${COMPILE_DEFS} )
+  nlohmann_json::nlohmann_json
+  SFML::Window
+  SFML::Graphics
+  ImGui-SFML::ImGui-SFML
 
-else()
+  unofficial::concurrentqueue::concurrentqueue
+  kissfft::kissfft
+)
 
-  set( COMPILE_DEFS
-    -DNOMINMAX
-    -DWINDOWS_LEAN_AND_MEAN
-    -DWIN32
-    -D_WINDOWS
-    -D_UNICODE
-    -DUNICODE
-    -DSPDLOG_USE_STD_FORMAT
-    -DBUILD_NUMBER="r${BUILD_NUMBER}"
-  )
-
-  if ( BUILD_PLUGIN )
-    list( APPEND COMPILE_DEFS -DBUILD_PLUGIN )
-  endif()
-
-  add_definitions( ${COMPILE_DEFS} )
-
-endif()
+#-----------------------------------------------------------------------------#
 
 target_precompile_headers( ${PROJECT_NAME}
   PRIVATE
   helpers/CommonHeaders.hpp
 )
+
+#-----------------------------------------------------------------------------#
 
 if ( NX_LOG_FILE_DISABLED )
   add_compile_definitions( NX_LOG_FILE_DISABLED=1 )
@@ -294,3 +188,20 @@ else()
   add_compile_definitions( NX_LOG_FILE="${NX_LOG_FILE}" )
   add_compile_definitions( NX_LOG_FILE_DISABLED=0 )
 endif()
+
+#-----------------------------------------------------------------------------#
+
+# required for fmt and msvc to force utf-8
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+#-----------------------------------------------------------------------------#
+
+# fdebug.h in the VST3 SDK requires _DEBUG and RELEASE to be defined
+if ( ${CMAKE_BUILD_TYPE} STREQUAL "Debug" )
+  add_definitions( -DBUILD_NUMBER="d${BUILD_NUMBER}" -D_DEBUG -DDEBUG )
+else()
+  add_definitions( -DBUILD_NUMBER="r${BUILD_NUMBER}" -DRELEASE )
+endif()
+
+#-----------------------------------------------------------------------------#

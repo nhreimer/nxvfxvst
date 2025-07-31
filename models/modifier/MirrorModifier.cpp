@@ -15,6 +15,8 @@
 
 #include "models/modifier/MirrorModifier.hpp"
 
+#include "helpers/SerialHelper.hpp"
+
 namespace nx
 {
   /////////////////////////////////////////////////////////

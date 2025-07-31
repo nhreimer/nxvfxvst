@@ -18,6 +18,7 @@
 #include <random>
 
 #include "models/IParticleBehavior.hpp"
+#include "models/data/PipelineContext.hpp"
 
 namespace nx
 {
@@ -56,6 +57,7 @@ X(jitterMultiplier  , float, 0.5f, 0.f, 5.f, "Amount of jitter", true)
 
     void deserialize(const nlohmann::json &j) override;
 
+    [[nodiscard]]
     E_BehaviorType getType() const override { return E_BehaviorType::E_JitterBehavior; }
 
     void applyOnSpawn( IParticle * p,
