@@ -130,8 +130,8 @@ namespace nx
   void ModifierPipeline::drawModifierPipelineMenu()
   {
     ImGui::Separator();
-    ImGui::Text( "Modifiers: %d", m_modifiers.size() );
-    ImGui::Text( "Artifacts: %d", m_artifactCount );
+    ImGui::Text( "Modifiers: %ld", m_modifiers.size() );
+    ImGui::Text( "Artifacts: %ld", m_artifactCount );
 
     int deletePos = -1;
     int swapA = -1;

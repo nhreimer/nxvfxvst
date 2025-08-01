@@ -60,7 +60,7 @@ namespace nx
 
   void SpiralParticleLayout::drawMenu()
   {
-    ImGui::Text( "Particles: %d", m_particles.size() );
+    ImGui::Text( "Particles: %ld", m_particles.size() );
     ImGui::Separator();
     if ( ImGui::TreeNode( "Spiral Layout " ) )
     {

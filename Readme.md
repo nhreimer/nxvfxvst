@@ -103,6 +103,8 @@ GCC 13+ is recommended.
 presets available (still in the testing phase):
 
 1. linux-gcc-debug
+2. linux-gcc-vst3-release
+3. linux-gcc-vst3-debug
 
 ```bash
 cd nxvfxvst

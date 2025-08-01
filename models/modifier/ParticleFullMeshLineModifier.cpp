@@ -13,8 +13,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-#pragma once
-
 #include "models/modifier/ParticleFullMeshLineModifier.hpp"
 
 #include "helpers/LineHelper.hpp"

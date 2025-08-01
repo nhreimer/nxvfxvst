@@ -42,7 +42,7 @@ namespace nx
 
   void MidiChannelPipeline::drawMenu()
   {
-    ImGui::Text( "Particle count: %d", m_particleLayout.getParticles().size() );
+    ImGui::Text( "Particle count: %ld", m_particleLayout.getParticles().size() );
     ImGui::Separator();
     m_particleLayout.drawMidiMenu();
 

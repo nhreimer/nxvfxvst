@@ -16,6 +16,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 
 #include "pluginterfaces/vst/ivstattributes.h"
 #include "pluginterfaces/vst/ivstmessage.h"

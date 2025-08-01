@@ -57,7 +57,7 @@ namespace nx
 
   void LSystemCurveLayout::drawMenu()
   {
-    ImGui::Text("Particles: %d", m_particles.size());
+    ImGui::Text("Particles: %ld", m_particles.size());
     ImGui::Separator();
     if (ImGui::TreeNode("L-System Particle Layout"))
     {

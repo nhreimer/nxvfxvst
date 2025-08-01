@@ -13,8 +13,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-#pragma once
-
 #include "models/particle/behavior/FreeFallBehavior.hpp"
 
 #include "helpers/SerialHelper.hpp"

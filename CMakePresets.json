@@ -35,10 +35,31 @@
       "name": "linux-gcc-debug",
       "displayName": "Linux GCC with Ninja (Debug)",
       "inherits": "linux-gcc",
-      "binaryDir": "${sourceDir}/build/linux-gcc-debug",
+      "binaryDir": "${sourceDir}/build/linux-gcc/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_BUILD_VST3": "OFF"
+      }
+    },
+    {
+      "name": "linux-gcc-vst3-release",
+      "displayName": "Linux GCC with Ninja (VST3 Release)",
+      "inherits": "linux-gcc",
+      "binaryDir": "${sourceDir}/build/linux-gcc/vst3/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_VST3": "ON"
+      }
+    },
+    {
+      "name": "linux-gcc-vst3-debug",
+      "displayName": "Linux GCC with Ninja (VST3 Debug)",
+      "inherits": "linux-gcc",
+      "binaryDir": "${sourceDir}/build/linux-gcc/vst3/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_VST3": "ON",
+        "NX_LOG_FILE": "${sourceDir}/build/linux-gcc/vst3/debug/nxvfxvst_log_file.txt"
       }
     },
     {
@@ -89,6 +110,14 @@
       "name": "build-linux-gcc-debug",
       "configurePreset": "linux-gcc-debug"
     },
+    {
+      "name": "build-linux-gcc-vst3-release",
+      "configurePreset": "linux-gcc-vst3-release"
+    },
+    {
+      "name": "build-linux-gcc-vst3-debug",
+      "configurePreset": "linux-gcc-vst3-debug"
+    },    
     {
       "name": "build-windows-msvc-debug",
       "configurePreset": "windows-msvc-debug"
