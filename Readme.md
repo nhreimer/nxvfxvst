@@ -113,6 +113,8 @@ cmake --preset linux-gcc-debug
 cmake --build --preset build-linux-gcc-debug
 ```
 
+* NOTE: the standalone app works and has been tested. the VST3 builds successfully, but there are bugs that may cause crashing.
+
 ## Windows
 
 Setting up [vcpkg-windows](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-powershell)
