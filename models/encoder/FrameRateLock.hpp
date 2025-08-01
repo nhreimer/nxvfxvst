@@ -15,6 +15,8 @@
 
 #pragma once
 
+
+#if defined WIN32
 #include <windows.h>
 
 namespace nx
@@ -59,6 +61,45 @@ namespace nx
     double m_targetDelta;
     double m_accumulatedTime;
   };
-
-
 }
+#elif defined __linux__
+
+#include <chrono>
+namespace nx
+{
+  class FrameRateLock final
+  {
+  public:
+    explicit FrameRateLock( const float fps = 60.f )
+    {
+      m_targetDelta = 1.0 / fps; // x FPS, e.g., 60 FPS
+      m_accumulatedTime = 0.0;
+      ::clock_gettime( CLOCK_MONOTONIC, &m_lastTime );
+    }
+
+    // Call once per frame; returns true when it's time to render a new frame
+    bool shouldRenderFrame()
+    {
+      timespec now;
+      ::clock_gettime( CLOCK_MONOTONIC, &now);
+
+      const double delta = ( now.tv_sec - m_lastTime.tv_sec ) +
+                           ( now.tv_nsec - m_lastTime.tv_nsec ) / 1e9;
+      m_lastTime = now;
+      m_accumulatedTime += delta;
+
+      if (m_accumulatedTime >= m_targetDelta)
+      {
+        m_accumulatedTime -= m_targetDelta;
+        return true;
+      }
+
+      return false;
+    }
+  private:
+    timespec m_lastTime;
+    double m_targetDelta;
+    double m_accumulatedTime;
+  };
+}
+#endif

@@ -119,7 +119,7 @@ X(E_Elastic,          "Elastic",          "easeOutElastic",       Easings::easeO
 
       if (ImGui::BeginCombo("##Easings", currentLabel))
       {
-#define X(eid, label, func)                                                        \
+#define X(eid, label, dummy, func)                                                 \
 {                                                                                  \
 const int32_t idx = static_cast<int32_t>(E_EasingType::eid);                       \
 const bool isSelected = (currentIndex == idx);                                     \

@@ -102,13 +102,13 @@ GCC 13+ is recommended.
 
 presets available (still in the testing phase):
 
-1. linux-gcc
+1. linux-gcc-debug
 
 ```bash
 cd nxvfxvst
 vcpkg install
-cmake --preset linux-gcc
-# building on linux isn't completely functional yet.
+cmake --preset linux-gcc-debug
+cmake --build --preset build-linux-gcc-debug
 ```
 
 ## Windows

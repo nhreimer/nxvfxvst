@@ -285,7 +285,7 @@ namespace nx
   void ShaderPipeline::drawShaderPipeline()
   {
     ImGui::Separator();
-    ImGui::Text( "Shaders: %d", m_shaders.size() );
+    ImGui::Text( "Shaders: %ld", m_shaders.size() );
 
     int deletePos = -1;
     int swapA = -1;

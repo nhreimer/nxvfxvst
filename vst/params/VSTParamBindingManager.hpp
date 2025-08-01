@@ -22,7 +22,7 @@
 
 #include "helpers/Definitions.hpp"
 #include "log/Logger.hpp"
-#include "public.sdk/source/vst/vstparameters.h"
+#include <public.sdk/source/vst/vstparameters.h>
 
 namespace nx
 {

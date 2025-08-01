@@ -97,7 +97,7 @@ namespace nx
   void ParticleBehaviorPipeline::drawBehaviorPipelineMenu()
   {
     ImGui::Separator();
-    ImGui::Text( "Behaviors: %d", m_particleBehaviors.size() );
+    ImGui::Text( "Behaviors: %ld", m_particleBehaviors.size() );
 
     int deletePos = -1;
     int swapA = -1;

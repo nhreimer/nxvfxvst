@@ -23,10 +23,22 @@
       "name": "linux-gcc",
       "displayName": "Linux GCC with Ninja",
       "inherits": "vcpkg",
-      "binaryDir": "${sourceDir}/build/linux-gcc",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++"
+        "CMAKE_CXX_COMPILER": "g++",
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "CMAKE_CXX_FLAGS": "-DUNICODE -DNOMINMAX -DLINUX -DSPDLOG_USE_STD_FORMAT"
+      }
+    },
+    {
+      "name": "linux-gcc-debug",
+      "displayName": "Linux GCC with Ninja (Debug)",
+      "inherits": "linux-gcc",
+      "binaryDir": "${sourceDir}/build/linux-gcc-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_VST3": "OFF"
       }
     },
     {
@@ -74,8 +86,8 @@
   ],
   "buildPresets": [
     {
-      "name": "build-linux-gcc",
-      "configurePreset": "linux-gcc"
+      "name": "build-linux-gcc-debug",
+      "configurePreset": "linux-gcc-debug"
     },
     {
       "name": "build-windows-msvc-debug",
