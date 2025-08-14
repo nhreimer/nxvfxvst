@@ -56,6 +56,40 @@ Binary releases through GitHub can be found [here](https://github.com/nhreimer/n
 
 ---
 
+# Getting Started
+
+| Audio Channel Menu (1)                                  | Midi Channels Menu (2-5)                               |
+|---------------------------------------------------------|--------------------------------------------------------|
+| ![Alt text](./media/nxvfxvst-channel1.png "Audio Data") | ![Alt text](./media/nxvfxvst-channel2.png "Midi Data") |
+
+There are two menus that immediately open: 1) the VFX Options menu, and 2) the Diagnostics menu.
+
+## The Diagnostics menu
+
+Each channel has its own dedicated rendering thread. If any of the green metrics drop, they will turn red. 
+Keep an eye on them when designing because a lot depends on your system hardware.
+
+## The VFX Options menu
+
+Use the slider on the top to switch between channels. The flow of the menu follows the 
+flow of the processing chain: 
+
+1. Layout options place particles on the screen in a pattern. Behaviors fall under the scope of layouts, because they are forces that act on a layout.
+2. Modifier options allow adding after the placement of particles, such as lines
+3. FX are applied next and are responsible for a host of shader-based enhancements
+4. The Video Encoder can capture and record the output 
+
+### Audio-specific Menu Options
+
+The FFT Option allows users to adjust how sensitive the audio data is.
+
+### Channel 1 (Audio Data)
+
+
+### Channels 2 - 5 (Midi Data)
+
+---
+
 # BUILDING
 
 ## Dependencies
